@@ -1,4 +1,3 @@
-```jsx
 import React, { useEffect, useRef, useState } from "react";
 import foxHead from "./assets/fox-head.svg";
 
@@ -39,14 +38,17 @@ function loadSettings() {
     return {
       ...defaultSettings,
       ...parsed,
+
       myAvatar: {
         ...defaultSettings.myAvatar,
         ...(parsed.myAvatar || {}),
       },
+
       otherAvatar: {
         ...defaultSettings.otherAvatar,
         ...(parsed.otherAvatar || {}),
       },
+
       background: {
         ...defaultSettings.background,
         ...(parsed.background || {}),
@@ -64,7 +66,7 @@ function saveSettings(settings) {
       JSON.stringify(settings)
     );
   } catch {
-    // 本地存储不可用时保持当前页面状态即可。
+    // 本地存储不可用时保持当前页面状态。
   }
 }
 
@@ -78,6 +80,7 @@ function Avatar({ avatar, className = "" }) {
     </div>
   );
 }
+
 export default function Chat({ onBack }) {
   const [input, setInput] = useState("");
 
@@ -188,6 +191,7 @@ export default function Chat({ onBack }) {
   function resetMyAvatar() {
     setSettings((current) => ({
       ...current,
+
       myAvatar: {
         ...defaultSettings.myAvatar,
       },
@@ -197,6 +201,7 @@ export default function Chat({ onBack }) {
   function resetOtherAvatar() {
     setSettings((current) => ({
       ...current,
+
       otherAvatar: {
         ...defaultSettings.otherAvatar,
       },
@@ -206,6 +211,7 @@ export default function Chat({ onBack }) {
   function resetBackground() {
     setSettings((current) => ({
       ...current,
+
       background: {
         ...defaultSettings.background,
       },
@@ -235,13 +241,10 @@ export default function Chat({ onBack }) {
   const chatStyle =
     settings.background.type === "image"
       ? {
-          backgroundImage: `
-            linear-gradient(
-              rgba(245, 239, 228, 0.74),
-              rgba(245, 239, 228, 0.74)
-            ),
-            url("${settings.background.value}")
-          `,
+          backgroundImage:
+            'linear-gradient(rgba(245, 239, 228, 0.74), rgba(245, 239, 228, 0.74)), url("' +
+            settings.background.value +
+            '")',
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: "fixed",
@@ -251,10 +254,7 @@ export default function Chat({ onBack }) {
         };
 
   return (
-    <main
-      className="chat-page"
-      style={chatStyle}
-    >
+    <main className="chat-page" style={chatStyle}>
       <header className="chat-header">
         <button
           className="chat-back"
@@ -294,8 +294,6 @@ export default function Chat({ onBack }) {
               ×
             </button>
           </div>
-
-          {/* 我的头像 */}
 
           <div className="settings-section">
             <p>我的头像</p>
@@ -346,8 +344,6 @@ export default function Chat({ onBack }) {
             />
           </div>
 
-          {/* 对方头像 */}
-
           <div className="settings-section">
             <p>对方头像</p>
 
@@ -397,8 +393,6 @@ export default function Chat({ onBack }) {
             />
           </div>
 
-          {/* 聊天背景 */}
-
           <div className="settings-section">
             <p>聊天背景</p>
 
@@ -408,7 +402,12 @@ export default function Chat({ onBack }) {
                 style={
                   settings.background.type === "image"
                     ? {
-                        backgroundImage: `url("${settings.background.value}")`,
+                        backgroundImage:
+                          'url("' +
+                          settings.background.value +
+                          '")',
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
                       }
                     : {
                         background:
@@ -527,4 +526,3 @@ export default function Chat({ onBack }) {
     </main>
   );
 }
-```
