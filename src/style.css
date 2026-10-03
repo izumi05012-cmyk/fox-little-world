@@ -1,0 +1,15 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #f5efe4;
+  color: #3d3028;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+#root {
+  min-height: 100vh;
+}
