@@ -1,13 +1,33 @@
-import "./style.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "./style.css";
 
 function App() {
   return (
-    <div>
-      <h1>🦊 Fox Little World</h1>
-      <p>我们的小世界，正在加载中……</p>
-    </div>
+    <main className="home">
+      <div className="fox-mark">🦊</div>
+
+      <p className="eyebrow">FOX LITTLE WORLD</p>
+
+      <h1>我们的小世界</h1>
+
+      <p className="intro">
+        这里装着我们的小事、碎片和想念。
+      </p>
+
+      <section className="card">
+        <span>TODAY</span>
+        <h2>今天也要好好生活。</h2>
+        <p>距离我们的下一个重要日子，还有 12 天。</p>
+      </section>
+
+      <nav className="nav">
+        <button>⌂</button>
+        <button>♡</button>
+        <button>✎</button>
+        <button>☼</button>
+      </nav>
+    </main>
   );
 }
 
