@@ -1,3 +1,4 @@
+import paw from "./assets/paw.svg";
 import foxHead from "./assets/fox-head.svg";
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -25,11 +26,22 @@ function App() {
       </section>
 
       <nav className="nav">
-        <button>⌂</button>
-        <button>♡</button>
-        <button>✎</button>
-        <button>☼</button>
-      </nav>
+  <button>
+    <img src={paw} alt="首页" />
+  </button>
+
+  <button>
+    <img src={paw} alt="聊天" />
+  </button>
+
+  <button>
+    <img src={paw} alt="日记" />
+  </button>
+
+  <button>
+    <img src={paw} alt="更多" />
+  </button>
+</nav>
     </main>
   );
 }
