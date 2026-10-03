@@ -70,7 +70,7 @@ function saveSettings(settings) {
 
 function Avatar({ avatar, className = "" }) {
   return (
-    <div className={`avatar ${className}`}>
+    <div className={"avatar " + className}>
       <img
         src={avatar.value || foxHead}
         alt={avatar.label || "头像"}
