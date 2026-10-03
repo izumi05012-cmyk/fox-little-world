@@ -21,7 +21,10 @@ button {
   text-align: center;
 }
 
-.fox-mark {
+.fox-mark img {
+  width: 130px;
+  height: auto;
+} {
   font-size: 72px;
   margin-bottom: 24px;
 }
