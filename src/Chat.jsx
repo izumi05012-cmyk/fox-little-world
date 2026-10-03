@@ -72,13 +72,12 @@ function Avatar({ avatar, className = "" }) {
   return (
     <div className={`avatar ${className}`}>
       <img
-        src={avatar?.value || foxHead}
-        alt={avatar?.label || ""}
+        src={avatar.value || foxHead}
+        alt={avatar.label || "头像"}
       />
     </div>
   );
 }
-
 export default function Chat({ onBack }) {
   const [input, setInput] = useState("");
 
