@@ -14,6 +14,7 @@
 
   --brick: #a35f4d;
   --brick-soft: #ead0c5;
+  --brick-pale: #f1ddd5;
 
   --white: #fffaf2;
 
@@ -71,6 +72,7 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
+
 /* =========================================================
    HOME
    ========================================================= */
@@ -88,54 +90,90 @@ input:focus-visible {
   width: 100%;
   min-width: 0;
   min-height: 78px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 20px;
+
   border-bottom: 1px solid var(--line);
+
   color: var(--muted);
-  font-family: Georgia, "Times New Roman", serif;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
   font-size: 12px;
   letter-spacing: 0.28em;
+
   white-space: nowrap;
 }
 
 .home-header > span:first-child,
 .header-date {
   min-width: 0;
+
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .header-date {
+  flex: 0 1 auto;
+  max-width: 48%;
+
   text-align: right;
   letter-spacing: 0.2em;
 }
 
+
+/* =========================================================
+   HOME HERO
+   ========================================================= */
+
 .hero {
   width: 100%;
   min-width: 0;
-  padding: clamp(54px, 9vw, 94px) 0 clamp(60px, 8vw, 86px);
+
+  padding:
+    clamp(54px, 9vw, 94px)
+    0
+    clamp(60px, 8vw, 86px);
+
   text-align: center;
+
   border-bottom: 1px solid var(--line);
 }
 
 .fox-mark {
   width: min(160px, 34vw);
   height: auto;
-  margin: 0 auto clamp(28px, 5vw, 44px);
+
+  margin:
+    0
+    auto
+    clamp(28px, 5vw, 44px);
 }
 
 .fox-mark img {
   display: block;
+
   width: 100%;
   height: auto;
 }
 
 .eyebrow {
   margin: 0 0 20px;
+
   color: var(--brick);
-  font-family: Georgia, "Times New Roman", serif;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
   font-size: clamp(11px, 1.6vw, 14px);
   letter-spacing: 0.42em;
   line-height: 1.5;
@@ -143,19 +181,25 @@ input:focus-visible {
 
 .hero h1 {
   margin: 0;
+
   font-size: clamp(38px, 6vw, 68px);
   font-weight: 400;
   line-height: 1.25;
+
   letter-spacing: 0.08em;
 }
 
 .intro {
   max-width: 620px;
+
   margin: 26px auto 0;
+
   color: var(--muted);
+
   font-size: clamp(16px, 2.3vw, 22px);
   line-height: 1.9;
 }
+
 
 /* =========================================================
    TODAY CARD
@@ -164,7 +208,11 @@ input:focus-visible {
 .today-card {
   width: 100%;
   min-width: 0;
-  padding: clamp(42px, 6vw, 64px) clamp(2px, 1vw, 12px);
+
+  padding:
+    clamp(42px, 6vw, 64px)
+    clamp(2px, 1vw, 12px);
+
   border-bottom: 1px solid var(--line);
 }
 
@@ -172,17 +220,26 @@ input:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 20px;
   min-width: 0;
+
   margin-bottom: 44px;
+
   color: var(--brick);
-  font-family: Georgia, "Times New Roman", serif;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
   font-size: 13px;
   letter-spacing: 0.25em;
 }
 
 .card-label span {
   min-width: 0;
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -195,6 +252,7 @@ input:focus-visible {
 
 .today-card h2 {
   margin: 0;
+
   font-size: clamp(28px, 4.5vw, 48px);
   font-weight: 400;
   line-height: 1.45;
@@ -202,13 +260,16 @@ input:focus-visible {
 
 .today-card p {
   margin: 24px 0 0;
+
   color: var(--muted);
+
   font-size: clamp(16px, 2.5vw, 23px);
   line-height: 1.8;
 }
 
 .today-card strong {
   color: var(--brick);
+
   font-size: 1.25em;
   font-weight: 400;
 }
@@ -216,18 +277,28 @@ input:focus-visible {
 .card-line {
   width: 96px;
   height: 1px;
+
   margin-top: 42px;
+
   background: var(--brick);
 }
 
 .tiny-note {
   display: block;
+
   margin-top: 24px;
+
   color: #ad9588;
-  font-family: Georgia, "Times New Roman", serif;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
   font-size: 13px;
   letter-spacing: 0.2em;
 }
+
 
 /* =========================================================
    SECTIONS
@@ -236,33 +307,51 @@ input:focus-visible {
 .section {
   width: 100%;
   min-width: 0;
-  padding: clamp(46px, 7vw, 72px) 0;
+
+  padding:
+    clamp(46px, 7vw, 72px)
+    0;
 }
 
 .section-heading {
   width: 100%;
   min-width: 0;
+
   display: flex;
   align-items: center;
+
   gap: 18px;
+
   color: var(--muted);
-  font-family: Georgia, "Times New Roman", serif;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
   font-size: 13px;
   letter-spacing: 0.34em;
 }
 
 .section-heading span {
   flex: 0 1 auto;
+
   min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .section-heading i {
   flex: 1 1 auto;
+
   min-width: 20px;
   height: 1px;
+
   background: var(--line);
 }
+
 
 /* =========================================================
    FEATURE GRID
@@ -271,9 +360,14 @@ input:focus-visible {
 .feature-grid {
   width: 100%;
   min-width: 0;
+
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
   margin-top: 30px;
+
   border-top: 1px solid var(--line);
   border-left: 1px solid var(--line);
 }
@@ -281,17 +375,24 @@ input:focus-visible {
 .feature-grid button {
   min-width: 0;
   min-height: 154px;
+
   padding: 28px 18px 22px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   gap: 8px;
+
   border: 0;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
+
   background: rgba(255, 250, 242, 0.35);
+
   cursor: pointer;
+
   transition:
     background 160ms ease,
     transform 160ms ease;
@@ -307,8 +408,11 @@ input:focus-visible {
 
 .feature-icon {
   display: block;
+
   min-height: 42px;
+
   color: var(--brick);
+
   font-size: 34px;
   line-height: 1;
 }
@@ -320,10 +424,16 @@ input:focus-visible {
 
 .feature-grid small {
   color: var(--muted);
-  font-family: Georgia, "Times New Roman", serif;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
   font-size: 10px;
   letter-spacing: 0.18em;
 }
+
 
 /* =========================================================
    RECENT
@@ -332,39 +442,61 @@ input:focus-visible {
 .recent-card {
   width: 100%;
   min-width: 0;
-  padding: 0 0 clamp(46px, 7vw, 72px);
+
+  padding:
+    0
+    0
+    clamp(46px, 7vw, 72px);
 }
 
 .recent-chat {
   width: 100%;
   min-width: 0;
+
   margin-top: 28px;
   padding: 20px 0;
+
   display: grid;
-  grid-template-columns: 56px minmax(0, 1fr) auto;
+
+  grid-template-columns:
+    56px
+    minmax(0, 1fr)
+    auto;
+
   align-items: center;
+
   gap: 18px;
+
   border: 0;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
+
   background: transparent;
+
   text-align: left;
+
   cursor: pointer;
 }
 
 .recent-avatar {
   width: 56px;
   height: 56px;
+  min-width: 56px;
+
   overflow: hidden;
+
   border: 1px solid var(--line);
   border-radius: 50%;
+
   background: var(--paper-light);
 }
 
 .recent-avatar img {
   display: block;
+
   width: 100%;
   height: 100%;
+
   object-fit: contain;
 }
 
@@ -374,13 +506,16 @@ input:focus-visible {
 
 .recent-content strong {
   display: block;
+
   font-size: 16px;
   font-weight: 400;
 }
 
 .recent-content p {
   margin: 6px 0 0;
+
   color: var(--muted);
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -388,10 +523,17 @@ input:focus-visible {
 
 .recent-time {
   color: var(--muted);
-  font-family: Georgia, "Times New Roman", serif;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
   font-size: 11px;
+
   white-space: nowrap;
 }
+
 
 /* =========================================================
    DAILY NOTE
@@ -400,23 +542,33 @@ input:focus-visible {
 .daily-note {
   width: 100%;
   min-width: 0;
+
   padding: 36px 0 20px;
+
   text-align: center;
 }
 
 .daily-note > span {
   color: var(--brick);
-  font-family: Georgia, "Times New Roman", serif;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
   font-size: 11px;
   letter-spacing: 0.3em;
 }
 
 .daily-note p {
   margin: 18px 0 0;
+
   color: var(--muted);
+
   font-size: 17px;
   line-height: 1.8;
 }
+
 
 /* =========================================================
    BOTTOM NAV
@@ -424,29 +576,50 @@ input:focus-visible {
 
 .nav {
   position: fixed;
+
   z-index: 30;
+
   left: 50%;
   bottom: 0;
+
   width: min(100%, var(--page-max));
+
   min-width: 0;
+
   transform: translateX(-50%);
-  padding: 12px var(--page-pad) calc(12px + env(safe-area-inset-bottom));
+
+  padding:
+    12px
+    var(--page-pad)
+    calc(12px + env(safe-area-inset-bottom));
+
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
   gap: 8px;
+
   border-top: 1px solid var(--line);
+
   background: rgba(245, 239, 228, 0.96);
+
   backdrop-filter: blur(10px);
 }
 
 .nav button {
   min-width: 0;
   height: 52px;
+
   display: grid;
   place-items: center;
+
   border: 0;
+
   background: transparent;
+
   opacity: 0.55;
+
   cursor: pointer;
 }
 
@@ -457,8 +630,10 @@ input:focus-visible {
 .nav img {
   width: 30px;
   height: 30px;
+
   object-fit: contain;
 }
+
 
 /* =========================================================
    CHAT PAGE
@@ -467,32 +642,57 @@ input:focus-visible {
 .chat-page {
   width: 100%;
   min-width: 0;
+
   min-height: 100vh;
   min-height: 100dvh;
+
   display: flex;
   flex-direction: column;
+
   overflow-x: hidden;
+
   color: var(--ink);
 }
 
+
+/* =========================================================
+   CHAT HEADER
+   ========================================================= */
+
 .chat-header {
   position: sticky;
+
   z-index: 20;
+
   top: 0;
+
   width: 100%;
   min-width: 0;
+
   min-height: 92px;
+
   padding:
     14px
     max(var(--page-pad), env(safe-area-inset-left))
     14px
     max(var(--page-pad), env(safe-area-inset-right));
+
   display: grid;
-  grid-template-columns: 42px 54px minmax(0, 1fr) 42px;
+
+  grid-template-columns:
+    42px
+    54px
+    minmax(0, 1fr)
+    42px;
+
   align-items: center;
+
   gap: 12px;
+
   border-bottom: 1px solid var(--line);
+
   background: rgba(245, 239, 228, 0.94);
+
   backdrop-filter: blur(10px);
 }
 
@@ -500,14 +700,21 @@ input:focus-visible {
 .chat-settings-button {
   width: 42px;
   height: 42px;
+
   padding: 0;
+
   display: grid;
   place-items: center;
+
   border: 0;
+
   background: transparent;
+
   color: var(--muted);
+
   font-size: 28px;
   line-height: 1;
+
   cursor: pointer;
 }
 
@@ -519,29 +726,37 @@ input:focus-visible {
   width: 54px;
   height: 54px;
   min-width: 54px;
+
   overflow: hidden;
+
   border: 1px solid var(--line);
   border-radius: 50%;
+
   background: var(--paper-light);
 }
 
 .avatar img {
   display: block;
+
   width: 100%;
   height: 100%;
+
   object-fit: cover;
 }
 
 .chat-title {
   min-width: 0;
+
   overflow: hidden;
 }
 
 .chat-title h1 {
   margin: 0;
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
   font-size: 22px;
   font-weight: 400;
   line-height: 1.3;
@@ -549,13 +764,18 @@ input:focus-visible {
 
 .chat-title span {
   display: block;
+
   margin-top: 3px;
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
   color: var(--muted);
+
   font-size: 13px;
 }
+
 
 /* =========================================================
    CHAT SETTINGS
@@ -563,11 +783,19 @@ input:focus-visible {
 
 .chat-settings {
   position: relative;
+
   z-index: 15;
+
   width: min(100%, 720px);
+
   margin: 0 auto;
-  padding: 24px var(--page-pad);
+
+  padding:
+    24px
+    var(--page-pad);
+
   border-bottom: 1px solid var(--line);
+
   background: rgba(251, 247, 239, 0.98);
 }
 
@@ -575,10 +803,18 @@ input:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 16px;
+
   margin-bottom: 22px;
+
   color: var(--muted);
-  font-family: Georgia, "Times New Roman", serif;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
   font-size: 12px;
   letter-spacing: 0.28em;
 }
@@ -586,32 +822,49 @@ input:focus-visible {
 .settings-title button {
   width: 32px;
   height: 32px;
+
   padding: 0;
+
   border: 0;
+
   background: transparent;
+
   color: var(--muted);
+
   font-size: 24px;
+
   cursor: pointer;
 }
 
 .settings-section {
   min-width: 0;
+
   padding: 18px 0;
+
   border-top: 1px solid var(--line);
 }
 
 .settings-section > p {
   margin: 0 0 12px;
+
   color: var(--muted);
+
   font-size: 13px;
 }
 
 .custom-setting,
 .background-setting {
   min-width: 0;
+
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+
+  grid-template-columns:
+    auto
+    minmax(0, 1fr)
+    auto;
+
   align-items: center;
+
   gap: 14px;
 }
 
@@ -629,9 +882,11 @@ input:focus-visible {
 .setting-info strong,
 .background-setting-info strong {
   display: block;
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
   font-size: 14px;
   font-weight: 400;
 }
@@ -639,28 +894,39 @@ input:focus-visible {
 .setting-info small,
 .background-setting-info small {
   display: block;
+
   margin-top: 4px;
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
   color: var(--muted);
+
   font-size: 11px;
 }
 
 .setting-actions {
   display: flex;
   align-items: center;
+
   gap: 6px;
 }
 
 .setting-actions button {
   min-height: 34px;
+
   padding: 0 11px;
+
   border: 1px solid var(--line);
   border-radius: 3px;
+
   background: transparent;
+
   color: var(--ink);
+
   font-size: 12px;
+
   cursor: pointer;
 }
 
@@ -668,8 +934,11 @@ input:focus-visible {
   width: 74px;
   height: 52px;
   min-width: 74px;
+
   border: 1px solid var(--line);
+
   background: var(--paper);
+
   background-position: center;
   background-size: cover;
 }
@@ -680,10 +949,13 @@ input:focus-visible {
 
 .settings-note {
   margin: 18px 0 0;
+
   color: var(--muted);
+
   font-size: 11px;
   line-height: 1.8;
 }
+
 
 /* =========================================================
    CHAT MESSAGES
@@ -692,31 +964,50 @@ input:focus-visible {
 .messages {
   width: 100%;
   min-width: 0;
+
   flex: 1 1 auto;
-  padding: 34px max(var(--page-pad), env(safe-area-inset-left))
-    120px max(var(--page-pad), env(safe-area-inset-right));
+
+  padding:
+    34px
+    max(var(--page-pad), env(safe-area-inset-left))
+    124px
+    max(var(--page-pad), env(safe-area-inset-right));
+
   overflow-x: hidden;
 }
 
 .chat-date {
   width: fit-content;
   max-width: 100%;
+
   margin: 0 auto 38px;
+
   padding-bottom: 10px;
+
   border-bottom: 1px dashed var(--line);
+
   color: var(--muted);
-  font-family: Georgia, "Times New Roman", serif;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
   font-size: 12px;
   letter-spacing: 0.22em;
+
   text-align: center;
 }
 
 .message-row {
   width: 100%;
   min-width: 0;
+
   display: flex;
   align-items: flex-start;
+
   gap: 12px;
+
   margin: 0 0 28px;
 }
 
@@ -732,7 +1023,9 @@ input:focus-visible {
 
 .message-content {
   min-width: 0;
-  max-width: min(72%, 520px);
+
+  max-width:
+    min(72%, 520px);
 }
 
 .message-row.me .message-content {
@@ -741,29 +1034,129 @@ input:focus-visible {
   align-items: flex-end;
 }
 
+
+/* =========================================================
+   FOX PAPER MESSAGE BUBBLE
+   ========================================================= */
+
 .message-bubble {
+  position: relative;
+
   min-width: 0;
-  padding: 14px 18px;
+  max-width: 100%;
+
+  padding:
+    13px
+    18px;
+
   border: 1px solid #d3bda9;
-  border-radius: 18px;
-  background: rgba(255, 250, 242, 0.9);
+
+  border-radius: 15px 15px 15px 4px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 250, 242, 0.97),
+      rgba(250, 243, 232, 0.94)
+    );
+
+  box-shadow:
+    0 2px 0 rgba(61, 48, 40, 0.025);
+
+  color: var(--ink);
+
   font-size: 17px;
   line-height: 1.65;
+
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
+
+/* 左边气泡的小狐狸耳朵 */
+
+.message-row.other .message-bubble::before {
+  content: "";
+
+  position: absolute;
+
+  left: -1px;
+  bottom: -1px;
+
+  width: 14px;
+  height: 14px;
+
+  background: var(--paper-light);
+
+  border-left: 1px solid #d3bda9;
+  border-bottom: 1px solid #d3bda9;
+
+  clip-path: polygon(
+    0 100%,
+    0 0,
+    100% 100%
+  );
+}
+
+
+/* 右边气泡 */
+
 .message-row.me .message-bubble {
-  background: var(--brick-soft);
+  border-radius:
+    15px
+    15px
+    4px
+    15px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(241, 221, 213, 0.98),
+      rgba(234, 208, 197, 0.95)
+    );
+}
+
+
+/* 右边气泡的小狐狸耳朵 */
+
+.message-row.me .message-bubble::before {
+  content: "";
+
+  position: absolute;
+
+  right: -1px;
+  bottom: -1px;
+
+  width: 14px;
+  height: 14px;
+
+  background: var(--brick-pale);
+
+  border-right: 1px solid #d3bda9;
+  border-bottom: 1px solid #d3bda9;
+
+  clip-path: polygon(
+    100% 100%,
+    100% 0,
+    0 100%
+  );
 }
 
 .message-content time {
   display: block;
+
   margin-top: 7px;
+
   color: var(--muted);
-  font-family: Georgia, "Times New Roman", serif;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
   font-size: 10px;
 }
+
 
 /* =========================================================
    CHAT INPUT
@@ -771,50 +1164,78 @@ input:focus-visible {
 
 .chat-input {
   position: fixed;
+
   z-index: 25;
+
   left: 0;
   right: 0;
   bottom: 0;
+
   width: 100%;
   min-width: 0;
+
   padding:
-    12px
-    max(var(--page-pad), env(safe-area-inset-right))
-    calc(12px + env(safe-area-inset-bottom))
-    max(var(--page-pad), env(safe-area-inset-left));
+    10px
+    max(10px, env(safe-area-inset-right))
+    calc(10px + env(safe-area-inset-bottom))
+    max(10px, env(safe-area-inset-left));
+
   display: flex;
   align-items: center;
-  gap: 10px;
+
+  gap: 9px;
+
   border-top: 1px solid var(--line);
-  background: rgba(245, 239, 228, 0.96);
+
+  background:
+    rgba(245, 239, 228, 0.96);
+
   backdrop-filter: blur(10px);
 }
 
 .input-plus {
-  flex: 0 0 48px;
-  width: 48px;
-  height: 48px;
+  flex: 0 0 46px;
+
+  width: 46px;
+  height: 46px;
+
   padding: 0;
+
   border: 1px solid var(--line);
   border-radius: 50%;
-  background: rgba(255, 250, 242, 0.7);
+
+  background:
+    rgba(255, 250, 242, 0.78);
+
   color: var(--muted);
-  font-size: 28px;
+
+  font-size: 25px;
   line-height: 1;
+
   cursor: pointer;
 }
 
 .chat-input input {
   flex: 1 1 auto;
+
   min-width: 0;
   width: 0;
-  height: 48px;
-  padding: 0 18px;
+
+  height: 46px;
+
+  padding:
+    0
+    16px;
+
   border: 1px solid #d3bda9;
-  border-radius: 24px;
-  background: rgba(255, 250, 242, 0.9);
+  border-radius: 23px;
+
+  background:
+    rgba(255, 250, 242, 0.94);
+
   color: var(--ink);
-  font-size: 16px;
+
+  font-size: 15px;
 }
 
 .chat-input input::placeholder {
@@ -822,18 +1243,30 @@ input:focus-visible {
 }
 
 .send-button {
-  flex: 0 0 52px;
-  width: 52px;
-  height: 52px;
-  padding: 0 0 2px 2px;
+  flex: 0 0 48px;
+
+  width: 48px;
+  height: 48px;
+
+  padding:
+    0
+    0
+    2px
+    2px;
+
   border: 0;
   border-radius: 50%;
+
   background: var(--brick);
+
   color: var(--white);
-  font-size: 24px;
+
+  font-size: 21px;
   line-height: 1;
+
   cursor: pointer;
 }
+
 
 /* =========================================================
    MOBILE
@@ -850,48 +1283,72 @@ input:focus-visible {
 
   .home-header {
     min-height: 64px;
+
     gap: 12px;
+
     font-size: 10px;
+
     letter-spacing: 0.18em;
   }
 
   .header-date {
     max-width: 46%;
+
     letter-spacing: 0.1em;
   }
 
+
+  /* HOME HERO */
+
   .hero {
-    padding: 58px 0 58px;
+    padding:
+      58px
+      0
+      58px;
   }
 
   .fox-mark {
     width: 128px;
+
     margin-bottom: 28px;
   }
 
   .eyebrow {
     margin-bottom: 16px;
+
     font-size: 10px;
+
     letter-spacing: 0.3em;
   }
 
   .hero h1 {
-    font-size: clamp(34px, 10vw, 48px);
+    font-size:
+      clamp(34px, 10vw, 48px);
+
     letter-spacing: 0.04em;
   }
 
   .intro {
     margin-top: 20px;
+
     font-size: 16px;
   }
 
+
+  /* TODAY */
+
   .today-card {
-    padding: 38px 0 44px;
+    padding:
+      38px
+      0
+      44px;
   }
 
   .card-label {
     margin-bottom: 32px;
+
     font-size: 10px;
+
     letter-spacing: 0.16em;
   }
 
@@ -901,6 +1358,7 @@ input:focus-visible {
 
   .today-card p {
     margin-top: 18px;
+
     font-size: 16px;
   }
 
@@ -908,28 +1366,43 @@ input:focus-visible {
     font-size: 11px;
   }
 
+
+  /* FEATURES */
+
   .section {
-    padding: 42px 0 48px;
+    padding:
+      42px
+      0
+      48px;
   }
 
   .section-heading {
     gap: 12px;
+
     font-size: 10px;
+
     letter-spacing: 0.22em;
   }
 
   .feature-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
     margin-top: 22px;
   }
 
   .feature-grid button {
     min-height: 128px;
-    padding: 22px 10px 18px;
+
+    padding:
+      22px
+      10px
+      18px;
   }
 
   .feature-icon {
     min-height: 34px;
+
     font-size: 28px;
   }
 
@@ -939,18 +1412,30 @@ input:focus-visible {
 
   .feature-grid small {
     font-size: 9px;
+
     letter-spacing: 0.12em;
   }
 
+
+  /* RECENT */
+
   .recent-chat {
-    grid-template-columns: 48px minmax(0, 1fr) auto;
+    grid-template-columns:
+      48px
+      minmax(0, 1fr)
+      auto;
+
     gap: 12px;
-    padding: 16px 0;
+
+    padding:
+      16px
+      0;
   }
 
   .recent-avatar {
     width: 48px;
     height: 48px;
+    min-width: 48px;
   }
 
   .recent-content strong {
@@ -961,17 +1446,32 @@ input:focus-visible {
     font-size: 13px;
   }
 
+
+  /* HOME NAV */
+
   .nav {
     padding-left: 12px;
     padding-right: 12px;
   }
 
-  /* Chat */
+
+  /* =======================================================
+     CHAT MOBILE
+     ======================================================= */
 
   .chat-header {
     min-height: 76px;
-    padding: 10px 12px;
-    grid-template-columns: 38px 46px minmax(0, 1fr) 38px;
+
+    padding:
+      10px
+      12px;
+
+    grid-template-columns:
+      38px
+      46px
+      minmax(0, 1fr)
+      38px;
+
     gap: 9px;
   }
 
@@ -979,6 +1479,7 @@ input:focus-visible {
   .chat-settings-button {
     width: 38px;
     height: 38px;
+
     font-size: 25px;
   }
 
@@ -1000,17 +1501,25 @@ input:focus-visible {
     font-size: 11px;
   }
 
+
+  /* SETTINGS */
+
   .chat-settings {
-    padding: 18px 16px;
+    padding:
+      18px
+      16px;
   }
 
   .custom-setting,
   .background-setting {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns:
+      auto
+      minmax(0, 1fr);
   }
 
   .setting-actions {
     grid-column: 1 / -1;
+
     padding-left: 62px;
   }
 
@@ -1018,17 +1527,25 @@ input:focus-visible {
     padding-left: 88px;
   }
 
+
+  /* MESSAGES */
+
   .messages {
-    padding: 28px 12px 112px;
+    padding:
+      28px
+      12px
+      116px;
   }
 
   .chat-date {
     margin-bottom: 30px;
+
     font-size: 10px;
   }
 
   .message-row {
     gap: 9px;
+
     margin-bottom: 24px;
   }
 
@@ -1039,48 +1556,99 @@ input:focus-visible {
   }
 
   .message-content {
-    max-width: calc(100% - 51px);
+    max-width:
+      calc(100% - 51px);
   }
 
   .message-bubble {
-    padding: 12px 15px;
-    border-radius: 16px;
+    padding:
+      11px
+      15px;
+
+    border-radius:
+      14px
+      14px
+      14px
+      4px;
+
     font-size: 16px;
+
+    line-height: 1.6;
   }
 
+  .message-row.me .message-bubble {
+    border-radius:
+      14px
+      14px
+      4px
+      14px;
+  }
+
+  .message-row.other .message-bubble::before,
+  .message-row.me .message-bubble::before {
+    width: 12px;
+    height: 12px;
+  }
+
+
+  /* INPUT */
+
   .chat-input {
-    padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
-    gap: 8px;
+    padding:
+      8px
+      10px
+      calc(8px + env(safe-area-inset-bottom));
+
+    gap: 7px;
   }
 
   .input-plus {
-    flex-basis: 46px;
-    width: 46px;
-    height: 46px;
-    font-size: 25px;
+    flex-basis: 44px;
+
+    width: 44px;
+    height: 44px;
+
+    font-size: 23px;
   }
 
   .chat-input input {
-    height: 46px;
-    padding: 0 15px;
+    height: 44px;
+
+    padding:
+      0
+      14px;
+
     font-size: 15px;
   }
 
   .send-button {
-    flex-basis: 48px;
-    width: 48px;
-    height: 48px;
-    font-size: 21px;
+    flex-basis: 46px;
+
+    width: 46px;
+    height: 46px;
+
+    font-size: 20px;
   }
 }
+
 
 /* =========================================================
    VERY SMALL PHONES
    ========================================================= */
 
 @media (max-width: 380px) {
+  :root {
+    --page-pad: 13px;
+  }
+
   .home-header {
     font-size: 9px;
+
+    gap: 8px;
+  }
+
+  .header-date {
+    max-width: 44%;
   }
 
   .hero h1 {
@@ -1097,10 +1665,32 @@ input:focus-visible {
 
   .feature-grid button {
     min-height: 118px;
+
+    padding-left: 7px;
+    padding-right: 7px;
   }
 
+  .feature-grid strong {
+    font-size: 14px;
+  }
+
+  .feature-grid small {
+    font-size: 8px;
+  }
+
+
+  /* CHAT HEADER */
+
   .chat-header {
-    grid-template-columns: 34px 42px minmax(0, 1fr) 34px;
+    padding-left: 9px;
+    padding-right: 9px;
+
+    grid-template-columns:
+      34px
+      42px
+      minmax(0, 1fr)
+      34px;
+
     gap: 7px;
   }
 
@@ -1120,23 +1710,73 @@ input:focus-visible {
     font-size: 18px;
   }
 
+  .chat-title span {
+    font-size: 10px;
+  }
+
+
+  /* CHAT MESSAGES */
+
+  .messages {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .message-row {
+    gap: 7px;
+  }
+
+  .message-row .avatar {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+  }
+
+  .message-content {
+    max-width:
+      calc(100% - 45px);
+  }
+
   .message-bubble {
+    padding:
+      10px
+      13px;
+
     font-size: 15px;
   }
 
+
+  /* CHAT INPUT */
+
+  .chat-input {
+    padding-left: 7px;
+    padding-right: 7px;
+
+    gap: 6px;
+  }
+
   .input-plus {
-    flex-basis: 42px;
-    width: 42px;
-    height: 42px;
+    flex-basis: 40px;
+
+    width: 40px;
+    height: 40px;
+
+    font-size: 21px;
   }
 
   .chat-input input {
-    height: 44px;
+    height: 42px;
+
+    padding-left: 12px;
+    padding-right: 12px;
   }
 
   .send-button {
-    flex-basis: 44px;
-    width: 44px;
-    height: 44px;
+    flex-basis: 42px;
+
+    width: 42px;
+    height: 42px;
+
+    font-size: 18px;
   }
 }
