@@ -1,15 +1,17 @@
-import paw from "./assets/paw.svg";
-import foxHead from "./assets/fox-head.svg";
-import React from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import "./style.css";
 
-function App() {
+import Chat from "./Chat";
+import foxHead from "./assets/fox-head.svg";
+import paw from "./assets/paw.svg";
+
+function Home({ onChat }) {
   return (
     <main className="home">
       <div className="fox-mark">
-  <img src={foxHead} alt="Fox Little World" />
-</div>
+        <img src={foxHead} alt="Fox Little World" />
+      </div>
 
       <p className="eyebrow">FOX LITTLE WORLD</p>
 
@@ -26,24 +28,34 @@ function App() {
       </section>
 
       <nav className="nav">
-  <button>
-    <img src={paw} alt="首页" />
-  </button>
+        <button>
+          <img src={paw} alt="首页" />
+        </button>
 
-  <button>
-    <img src={paw} alt="聊天" />
-  </button>
+        <button onClick={onChat}>
+          <img src={paw} alt="聊天" />
+        </button>
 
-  <button>
-    <img src={paw} alt="日记" />
-  </button>
+        <button>
+          <img src={paw} alt="日记" />
+        </button>
 
-  <button>
-    <img src={paw} alt="更多" />
-  </button>
-</nav>
+        <button>
+          <img src={paw} alt="更多" />
+        </button>
+      </nav>
     </main>
   );
+}
+
+function App() {
+  const [page, setPage] = useState("home");
+
+  if (page === "chat") {
+    return <Chat onBack={() => setPage("home")} />;
+  }
+
+  return <Home onChat={() => setPage("chat")} />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(
