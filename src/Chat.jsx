@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import foxHead from "./assets/fox-head.svg";
+import paw from "./assets/paw.svg";
 
 const STORAGE_KEY = "fox-little-world-chat-settings";
 
@@ -66,7 +67,7 @@ function saveSettings(settings) {
       JSON.stringify(settings)
     );
   } catch {
-    // 本地存储不可用时保持当前页面状态即可。
+    // 本地存储不可用时保持当前页面状态。
   }
 }
 
@@ -81,98 +82,26 @@ function Avatar({ avatar, className = "" }) {
   );
 }
 
-function MessageBubble({ message }) {
-  if (message.type === "voice") {
-    return (
-      <div className="message-bubble voice-bubble">
-        <span className="voice-play">▶</span>
-
-        <span className="voice-wave">
-          ·│·│··││·│··│
-        </span>
-
-        <span className="voice-length">
-          {message.duration}
-        </span>
-      </div>
-    );
-  }
-
-  if (message.type === "typing") {
-    return (
-      <div className="message-bubble typing-bubble">
-        <span>•</span>
-        <span>•</span>
-        <span>•</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="message-bubble">
-      {message.text}
-    </div>
-  );
-}
-
 export default function Chat({ onBack }) {
   const [input, setInput] = useState("");
-
   const [settings, setSettings] = useState(loadSettings);
-
   const [showSettings, setShowSettings] = useState(false);
 
   const [messages, setMessages] = useState([
     {
-      id: 1,
       from: "other",
       text: "今天吃饭了吗？",
-      time: "12:34",
+      time: "20:18",
     },
-
     {
-      id: 2,
       from: "me",
       text: "吃了！你呢？",
-      time: "12:36",
-      read: true,
+      time: "20:19",
     },
-
     {
-      id: 3,
       from: "other",
-      text: "我还没有… 好饿啊",
-      time: "12:37",
-    },
-
-    {
-      id: 4,
-      from: "me",
-      text: "那我们一起吃吧～",
-      time: "12:38",
-      read: true,
-    },
-
-    {
-      id: 5,
-      from: "other",
-      text: "好耶！吃什么？",
-      time: "12:40",
-    },
-
-    {
-      id: 6,
-      from: "me",
-      text: "火锅怎么样？\n我想吃很久了！",
-      time: "12:41",
-      read: true,
-    },
-
-    {
-      id: 7,
-      from: "other",
-      type: "typing",
-      time: "12:42",
+      text: "我也吃啦 🦊",
+      time: "20:20",
     },
   ]);
 
@@ -208,7 +137,6 @@ export default function Chat({ onBack }) {
     readImage(file, (value) => {
       setSettings((current) => ({
         ...current,
-
         myAvatar: {
           type: "image",
           source: "upload",
@@ -227,7 +155,6 @@ export default function Chat({ onBack }) {
     readImage(file, (value) => {
       setSettings((current) => ({
         ...current,
-
         otherAvatar: {
           type: "image",
           source: "upload",
@@ -246,7 +173,6 @@ export default function Chat({ onBack }) {
     readImage(file, (value) => {
       setSettings((current) => ({
         ...current,
-
         background: {
           type: "image",
           source: "upload",
@@ -293,14 +219,12 @@ export default function Chat({ onBack }) {
     setMessages((current) => [
       ...current,
       {
-        id: Date.now(),
         from: "me",
         text,
         time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        read: true,
       },
     ]);
 
@@ -310,13 +234,11 @@ export default function Chat({ onBack }) {
   const chatStyle =
     settings.background.type === "image"
       ? {
-          backgroundImage: `
-            linear-gradient(
-              rgba(245, 239, 228, 0.72),
-              rgba(245, 239, 228, 0.72)
-            ),
-            url("${settings.background.value}")
-          `,
+          backgroundImage:
+            `linear-gradient(
+              rgba(245, 239, 228, 0.74),
+              rgba(245, 239, 228, 0.74)
+            ), url("${settings.background.value}")`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: "fixed",
@@ -326,44 +248,32 @@ export default function Chat({ onBack }) {
         };
 
   return (
-    <main
-      className="chat-page"
-      style={chatStyle}
-    >
+    <main className="chat-page" style={chatStyle}>
       <header className="chat-header">
         <button
           className="chat-back"
           onClick={onBack}
           aria-label="返回首页"
         >
-          ‹
+          ←
         </button>
 
         <Avatar avatar={settings.otherAvatar} />
 
         <div className="chat-title">
-          <h1>
-            Bunny & Elliott
-            <span className="title-heart">♥</span>
-          </h1>
-
-          <span>在线 · 一起的第 102 天</span>
+          <h1>小狐狸</h1>
+          <span>我们的聊天</span>
         </div>
 
-        <div className="chat-header-actions">
-          <button aria-label="通话">
-            ♡
-          </button>
-
-          <button
-            onClick={() =>
-              setShowSettings((current) => !current)
-            }
-            aria-label="聊天设置"
-          >
-            ⋮
-          </button>
-        </div>
+        <button
+          className="chat-settings-button"
+          onClick={() =>
+            setShowSettings((current) => !current)
+          }
+          aria-label="聊天设置"
+        >
+          ⋯
+        </button>
       </header>
 
       {showSettings && (
@@ -488,6 +398,8 @@ export default function Chat({ onBack }) {
                     ? {
                         backgroundImage:
                           `url("${settings.background.value}")`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
                       }
                     : {
                         background:
@@ -546,12 +458,10 @@ export default function Chat({ onBack }) {
 
       <section className="messages">
         <div className="chat-date">
-          <span>—</span>
-          <strong>Sep. 22 · Tue</strong>
-          <span>—</span>
+          TODAY · 20:18
         </div>
 
-        {messages.map((message) => {
+        {messages.map((message, index) => {
           const avatar =
             message.from === "me"
               ? settings.myAvatar
@@ -559,39 +469,21 @@ export default function Chat({ onBack }) {
 
           return (
             <div
-              key={message.id}
+              key={index}
               className={`message-row ${message.from}`}
             >
               <Avatar avatar={avatar} />
 
               <div className="message-content">
-                <MessageBubble message={message} />
-
-                <div className="message-meta">
-                  {message.from === "me" && message.read && (
-                    <span className="read-state">
-                      已读 <span>♣</span>
-                    </span>
-                  )}
-
-                  <time>{message.time}</time>
+                <div className="message-bubble">
+                  {message.text}
                 </div>
+
+                <time>{message.time}</time>
               </div>
             </div>
           );
         })}
-
-        <div className="chat-ending">
-          <div className="ending-line" />
-
-          <div className="ending-flower">✿</div>
-
-          <div className="ending-line" />
-
-          <div className="ending-fox">
-            <img src={foxHead} alt="" />
-          </div>
-        </div>
       </section>
 
       <div className="chat-input">
@@ -612,25 +504,16 @@ export default function Chat({ onBack }) {
               sendMessage();
             }
           }}
-          placeholder="输入一点什么..."
+          placeholder="写点什么……"
         />
 
         <button
-          className="input-paw"
-          aria-label="发送"
+          className="send-button"
           onClick={sendMessage}
+          aria-label="发送"
         >
-          <span>●</span>
-          <span>●</span>
-          <span>●</span>
+          <img src={paw} alt="" />
         </button>
-      </div>
-
-      <div className="chat-tools">
-        <button aria-label="图片">▧</button>
-        <button aria-label="相机">□</button>
-        <button aria-label="表情">☺</button>
-        <button aria-label="语音">♩</button>
       </div>
     </main>
   );
