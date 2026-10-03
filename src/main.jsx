@@ -6,7 +6,9 @@ import "./style.css";
 function App() {
   return (
     <main className="home">
-      <div className="fox-mark">🦊</div>
+      <div className="fox-mark">
+  <img src={foxHead} alt="Fox Little World" />
+</div>
 
       <p className="eyebrow">FOX LITTLE WORLD</p>
 
