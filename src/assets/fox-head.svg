@@ -1,0 +1,27 @@
+<svg width="160" height="140" viewBox="0 0 160 140" xmlns="http://www.w3.org/2000/svg">
+  <path
+    d="M25 25 L55 40 Q80 28 105 40 L135 25 L128 75 Q120 115 80 120 Q40 115 32 75 Z"
+    fill="#A35F4D"
+  />
+  <path
+    d="M45 70 Q55 60 65 70"
+    fill="none"
+    stroke="#3D3028"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <path
+    d="M95 70 Q105 60 115 70"
+    fill="none"
+    stroke="#3D3028"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <path
+    d="M70 88 Q80 95 90 88"
+    fill="none"
+    stroke="#3D3028"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+</svg>
