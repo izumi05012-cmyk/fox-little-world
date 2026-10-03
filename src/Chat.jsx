@@ -1,22 +1,27 @@
-import React, { useEffect, useRef, useState } from "react";
-import foxHead from "./assets/fox-head.svg";
-import paw from "./assets/paw.svg";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
-const STORAGE_KEY = "fox-little-world-chat-settings";
+import foxHead from "./assets/fox-head.svg";
+
+const STORAGE_KEY =
+  "fox-little-world-chat-settings";
 
 const defaultSettings = {
   myAvatar: {
     type: "image",
     source: "default",
     value: foxHead,
-    label: "小狐狸",
+    label: "我的头像",
   },
 
   otherAvatar: {
     type: "image",
     source: "default",
     value: foxHead,
-    label: "小狐狸",
+    label: "对方头像",
   },
 
   background: {
@@ -28,7 +33,8 @@ const defaultSettings = {
 
 function loadSettings() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved =
+      localStorage.getItem(STORAGE_KEY);
 
     if (!saved) {
       return defaultSettings;
@@ -66,189 +72,316 @@ function saveSettings(settings) {
       STORAGE_KEY,
       JSON.stringify(settings)
     );
-  } catch {
-    // 本地存储不可用时保持当前页面状态。
-  }
+  } catch {}
 }
 
-function Avatar({ avatar, className = "" }) {
+function Avatar({
+  avatar,
+  className = "",
+}) {
   return (
-    <div className={`avatar ${className}`}>
+    <div
+      className={`avatar ${className}`}
+    >
       <img
-        src={avatar.value || foxHead}
-        alt={avatar.label || "头像"}
+        src={
+          avatar.value || foxHead
+        }
+        alt={
+          avatar.label || "头像"
+        }
       />
     </div>
   );
 }
 
-export default function Chat({ onBack }) {
-  const [input, setInput] = useState("");
-  const [settings, setSettings] = useState(loadSettings);
-  const [showSettings, setShowSettings] = useState(false);
+function PawIcon() {
+  return (
+    <svg
+      viewBox="0 0 40 40"
+      aria-hidden="true"
+    >
+      <ellipse
+        cx="20"
+        cy="25"
+        rx="8"
+        ry="7"
+      />
 
-  const [messages, setMessages] = useState([
-    {
-      from: "other",
-      text: "今天吃饭了吗？",
-      time: "20:18",
-    },
-    {
-      from: "me",
-      text: "吃了！你呢？",
-      time: "20:19",
-    },
-    {
-      from: "other",
-      text: "我也吃啦 🦊",
-      time: "20:20",
-    },
-  ]);
+      <ellipse
+        cx="10"
+        cy="17"
+        rx="4"
+        ry="5"
+      />
 
-  const myAvatarInput = useRef(null);
-  const otherAvatarInput = useRef(null);
-  const backgroundInput = useRef(null);
+      <ellipse
+        cx="17"
+        cy="12"
+        rx="4"
+        ry="5"
+      />
+
+      <ellipse
+        cx="25"
+        cy="12"
+        rx="4"
+        ry="5"
+      />
+
+      <ellipse
+        cx="32"
+        cy="17"
+        rx="4"
+        ry="5"
+      />
+    </svg>
+  );
+}
+
+export default function Chat({
+  onBack,
+}) {
+  const [input, setInput] =
+    useState("");
+
+  const [settings, setSettings] =
+    useState(loadSettings);
+
+  const [showSettings, setShowSettings] =
+    useState(false);
+
+  const [messages, setMessages] =
+    useState([
+      {
+        from: "other",
+        text: "今天吃饭了吗？",
+        time: "20:18",
+      },
+      {
+        from: "me",
+        text: "吃了！你呢？",
+        time: "20:19",
+      },
+      {
+        from: "other",
+        text: "我也吃啦 🦊",
+        time: "20:20",
+      },
+    ]);
+
+  const myAvatarInput =
+    useRef(null);
+
+  const otherAvatarInput =
+    useRef(null);
+
+  const backgroundInput =
+    useRef(null);
 
   useEffect(() => {
     saveSettings(settings);
   }, [settings]);
 
-  function readImage(file, callback) {
+  function readImage(
+    file,
+    callback
+  ) {
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
+    if (
+      !file.type.startsWith(
+        "image/"
+      )
+    ) {
       return;
     }
 
-    const reader = new FileReader();
+    const reader =
+      new FileReader();
 
     reader.onload = () => {
-      if (typeof reader.result === "string") {
-        callback(reader.result);
+      if (
+        typeof reader.result ===
+        "string"
+      ) {
+        callback(
+          reader.result
+        );
       }
     };
 
     reader.readAsDataURL(file);
   }
 
-  function changeMyAvatar(event) {
-    const file = event.target.files?.[0];
+  function changeMyAvatar(
+    event
+  ) {
+    const file =
+      event.target.files?.[0];
 
-    readImage(file, (value) => {
-      setSettings((current) => ({
-        ...current,
-        myAvatar: {
-          type: "image",
-          source: "upload",
-          value,
-          label: "我的头像",
-        },
-      }));
-    });
+    readImage(
+      file,
+      (value) => {
+        setSettings(
+          (current) => ({
+            ...current,
 
-    event.target.value = "";
-  }
-
-  function changeOtherAvatar(event) {
-    const file = event.target.files?.[0];
-
-    readImage(file, (value) => {
-      setSettings((current) => ({
-        ...current,
-        otherAvatar: {
-          type: "image",
-          source: "upload",
-          value,
-          label: "对方头像",
-        },
-      }));
-    });
+            myAvatar: {
+              type: "image",
+              source: "upload",
+              value,
+              label: "我的头像",
+            },
+          })
+        );
+      }
+    );
 
     event.target.value = "";
   }
 
-  function changeBackground(event) {
-    const file = event.target.files?.[0];
+  function changeOtherAvatar(
+    event
+  ) {
+    const file =
+      event.target.files?.[0];
 
-    readImage(file, (value) => {
-      setSettings((current) => ({
-        ...current,
-        background: {
-          type: "image",
-          source: "upload",
-          value,
-        },
-      }));
-    });
+    readImage(
+      file,
+      (value) => {
+        setSettings(
+          (current) => ({
+            ...current,
+
+            otherAvatar: {
+              type: "image",
+              source: "upload",
+              value,
+              label: "对方头像",
+            },
+          })
+        );
+      }
+    );
+
+    event.target.value = "";
+  }
+
+  function changeBackground(
+    event
+  ) {
+    const file =
+      event.target.files?.[0];
+
+    readImage(
+      file,
+      (value) => {
+        setSettings(
+          (current) => ({
+            ...current,
+
+            background: {
+              type: "image",
+              source: "upload",
+              value,
+            },
+          })
+        );
+      }
+    );
 
     event.target.value = "";
   }
 
   function resetMyAvatar() {
-    setSettings((current) => ({
-      ...current,
-      myAvatar: {
-        ...defaultSettings.myAvatar,
-      },
-    }));
+    setSettings(
+      (current) => ({
+        ...current,
+        myAvatar: {
+          ...defaultSettings.myAvatar,
+        },
+      })
+    );
   }
 
   function resetOtherAvatar() {
-    setSettings((current) => ({
-      ...current,
-      otherAvatar: {
-        ...defaultSettings.otherAvatar,
-      },
-    }));
+    setSettings(
+      (current) => ({
+        ...current,
+        otherAvatar: {
+          ...defaultSettings.otherAvatar,
+        },
+      })
+    );
   }
 
   function resetBackground() {
-    setSettings((current) => ({
-      ...current,
-      background: {
-        ...defaultSettings.background,
-      },
-    }));
+    setSettings(
+      (current) => ({
+        ...current,
+        background: {
+          ...defaultSettings.background,
+        },
+      })
+    );
   }
 
   function sendMessage() {
-    const text = input.trim();
+    const text =
+      input.trim();
 
-    if (!text) return;
+    if (!text) {
+      return;
+    }
 
-    setMessages((current) => [
-      ...current,
-      {
-        from: "me",
-        text,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      },
-    ]);
+    setMessages(
+      (current) => [
+        ...current,
+
+        {
+          from: "me",
+          text,
+          time:
+            new Date().toLocaleTimeString(
+              [],
+              {
+                hour: "2-digit",
+                minute: "2-digit",
+              }
+            ),
+        },
+      ]
+    );
 
     setInput("");
   }
 
   const chatStyle =
-    settings.background.type === "image"
+    settings.background.type ===
+    "image"
       ? {
           backgroundImage:
             `linear-gradient(
-              rgba(245, 239, 228, 0.74),
-              rgba(245, 239, 228, 0.74)
+              rgba(245, 239, 228, 0.72),
+              rgba(245, 239, 228, 0.72)
             ), url("${settings.background.value}")`,
           backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
+          backgroundPosition:
+            "center",
+          backgroundAttachment:
+            "fixed",
         }
       : {
-          background: settings.background.value,
+          background:
+            settings.background.value,
         };
 
   return (
-    <main className="chat-page" style={chatStyle}>
+    <main
+      className="chat-page"
+      style={chatStyle}
+    >
       <header className="chat-header">
         <button
           className="chat-back"
@@ -258,17 +391,29 @@ export default function Chat({ onBack }) {
           ←
         </button>
 
-        <Avatar avatar={settings.otherAvatar} />
+        <Avatar
+          avatar={
+            settings.otherAvatar
+          }
+        />
 
         <div className="chat-title">
-          <h1>小狐狸</h1>
-          <span>我们的聊天</span>
+          <h1>
+            Bunny &amp; Elliott ♥
+          </h1>
+
+          <span>
+            在线 · 一起的第102天
+          </span>
         </div>
 
         <button
           className="chat-settings-button"
           onClick={() =>
-            setShowSettings((current) => !current)
+            setShowSettings(
+              (current) =>
+                !current
+            )
           }
           aria-label="聊天设置"
         >
@@ -279,10 +424,16 @@ export default function Chat({ onBack }) {
       {showSettings && (
         <section className="chat-settings">
           <div className="settings-title">
-            <span>CHAT SETTINGS</span>
+            <span>
+              CHAT SETTINGS
+            </span>
 
             <button
-              onClick={() => setShowSettings(false)}
+              onClick={() =>
+                setShowSettings(
+                  false
+                )
+              }
               aria-label="关闭设置"
             >
               ×
@@ -294,19 +445,25 @@ export default function Chat({ onBack }) {
 
             <div className="custom-setting">
               <Avatar
-                avatar={settings.myAvatar}
+                avatar={
+                  settings.myAvatar
+                }
                 className="settings-avatar"
               />
 
               <div className="setting-info">
                 <strong>
-                  {settings.myAvatar.source === "upload"
+                  {settings.myAvatar
+                    .source ===
+                  "upload"
                     ? "自定义头像"
                     : "默认狐狸"}
                 </strong>
 
                 <small>
-                  {settings.myAvatar.source === "upload"
+                  {settings.myAvatar
+                    .source ===
+                  "upload"
                     ? "来自本机图片"
                     : "Fox Little World"}
                 </small>
@@ -321,8 +478,15 @@ export default function Chat({ onBack }) {
                   更换
                 </button>
 
-                {settings.myAvatar.source === "upload" && (
-                  <button onClick={resetMyAvatar}>
+                {settings
+                  .myAvatar
+                  .source ===
+                  "upload" && (
+                  <button
+                    onClick={
+                      resetMyAvatar
+                    }
+                  >
                     恢复
                   </button>
                 )}
@@ -334,7 +498,9 @@ export default function Chat({ onBack }) {
               className="hidden-file-input"
               type="file"
               accept="image/*"
-              onChange={changeMyAvatar}
+              onChange={
+                changeMyAvatar
+              }
             />
           </div>
 
@@ -343,19 +509,25 @@ export default function Chat({ onBack }) {
 
             <div className="custom-setting">
               <Avatar
-                avatar={settings.otherAvatar}
+                avatar={
+                  settings.otherAvatar
+                }
                 className="settings-avatar"
               />
 
               <div className="setting-info">
                 <strong>
-                  {settings.otherAvatar.source === "upload"
+                  {settings.otherAvatar
+                    .source ===
+                  "upload"
                     ? "自定义头像"
                     : "默认狐狸"}
                 </strong>
 
                 <small>
-                  {settings.otherAvatar.source === "upload"
+                  {settings.otherAvatar
+                    .source ===
+                  "upload"
                     ? "来自本机图片"
                     : "Fox Little World"}
                 </small>
@@ -370,8 +542,15 @@ export default function Chat({ onBack }) {
                   更换
                 </button>
 
-                {settings.otherAvatar.source === "upload" && (
-                  <button onClick={resetOtherAvatar}>
+                {settings
+                  .otherAvatar
+                  .source ===
+                  "upload" && (
+                  <button
+                    onClick={
+                      resetOtherAvatar
+                    }
+                  >
                     恢复
                   </button>
                 )}
@@ -383,7 +562,9 @@ export default function Chat({ onBack }) {
               className="hidden-file-input"
               type="file"
               accept="image/*"
-              onChange={changeOtherAvatar}
+              onChange={
+                changeOtherAvatar
+              }
             />
           </div>
 
@@ -394,12 +575,12 @@ export default function Chat({ onBack }) {
               <div
                 className="background-preview-large"
                 style={
-                  settings.background.type === "image"
+                  settings.background
+                    .type ===
+                  "image"
                     ? {
                         backgroundImage:
                           `url("${settings.background.value}")`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
                       }
                     : {
                         background:
@@ -410,13 +591,17 @@ export default function Chat({ onBack }) {
 
               <div className="background-setting-info">
                 <strong>
-                  {settings.background.source === "upload"
+                  {settings.background
+                    .source ===
+                  "upload"
                     ? "自定义背景"
                     : "米白纸张"}
                 </strong>
 
                 <small>
-                  {settings.background.source === "upload"
+                  {settings.background
+                    .source ===
+                  "upload"
                     ? "来自本机图片"
                     : "Fox Little World"}
                 </small>
@@ -431,8 +616,15 @@ export default function Chat({ onBack }) {
                   更换
                 </button>
 
-                {settings.background.source === "upload" && (
-                  <button onClick={resetBackground}>
+                {settings
+                  .background
+                  .source ===
+                  "upload" && (
+                  <button
+                    onClick={
+                      resetBackground
+                    }
+                  >
                     恢复
                   </button>
                 )}
@@ -444,7 +636,9 @@ export default function Chat({ onBack }) {
               className="hidden-file-input"
               type="file"
               accept="image/*"
-              onChange={changeBackground}
+              onChange={
+                changeBackground
+              }
             />
           </div>
 
@@ -458,38 +652,47 @@ export default function Chat({ onBack }) {
 
       <section className="messages">
         <div className="chat-date">
-          TODAY · 20:18
+          <span>
+            TODAY · 20:18
+          </span>
         </div>
 
-        {messages.map((message, index) => {
-          const avatar =
-            message.from === "me"
-              ? settings.myAvatar
-              : settings.otherAvatar;
+        {messages.map(
+          (message, index) => {
+            const avatar =
+              message.from ===
+              "me"
+                ? settings.myAvatar
+                : settings.otherAvatar;
 
-          return (
-            <div
-              key={index}
-              className={`message-row ${message.from}`}
-            >
-              <Avatar avatar={avatar} />
+            return (
+              <div
+                key={index}
+                className={`message-row ${message.from}`}
+              >
+                <Avatar
+                  avatar={avatar}
+                />
 
-              <div className="message-content">
-                <div className="message-bubble">
-                  {message.text}
+                <div className="message-content">
+                  <div className="message-bubble">
+                    {message.text}
+                  </div>
+
+                  <time>
+                    {message.time}
+                  </time>
                 </div>
-
-                <time>{message.time}</time>
               </div>
-            </div>
-          );
-        })}
+            );
+          }
+        )}
       </section>
 
       <div className="chat-input">
         <button
           className="input-plus"
-          aria-label="更多"
+          aria-label="添加"
         >
           ＋
         </button>
@@ -497,10 +700,15 @@ export default function Chat({ onBack }) {
         <input
           value={input}
           onChange={(event) =>
-            setInput(event.target.value)
+            setInput(
+              event.target.value
+            )
           }
           onKeyDown={(event) => {
-            if (event.key === "Enter") {
+            if (
+              event.key ===
+              "Enter"
+            ) {
               sendMessage();
             }
           }}
@@ -512,7 +720,7 @@ export default function Chat({ onBack }) {
           onClick={sendMessage}
           aria-label="发送"
         >
-          <img src={paw} alt="" />
+          <PawIcon />
         </button>
       </div>
     </main>
