@@ -91,3 +91,8 @@ h1 {
   font-size: 20px;
   cursor: pointer;
 }
+.nav button img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
