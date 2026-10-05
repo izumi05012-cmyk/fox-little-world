@@ -10,6 +10,8 @@ const STORAGE_KEY =
   "fox-little-world-chat-settings";
 
 const defaultSettings = {
+  chatName: "Bunny & Elliott ♥",
+
   myAvatar: {
     type: "image",
     source: "default",
@@ -162,6 +164,7 @@ export default function Chat({
         from: "me",
         text: "吃了！你呢？",
         time: "20:19",
+        read: true,
       },
       {
         from: "other",
@@ -327,6 +330,16 @@ export default function Chat({
     );
   }
 
+  function changeChatName(event) {
+    setSettings(
+      (current) => ({
+        ...current,
+        chatName:
+          event.target.value,
+      })
+    );
+  }
+
   function sendMessage() {
     const text =
       input.trim();
@@ -350,6 +363,7 @@ export default function Chat({
                 minute: "2-digit",
               }
             ),
+          read: false,
         },
       ]
     );
@@ -383,10 +397,11 @@ export default function Chat({
       style={chatStyle}
     >
       <header className="chat-header">
+
         <button
           className="chat-back"
           onClick={onBack}
-          aria-label="返回首页"
+          aria-label="返回"
         >
           ←
         </button>
@@ -399,7 +414,7 @@ export default function Chat({
 
         <div className="chat-title">
           <h1>
-            Bunny &amp; Elliott ♥
+            {settings.chatName}
           </h1>
 
           <span>
@@ -423,6 +438,7 @@ export default function Chat({
 
       {showSettings && (
         <section className="chat-settings">
+
           <div className="settings-title">
             <span>
               CHAT SETTINGS
@@ -440,10 +456,28 @@ export default function Chat({
             </button>
           </div>
 
+          {/* 聊天名称 */}
+          <div className="settings-section">
+            <p>聊天名称</p>
+
+            <input
+              className="chat-name-input"
+              value={
+                settings.chatName
+              }
+              onChange={
+                changeChatName
+              }
+              placeholder="输入聊天名称"
+            />
+          </div>
+
+          {/* 我的头像 */}
           <div className="settings-section">
             <p>我的头像</p>
 
             <div className="custom-setting">
+
               <Avatar
                 avatar={
                   settings.myAvatar
@@ -504,10 +538,12 @@ export default function Chat({
             />
           </div>
 
+          {/* 对方头像 */}
           <div className="settings-section">
             <p>对方头像</p>
 
             <div className="custom-setting">
+
               <Avatar
                 avatar={
                   settings.otherAvatar
@@ -568,10 +604,12 @@ export default function Chat({
             />
           </div>
 
+          {/* 聊天背景 */}
           <div className="settings-section">
             <p>聊天背景</p>
 
             <div className="background-setting">
+
               <div
                 className="background-preview-large"
                 style={
@@ -651,6 +689,7 @@ export default function Chat({
       )}
 
       <section className="messages">
+
         <div className="chat-date">
           <span>
             TODAY · 20:18
@@ -670,18 +709,32 @@ export default function Chat({
                 key={index}
                 className={`message-row ${message.from}`}
               >
+
                 <Avatar
                   avatar={avatar}
                 />
 
                 <div className="message-content">
+
                   <div className="message-bubble">
                     {message.text}
                   </div>
 
-                  <time>
-                    {message.time}
-                  </time>
+                  <div className="message-meta">
+                    <time>
+                      {message.time}
+                    </time>
+
+                    {message.from ===
+                      "me" && (
+                      <span className="message-read">
+                        {message.read
+                          ? "已读"
+                          : "未读"}
+                      </span>
+                    )}
+                  </div>
+
                 </div>
               </div>
             );
@@ -689,39 +742,78 @@ export default function Chat({
         )}
       </section>
 
+      {/* 输入区域 */}
       <div className="chat-input">
-        <button
-          className="input-plus"
-          aria-label="添加"
-        >
-          ＋
-        </button>
 
-        <input
-          value={input}
-          onChange={(event) =>
-            setInput(
-              event.target.value
-            )
-          }
-          onKeyDown={(event) => {
-            if (
-              event.key ===
-              "Enter"
-            ) {
-              sendMessage();
+        <div className="chat-input-main">
+
+          <button
+            className="input-plus"
+            type="button"
+            aria-label="添加"
+          >
+            ＋
+          </button>
+
+          <input
+            value={input}
+            onChange={(event) =>
+              setInput(
+                event.target.value
+              )
             }
-          }}
-          placeholder="写点什么……"
-        />
+            onKeyDown={(event) => {
+              if (
+                event.key ===
+                "Enter"
+              ) {
+                sendMessage();
+              }
+            }}
+            placeholder="写点什么……"
+          />
 
-        <button
-          className="send-button"
-          onClick={sendMessage}
-          aria-label="发送"
-        >
-          <PawIcon />
-        </button>
+          <button
+            className="send-button"
+            type="button"
+            onClick={sendMessage}
+            aria-label="发送"
+          >
+            <PawIcon />
+          </button>
+
+        </div>
+
+        <div className="chat-tools">
+
+          <button
+            type="button"
+            onClick={() =>
+              alert("图片功能以后接")
+            }
+          >
+            图片
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              alert("语音功能以后接")
+            }
+          >
+            语音
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              alert("更多功能以后接")
+            }
+          >
+            更多
+          </button>
+
+        </div>
       </div>
     </main>
   );
