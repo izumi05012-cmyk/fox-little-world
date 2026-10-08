@@ -1003,7 +1003,12 @@ button:focus-visible, input:focus-visible {
    ========================================================= */
 
 .messages {
-  width: 100%;
+  width: 100%;background:
+radial-gradient(
+  circle at top,
+  rgba(255,255,255,.35),
+  transparent 45%
+);
   min-width: 0;
   flex: 1 1 auto;
   padding: 36px max(var(--page-pad), env(safe-area-inset-left)) 130px max(var(--page-pad), env(safe-area-inset-right));
@@ -1054,124 +1059,147 @@ button:focus-visible, input:focus-visible {
 }
 
 /* =========================================================
-   FOX CHAT BUBBLES
+   FOX CHAT BUBBLES - FROSTED GLASS
    ========================================================= */
 
 .message-bubble {
-  --bubble-bg: rgba(255,250,242,.96);
+
+  --bubble-bg: rgba(255,250,242,.58);
 
   position: relative;
-  min-width: 0;
 
-  padding: 13px 18px;
+  padding: 14px 18px;
 
-  border: 1px solid rgba(215,198,180,.72);
-  border-radius: 17px;
+  border-radius: 22px;
 
-  background: var(--bubble-bg);
+  border: 1px solid rgba(215,198,180,.55);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.45),
+      rgba(245,239,228,.35)
+    );
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  box-shadow:
+    0 8px 25px rgba(61,48,40,.08),
+    inset 0 1px 0 rgba(255,255,255,.5);
+
   color: var(--ink);
 
-  font-size: 16px;
-  line-height: 1.65;
+  font-size:16px;
+  line-height:1.65;
 
-  overflow-wrap: anywhere;
-  word-break: break-word;
-
-  filter: drop-shadow(0 1px 1px rgba(61,48,40,.04));
+  overflow-wrap:anywhere;
+  word-break:break-word;
 }
 
-/* 对方：左边两只小耳朵 */
 
-.message-row.other .message-bubble::before,
-.message-row.other .message-bubble::after {
-  content: "";
-  position: absolute;
-  left: -7px;
+/* 对方气泡 */
 
-  width: 13px;
-  height: 13px;
+.message-row.other .message-bubble {
 
-  background: var(--bubble-bg);
-  border-left: 1px solid rgba(215,198,180,.72);
+  --bubble-bg:rgba(255,250,242,.65);
+
 }
 
-.message-row.other .message-bubble::before {
-  top: 8px;
-  transform:
-    rotate(45deg)
-    skew(-8deg,-8deg);
-}
-
-.message-row.other .message-bubble::after {
-  bottom: 8px;
-  transform:
-    rotate(45deg)
-    skew(-8deg,-8deg);
-}
 
 /* 我的气泡 */
 
 .message-row.me .message-bubble {
-  --bubble-bg: rgba(234,208,197,.96);
-  border-color: rgba(163,95,77,.22);
+
+  --bubble-bg:rgba(234,208,197,.65);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(234,208,197,.75),
+      rgba(255,250,242,.35)
+    );
+
+  border-color:
+    rgba(163,95,77,.25);
+
 }
 
-/* 我的：右边两只小耳朵 */
 
-.message-row.me .message-bubble::before,
+/* 左侧小角 */
+
+.message-row.other .message-bubble::after {
+
+  content:"";
+
+  position:absolute;
+
+  left:-7px;
+
+  top:18px;
+
+  width:14px;
+
+  height:14px;
+
+  background:rgba(255,250,242,.65);
+
+  transform:rotate(45deg);
+
+  border-left:
+    1px solid rgba(215,198,180,.55);
+
+  border-bottom:
+    1px solid rgba(215,198,180,.55);
+
+}
+
+
+/* 右侧小角 */
+
 .message-row.me .message-bubble::after {
-  content: "";
-  position: absolute;
-  right: -7px;
 
-  width: 13px;
-  height: 13px;
+  content:"";
 
-  background: var(--bubble-bg);
-  border-right: 1px solid rgba(163,95,77,.22);
+  position:absolute;
+
+  right:-7px;
+
+  top:18px;
+
+  width:14px;
+
+  height:14px;
+
+  background:rgba(234,208,197,.65);
+
+  transform:rotate(45deg);
+
+  border-right:
+    1px solid rgba(163,95,77,.25);
+
+  border-top:
+    1px solid rgba(163,95,77,.25);
+
 }
 
-.message-row.me .message-bubble::before {
-  top: 8px;
-  transform:
-    rotate(45deg)
-    skew(8deg,8deg);
-}
 
-.message-row.me .message-bubble::after {
-  bottom: 8px;
-  transform:
-    rotate(45deg)
-    skew(8deg,8deg);
-}
-
-/* 消息时间 + 已读 */
-
-.message-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 7px;
-}
-
-.message-meta time {
-  margin-top: 0;
-}
-
-.message-read {
-  color: var(--brick);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 9px;
-  letter-spacing: .05em;
-}
+/* 时间 */
 
 .message-content time {
-  display: block;
-  margin-top: 8px;
-  color: var(--muted);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 10px;
-  letter-spacing: .03em;
+
+  display:block;
+
+  margin-top:8px;
+
+  color:var(--muted);
+
+  font-family:Georgia,"Times New Roman",serif;
+
+  font-size:10px;
+
+  letter-spacing:.03em;
+
 }
 
 /* =========================================================
