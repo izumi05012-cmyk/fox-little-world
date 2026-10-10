@@ -49,6 +49,9 @@ const constellationLines = [
   ["claw-c", "heart"],
 ];
 
+// brighter (larger) stars read darker; dim ones fade into the paper
+const starGlow = (r) => Math.min(1, 0.32 + r * 0.24);
+
 const timeline = [
   { date: "2026.04.18", title: "第一封信", text: "我们的小世界，从一封信开始。" },
   { date: "2026.07.02", title: "那天的雨", text: "一起记住的一场雨。" },
@@ -78,7 +81,12 @@ function StarMap({ onOpen }) {
 
       <div className="star-map-wrap">
         <div className="star-map">
-          <svg className="star-map-lines" viewBox="0 0 100 100" aria-hidden="true">
+          <svg
+            className="star-map-lines"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
             {constellationLines.map(([from, to]) => {
               const a = pointMap[from];
               const b = pointMap[to];
@@ -89,6 +97,7 @@ function StarMap({ onOpen }) {
                   y1={a.y}
                   x2={b.x}
                   y2={b.y}
+                  opacity={((starGlow(a.r) + starGlow(b.r)) / 2) * 0.55}
                 />
               );
             })}
@@ -103,7 +112,8 @@ function StarMap({ onOpen }) {
               style={{
                 left: `${star.x}%`,
                 top: `${star.y}%`,
-                "--star-size": `${star.r * 4}px`,
+                "--star-size": `${star.r * 2.4}px`,
+                "--star-opacity": starGlow(star.r),
               }}
             />
           ))}
