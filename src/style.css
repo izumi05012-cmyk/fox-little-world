@@ -344,11 +344,24 @@ button:focus-visible, input:focus-visible {
 }
 
 /* hairline pencil strokes; each line's opacity is set per line in JSX */
-.star-map-lines line {
+.star-map-lines path {
+  fill: none;
   stroke: var(--ink);
   stroke-width: .7;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
+}
+
+/* a few faint specks scattered on the paper, so the map doesn't float alone */
+.star-dust {
+  position: absolute;
+  width: var(--dust-size, 2px);
+  height: var(--dust-size, 2px);
+  border-radius: 50%;
+  background: var(--ink);
+  opacity: var(--dust-opacity, .2);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
 .constellation-star,
@@ -376,6 +389,8 @@ button:focus-visible, input:focus-visible {
     0 0 14px rgba(163, 95, 77, .22);
 }
 
+/* An entry is simply one of the constellation's own stars that can be tapped:
+   an ink dot with a hairline brick ring. The 40px button is only the touch area. */
 .entry-star {
   width: 40px;
   height: 40px;
@@ -386,33 +401,87 @@ button:focus-visible, input:focus-visible {
   border-radius: 50%;
   background: transparent;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .entry-star span {
-  width: 11px;
-  height: 11px;
-  border: 1px solid var(--brick);
+  position: relative;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--paper-light);
-  box-shadow:
-    0 0 0 4px rgba(163,95,77,.05),
-    0 0 18px rgba(163,95,77,.12);
-  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+  background: var(--ink);
+  opacity: .82;
+  box-shadow: 0 0 9px rgba(61, 48, 40, .16);
+  transition: background 180ms ease, opacity 180ms ease, transform 180ms ease;
+}
+
+/* the ring: thin, slightly transparent, like a pencil circle around the star */
+.entry-star span::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 1px solid rgba(163, 95, 77, .45);
+  border-radius: 50%;
+  transition: inset 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.entry-star.entry-main span {
+  width: 8px;
+  height: 8px;
+  background: var(--brick);
+  opacity: 1;
+  box-shadow: 0 0 14px rgba(163, 95, 77, .28);
+}
+
+.entry-star.entry-main span::after {
+  inset: -8px;
+  border-color: rgba(163, 95, 77, .6);
 }
 
 .entry-star:hover span,
+.entry-star:focus-visible span,
 .entry-star.selected span {
-  transform: scale(1.45);
   background: var(--brick);
-  box-shadow:
-    0 0 0 5px rgba(163,95,77,.08),
-    0 0 24px rgba(163,95,77,.18);
+  opacity: 1;
 }
 
+.entry-star:hover span::after,
+.entry-star:focus-visible span::after,
+.entry-star.selected span::after {
+  inset: -9px;
+  border-color: var(--brick);
+  box-shadow: 0 0 14px rgba(163, 95, 77, .18);
+}
+
+/* tiny handwritten-style label beside each star */
+.entry-star small {
+  position: absolute;
+  white-space: nowrap;
+  color: var(--muted);
+  opacity: .72;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 8px;
+  letter-spacing: .2em;
+  pointer-events: none;
+  transition: color 180ms ease, opacity 180ms ease;
+}
+
+.entry-star.side-t small { bottom: calc(50% + 13px); left: 50%; transform: translateX(-50%); }
+.entry-star.side-b small { top: calc(50% + 13px); left: 50%; transform: translateX(-50%); }
+.entry-star.side-r small { left: calc(50% + 14px); top: 50%; transform: translateY(-50%); }
+.entry-star.side-l small { right: calc(50% + 14px); top: 50%; transform: translateY(-50%); }
+
+.entry-star.selected small,
+.entry-star:hover small {
+  color: var(--brick);
+  opacity: 1;
+}
+
+/* top-right is the one corner no star or label ever reaches */
 .star-map-note {
   position: absolute;
   right: 6%;
-  bottom: 7%;
+  top: 3%;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -1326,13 +1395,12 @@ button:focus-visible, input:focus-visible {
 
   .star-map-note {
     right: 7%;
-    bottom: 7%;
+    top: 3%;
   }
 
   .star-map-note span, .star-map-note small { font-size: 8px; }
 
-  .entry-star { width: 34px; height: 34px; }
-  .entry-star span { width: 10px; height: 10px; }
+  .entry-star { width: 38px; height: 38px; }
 
   .timeline {
     margin-top: 21px;

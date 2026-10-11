@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import "./style.css";
 
@@ -7,16 +7,20 @@ import ChatList from "./ChatList";
 import foxHead from "./assets/fox-head.svg";
 import paw from "./assets/paw.svg";
 
+// Each entry now IS a star of the constellation (`star` = id in constellationStars),
+// so the map reads as one drawing. `side` is where its tiny label sits.
 const starEntries = [
-  { id: "chat", label: "聊天", english: "CHAT", x: 38, y: 46, type: "chat", active: true },
-  { id: "diary", label: "日记", english: "DIARY", x: 48, y: 40, type: "placeholder", active: true },
-  { id: "calendar", label: "日历", english: "CALENDAR", x: 58, y: 45, type: "placeholder", active: true },
-  { id: "memories", label: "记录我们", english: "MEMORIES", x: 67, y: 53, type: "placeholder", active: true },
-  { id: "tarot", label: "Tarot", english: "TONIGHT", x: 72, y: 65, type: "placeholder", active: true },
-  { id: "mood", label: "晴天娃娃", english: "MOOD", x: 67, y: 76, type: "placeholder", active: true },
-  { id: "letters", label: "Fox Post", english: "LETTERS", x: 54, y: 83, type: "placeholder", active: true },
-  { id: "space", label: "我们的空间", english: "OUR SPACE", x: 40, y: 79, type: "placeholder", active: true },
+  { id: "chat", label: "聊天", english: "CHAT", star: "heart", side: "b", main: true, type: "chat", active: true },
+  { id: "diary", label: "日记", english: "DIARY", star: "head-b", side: "t", type: "placeholder", active: true },
+  { id: "calendar", label: "日历", english: "CALENDAR", star: "head-d", side: "r", type: "placeholder", active: true },
+  { id: "memories", label: "记录我们", english: "MEMORIES", star: "body-b", side: "r", type: "placeholder", active: true },
+  { id: "tarot", label: "Tarot", english: "TONIGHT", star: "tail-a", side: "r", type: "placeholder", active: true },
+  { id: "mood", label: "晴天娃娃", english: "MOOD", star: "tail-c", side: "r", type: "placeholder", active: true },
+  { id: "letters", label: "Fox Post", english: "LETTERS", star: "tail-e", side: "l", type: "placeholder", active: true },
+  { id: "space", label: "我们的空间", english: "OUR SPACE", star: "tail-g", side: "l", type: "placeholder", active: true },
 ];
+
+const entryStarIds = new Set(starEntries.map((entry) => entry.star));
 
 const constellationStars = [
   { id: "head-a", x: 28, y: 27, r: 1.2 },
@@ -58,8 +62,76 @@ const timeline = [
   { date: "2026.09.22", title: "200 DAYS ♡", text: "已经一起走过两百天。" },
 ];
 
+// Pencil-drawn constellations leave a small gap beside each star. The gap is
+// measured in real pixels (the map isn't square), so it stays a circle.
+function gapPx(star) {
+  if (star.id === "heart") return 15;
+  if (entryStarIds.has(star.id)) return 11;
+  return star.r * 1.2 + 3;
+}
+
+function trimLine(a, b, size) {
+  const ax = (a.x * size.w) / 100;
+  const ay = (a.y * size.h) / 100;
+  const bx = (b.x * size.w) / 100;
+  const by = (b.y * size.h) / 100;
+  const len = Math.hypot(bx - ax, by - ay);
+  const ga = gapPx(a);
+  const gb = gapPx(b);
+  if (len <= ga + gb + 2) return null;
+  const ux = (bx - ax) / len;
+  const uy = (by - ay) / len;
+  return {
+    x1: ((ax + ux * ga) / size.w) * 100,
+    y1: ((ay + uy * ga) / size.h) * 100,
+    x2: ((bx - ux * gb) / size.w) * 100,
+    y2: ((by - uy * gb) / size.h) * 100,
+  };
+}
+
+// Pencil lines are never perfectly straight: bow each one a hair, by a fixed
+// amount per line (so it doesn't jitter between renders).
+function pencilPath(seg, index) {
+  const mx = (seg.x1 + seg.x2) / 2;
+  const my = (seg.y1 + seg.y2) / 2;
+  const dx = seg.x2 - seg.x1;
+  const dy = seg.y2 - seg.y1;
+  const len = Math.hypot(dx, dy) || 1;
+  const bend = (((index * 53) % 7) - 3) * 0.16;
+  const cx = mx - (dy / len) * bend;
+  const cy = my + (dx / len) * bend;
+  return `M${seg.x1} ${seg.y1} Q${cx} ${cy} ${seg.x2} ${seg.y2}`;
+}
+
+// Faint specks in the empty paper around the drawing (x, y in %).
+const starDust = [
+  [9, 10, 2, 0.22], [21, 7, 2, 0.14], [14, 20, 2, 0.18], [60, 9, 2, 0.16],
+  [82, 14, 3, 0.2], [91, 29, 2, 0.15], [86, 41, 2, 0.12], [8, 57, 2, 0.17],
+  [6, 69, 3, 0.2], [13, 91, 2, 0.14], [38, 65, 2, 0.14], [51, 69, 2, 0.1],
+  [50, 97, 2, 0.15], [92, 83, 2, 0.16],
+];
+
 function StarMap({ onOpen }) {
   const [selected, setSelected] = useState(null);
+  const mapRef = useRef(null);
+  const [size, setSize] = useState({ w: 358, h: 360 });
+
+  useEffect(() => {
+    const el = mapRef.current;
+    if (!el) return undefined;
+    const update = () => {
+      const w = el.clientWidth || 358;
+      const h = el.clientHeight || 360;
+      setSize((current) =>
+        current.w === w && current.h === h ? current : { w, h }
+      );
+    };
+    update();
+    if (typeof ResizeObserver === "undefined") return undefined;
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const pointMap = Object.fromEntries(
     constellationStars.map((star) => [star.id, star])
@@ -80,57 +152,75 @@ function StarMap({ onOpen }) {
       </div>
 
       <div className="star-map-wrap">
-        <div className="star-map">
+        <div className="star-map" ref={mapRef}>
           <svg
             className="star-map-lines"
             viewBox="0 0 100 100"
             preserveAspectRatio="none"
             aria-hidden="true"
           >
-            {constellationLines.map(([from, to]) => {
+            {constellationLines.map(([from, to], index) => {
               const a = pointMap[from];
               const b = pointMap[to];
+              const seg = trimLine(a, b, size);
+              if (!seg) return null;
               return (
-                <line
+                <path
                   key={`${from}-${to}`}
-                  x1={a.x}
-                  y1={a.y}
-                  x2={b.x}
-                  y2={b.y}
-                  opacity={((starGlow(a.r) + starGlow(b.r)) / 2) * 0.55}
+                  d={pencilPath(seg, index)}
+                  opacity={((starGlow(a.r) + starGlow(b.r)) / 2) * 0.6}
                 />
               );
             })}
           </svg>
 
-          {constellationStars.map((star) => (
+          {starDust.map(([x, y, s, o]) => (
             <span
-              key={star.id}
-              className={`constellation-star ${
-                star.id === "heart" ? "heart-star" : ""
-              }`}
+              key={`${x}-${y}`}
+              className="star-dust"
               style={{
-                left: `${star.x}%`,
-                top: `${star.y}%`,
-                "--star-size": `${star.r * 2.4}px`,
-                "--star-opacity": starGlow(star.r),
+                left: `${x}%`,
+                top: `${y}%`,
+                "--dust-size": `${s}px`,
+                "--dust-opacity": o,
               }}
+              aria-hidden="true"
             />
           ))}
 
-          {starEntries.map((entry) => (
-            <button
-              key={entry.id}
-              className={`entry-star ${
-                selected === entry.id ? "selected" : ""
-              }`}
-              style={{ left: `${entry.x}%`, top: `${entry.y}%` }}
-              onClick={() => selectEntry(entry)}
-              aria-label={entry.label}
-            >
-              <span />
-            </button>
-          ))}
+          {constellationStars
+            .filter((star) => !entryStarIds.has(star.id))
+            .map((star) => (
+              <span
+                key={star.id}
+                className="constellation-star"
+                style={{
+                  left: `${star.x}%`,
+                  top: `${star.y}%`,
+                  // whole pixels only: fractional sizes render as tilted ovals
+                  "--star-size": `${Math.max(3, Math.round(star.r * 2.4))}px`,
+                  "--star-opacity": starGlow(star.r),
+                }}
+              />
+            ))}
+
+          {starEntries.map((entry) => {
+            const star = pointMap[entry.star];
+            return (
+              <button
+                key={entry.id}
+                className={`entry-star side-${entry.side} ${
+                  entry.main ? "entry-main" : ""
+                } ${selected === entry.id ? "selected" : ""}`}
+                style={{ left: `${star.x}%`, top: `${star.y}%` }}
+                onClick={() => selectEntry(entry)}
+                aria-label={entry.label}
+              >
+                <span />
+                <small>{entry.english}</small>
+              </button>
+            );
+          })}
 
           <div className="star-map-note">
             <span>tap a star</span>
