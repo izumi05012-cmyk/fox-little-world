@@ -3,27 +3,29 @@
    ========================================================= */
 
 :root {
-  /* sampled from 曦曦's reference posters: peach-pink ground, cream
-     sheets, tomato red, and cool slate so it reads retro, not dusty */
-  --paper: #dfaa8f;
-  --paper-light: #f1e8d8;
-  --paper-deep: #e6d6bf;
-  --ink: #2f2a35;
-  --muted: #6c6670;
-  --line: #c99b84;
-  --brick: #b0392a;
-  --brick-pale: #f0c7b5;
-  --brown: #5f6b78;
-  --mustard: #d9ae62;
-  --navy: #3e4d6e;
-  --slate: #9aa4a6;
-  --display: "ZCOOL QingKe HuangYou", "Noto Serif SC", serif;
-  --deco: "Limelight", Georgia, serif;
-  --condensed: "Oswald", "Arial Narrow", sans-serif;
+  /* magazine poster palette — only these four (plus photo white).
+     No pure black anywhere: deep red does the work ink used to. */
+  --rose-grey: #e8c4b8;
+  --deep-red: #8e2b2b;
+  --mist-blue: #8fa6c8;
+  --gold: #c9a45c;
+  --paper: var(--rose-grey);
+  --paper-light: #f1dcd3;
+  --paper-deep: #e0b6a9;
+  --ink: var(--deep-red);
+  --muted: rgba(142, 43, 43, .68);
+  --line: rgba(142, 43, 43, .28);
+  --brick: var(--deep-red);
+  --brick-pale: #f0d3c9;
+  --brown: var(--mist-blue);
+  --mustard: var(--gold);
+  --navy: var(--mist-blue);
+  --script: "Pinyon Script", "Snell Roundhand", cursive;
+  --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --hand: "Long Cang", "Kaiti SC", "STKaiti", cursive;
   --page-max: 960px;
   --page-pad: clamp(18px, 4vw, 44px);
-  /* clean modern body text; the retro lives in the display fonts */
-  font-family: "PingFang SC", "HarmonyOS Sans SC", "MiSans", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
   color: var(--ink);
   background: var(--paper);
   color-scheme: light;
@@ -1816,280 +1818,166 @@ button:focus-visible, input:focus-visible {
 }
 
 /* =========================================================
-   PRINT GRAIN — the whole page sits on old risograph paper
+   MAGAZINE COVER HERO
    ========================================================= */
 
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  pointer-events: none;
-  opacity: .2;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .15 0 0 0 0 .1 0 0 0 1.4 -.35'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* =========================================================
-   NEWSPAPER FRONT PAGE HERO
-   ========================================================= */
-
-/* hand-wobbled lines: drawn as empty boxes so the wobble never touches text */
-.rough { display: block; filter: url(#rough); }
-
-.rule-double {
-  height: 6px;
-  border-top: 2px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
-}
-
-.rule {
-  height: 0;
-  margin: 10px 0;
-  border-top: 1px solid var(--ink);
-  opacity: .7;
-}
-
-.paper {
+.cover {
   position: relative;
-  margin: 16px -4px 0;
-  padding: 16px 16px 30px;
-  background: var(--paper-light);
-  color: var(--ink);
-  box-shadow: 0 1px 0 rgba(51, 37, 28, .08), 0 10px 24px -14px rgba(51, 37, 28, .45);
-  transform: rotate(-.6deg);
-  /* torn along the bottom */
-  clip-path: polygon(0 0, 100% 0, 100% 97.6%, 96% 99.2%, 91% 97.9%, 86% 99.6%, 80% 98.1%, 74% 99.4%, 67% 97.7%, 61% 99.5%, 55% 98.2%, 48% 99.7%, 42% 97.9%, 35% 99.3%, 29% 98%, 22% 99.6%, 16% 97.8%, 10% 99.4%, 5% 98.1%, 0 99.5%);
+  padding: 36px 6px 20px;
+  color: var(--deep-red);
 }
 
-.paper-dateline {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  padding-bottom: 8px;
-  color: var(--brown);
-  font-size: 10px;
-  letter-spacing: .06em;
-  white-space: nowrap;
-}
+.cover-title { position: relative; text-align: center; }
 
-.paper-masthead { text-align: center; }
-
-.paper-mast-en {
-  margin: 10px 0 0;
-  font-family: var(--deco);
-  font-size: 11px;
-  letter-spacing: .22em;
-  color: var(--brown);
-}
-
-.paper-masthead h1 {
-  margin: 2px 0 0;
-  font-family: var(--display);
-  font-size: clamp(48px, 15vw, 72px);
+.cover-title h1 {
+  margin: 0;
+  font-family: var(--script);
+  font-size: clamp(40px, 11.5vw, 64px);
   font-weight: 400;
-  line-height: 1;
-  letter-spacing: .06em;
+  line-height: 1.15;
+  white-space: nowrap;
+  letter-spacing: 0;
 }
 
-.paper-mast-sub {
-  margin: 6px 0 10px;
-  color: var(--brick);
+.cover-title p {
+  margin: 4px 0 0;
+  font-family: var(--serif);
   font-size: 11px;
-  letter-spacing: .3em;
+  font-weight: 300;
+  letter-spacing: .42em;
 }
 
-.paper-headline {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 14px 0 12px;
+.cover-moon {
+  position: absolute;
+  top: -6px;
+  right: 10%;
+  width: 20px;
+  transform: rotate(-18deg);
 }
 
-.paper-tag {
-  flex: none;
-  padding: 3px 6px 4px;
-  background: var(--brick);
-  color: var(--paper-light);
+.cover-collage {
+  position: relative;
+  height: 300px;
+  margin: 34px auto 0;
+  max-width: 360px;
+}
+
+.cover-photo {
+  position: absolute;
+  margin: 0;
+  padding: 4px;
+  background: #fbf4ef;
+  box-shadow: 0 6px 16px -8px rgba(142, 43, 43, .45);
+}
+
+.cover-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-photo-back {
+  top: 8px;
+  right: 4%;
+  width: 46%;
+  height: 150px;
+  transform: rotate(6deg);
+}
+
+.cover-photo-low {
+  bottom: 0;
+  left: 2%;
+  width: 36%;
+  height: 128px;
+  transform: rotate(-7deg);
+}
+
+.cover-photo-main {
+  z-index: 1;
+  top: 28px;
+  left: 26%;
+  width: 46%;
+  height: 230px;
+  transform: rotate(-2.5deg);
+}
+
+/* written small on the corner, like the back of a photograph */
+.cover-inscription {
+  position: absolute;
+  left: 14px;
+  bottom: 10px;
+  color: var(--deep-red);
+  font-family: var(--hand);
   font-size: 13px;
-  letter-spacing: .15em;
+  transform: rotate(-8deg);
+  opacity: .85;
+}
+
+.cover-pearls {
+  position: absolute;
+  z-index: 2;
+  top: -6px;
+  left: 4%;
+  width: 70%;
   transform: rotate(-4deg);
 }
 
-.paper-headline h2 {
-  margin: 0;
-  font-family: var(--display);
-  font-size: clamp(30px, 9vw, 44px);
-  font-weight: 400;
-  line-height: 1.1;
-}
-
-.paper-headline em {
-  font-style: normal;
-  color: var(--brick);
-}
-
-.paper-spread {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  gap: 14px;
-}
-
-.paper-figure {
-  position: relative;
-  margin: 0;
-  padding: 6px;
-}
-
-.paper-figure .frame {
+.cover-brooch {
   position: absolute;
-  inset: 0;
-  border: 2px solid var(--ink);
+  z-index: 3;
+  left: 66%;
+  top: 214px;
+  width: 50px;
+  transform: rotate(14deg);
+  filter: drop-shadow(0 2px 2px rgba(142, 43, 43, .3));
 }
 
-.paper-figure-art {
-  display: block;
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  object-position: center 60%;
-}
-
-/* a real 1770 garnet heart brooch, pinned over the corner of the picture */
-.paper-brooch {
-  position: absolute;
-  top: -24px;
-  left: -18px;
-  width: 66px;
-  transform: rotate(-16deg);
-  filter: drop-shadow(1px 3px 2px rgba(51, 37, 28, .35));
-}
-
-.paper-moon {
-  position: absolute;
-  top: 34px;
-  left: -26px;
-  width: 92px;
-  opacity: .85;
-  transform: rotate(-12deg);
-  pointer-events: none;
-}
-
-.paper-masthead { position: relative; }
-.paper-masthead > :not(.paper-moon) { position: relative; }
-
-.paper-credit {
-  max-width: 58%;
-  margin: 14px 0 0;
-  color: var(--muted);
-  font-size: 8px;
-  letter-spacing: .08em;
-}
-
-.paper-figure-slot {
-  aspect-ratio: 3 / 4;
+.cover-date {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  gap: 6px;
-  color: var(--brown);
-  /* old engraving cross-hatch while the drawing isn't here yet */
-  background:
-    repeating-linear-gradient(45deg, rgba(107, 74, 51, .14) 0 1px, transparent 1px 6px),
-    var(--paper-deep);
+  gap: 14px;
+  margin-top: 40px;
 }
 
-.paper-figure-slot span {
-  font-family: var(--display);
-  font-size: 20px;
-  letter-spacing: .2em;
+.cover-date strong {
+  font-family: var(--serif);
+  font-size: clamp(88px, 28vw, 140px);
+  font-weight: 300;
+  line-height: .85;
+  letter-spacing: -.02em;
 }
 
-.paper-figure-slot small { font-size: 10px; letter-spacing: .2em; }
-
-.paper-figure figcaption {
-  margin-top: 8px;
-  font-size: 10px;
-  line-height: 1.5;
-  color: var(--brown);
-}
-
-/* speech bubbles lean out of the frame into the page */
-.bubble {
-  position: absolute;
-  margin: 0;
-  padding: 5px 10px 6px;
-  border: 1.5px solid var(--ink);
-  border-radius: 50% / 46%;
-  background: var(--paper-light);
-  font-family: var(--display);
-  font-size: 15px;
-  white-space: nowrap;
-}
-
-.bubble::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  width: 10px;
-  height: 10px;
-  border-right: 1.5px solid var(--ink);
-  border-bottom: 1.5px solid var(--ink);
-  background: var(--paper-light);
-}
-
-.bubble-left {
-  top: 18%;
-  left: -12px;
-  transform: rotate(-6deg);
-}
-
-.bubble-left::after { left: 22px; transform: skewX(30deg) rotate(45deg); }
-
-.bubble-right {
-  top: 60%;
-  right: -16px;
-  color: var(--brick);
-  transform: rotate(5deg);
-}
-
-.bubble-right::after { right: 22px; transform: skewX(-30deg) rotate(45deg); }
-
-.paper-column {
-  font-size: 12px;
-  line-height: 1.75;
-  text-align: justify;
-}
-
-.paper-column p { margin: 0; }
-
-.paper-column b {
-  margin-right: 4px;
-  padding: 0 3px;
-  border: 1px solid var(--ink);
-  font-weight: 400;
-}
-
-.paper-stamp {
-  position: absolute;
-  right: 18px;
-  bottom: 26px;
-  margin: 0;
-  padding: 4px 8px;
-  border: 1.5px solid var(--brick);
-  color: var(--brick);
-  font-family: var(--condensed);
+.cover-date span {
+  padding-bottom: 6px;
+  color: var(--mist-blue);
+  font-family: var(--serif);
   font-size: 11px;
-  letter-spacing: .12em;
-  opacity: .8;
-  transform: rotate(-8deg);
+  letter-spacing: .24em;
+  writing-mode: vertical-rl;
 }
+
+.cover-copy {
+  max-width: 300px;
+  margin: 46px auto 0;
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 2.1;
+  letter-spacing: .16em;
+  text-align: center;
+}
+
+.cover-copy p { margin: 0; }
+.cover-copy p + p { margin-top: 10px; }
 
 .home-intro {
-  margin: 26px 0 0;
-  color: var(--ink);
-  font-size: 15px;
-  line-height: 1.9;
+  margin: 56px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: .16em;
+  line-height: 2;
   text-align: center;
 }

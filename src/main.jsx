@@ -6,10 +6,11 @@ import Chat from "./Chat";
 import ChatList from "./ChatList";
 import Splash from "./Splash";
 import HomeNav from "./HomeNav";
-import RetroHero from "./RetroHero";
-import "@fontsource/zcool-qingke-huangyou/400.css";
-import "@fontsource/limelight/400.css";
-import "@fontsource/oswald/500.css";
+import CoverHero from "./CoverHero";
+import "@fontsource/pinyon-script/400.css";
+import "@fontsource/noto-serif-sc/300.css";
+import "@fontsource/noto-serif-sc/400.css";
+import "@fontsource/long-cang/400.css";
 
 // Each entry now IS a star of the constellation (`star` = id in constellationStars),
 // so the map reads as one drawing. `side` is where its tiny label sits.
@@ -282,7 +283,7 @@ function Home({ onOpen }) {
 
   return (
     <main className="home-page">
-      <RetroHero today={today} dayCount={dayCount} />
+      <CoverHero today={today} dayCount={dayCount} />
 
       <p className="home-intro">
         留下一点今天，
