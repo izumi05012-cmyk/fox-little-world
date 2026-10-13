@@ -3,14 +3,21 @@
    ========================================================= */
 
 :root {
-  --paper: #f5efe4;
-  --paper-light: #fbf7ef;
-  --paper-deep: #eee4d4;
-  --ink: #3d3028;
-  --muted: #8b7669;
-  --line: #d7c6b4;
-  --brick: #a35f4d;
-  --brick-pale: #ead0c5;
+  /* Showa poster palette: cream paper, salmon, brick, mustard, cobalt */
+  --paper: #f3e7cc;
+  --paper-light: #fbf1dc;
+  --paper-deep: #ead9b8;
+  --ink: #2b211c;
+  --muted: #7d6656;
+  --line: #d6bf9a;
+  --brick: #c2462e;
+  --brick-pale: #f0c3b0;
+  --salmon: #e9a487;
+  --mustard: #e2a33a;
+  --cobalt: #33408f;
+  --display: "ZCOOL QingKe HuangYou", "Noto Serif SC", serif;
+  --deco: "Limelight", Georgia, serif;
+  --condensed: "Oswald", "Arial Narrow", sans-serif;
   --page-max: 960px;
   --page-pad: clamp(18px, 4vw, 44px);
   font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", Georgia, serif;
@@ -1803,4 +1810,171 @@ button:focus-visible, input:focus-visible {
   padding-bottom: 32px;
   color: var(--brick);
   font-size: 20px;
+}
+
+/* =========================================================
+   PRINT GRAIN — the whole page sits on old risograph paper
+   ========================================================= */
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  opacity: .22;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .15 0 0 0 0 .1 0 0 0 1.4 -.35'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* =========================================================
+   RETRO POSTER HERO
+   ========================================================= */
+
+.poster {
+  position: relative;
+  margin: 18px 0 0;
+  padding: 22px 18px 30px;
+  overflow: hidden;
+  border: 2.5px solid var(--ink);
+  background: var(--salmon);
+  box-shadow: 5px 5px 0 var(--ink);
+  text-align: center;
+}
+
+.poster-wallpaper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.poster > *:not(.poster-wallpaper) { position: relative; }
+
+.poster-top {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px 12px;
+  color: var(--ink);
+  font-family: var(--condensed);
+  font-size: 11px;
+  letter-spacing: .18em;
+}
+
+.poster-sign {
+  width: min(300px, 82%);
+  aspect-ratio: 1;
+  margin: 8px auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--paper-light);
+  /* the double brass ring around a shop sign */
+  box-shadow:
+    0 0 0 3px var(--brick),
+    0 0 0 7px var(--paper-light),
+    0 0 0 9px var(--brick);
+}
+
+.poster-kicker {
+  margin: 0;
+  color: var(--brick);
+  font-family: var(--condensed);
+  font-size: 15px;
+  letter-spacing: .16em;
+}
+
+.poster-kicker small {
+  font-family: var(--deco);
+  font-size: 10px;
+  letter-spacing: .04em;
+  text-transform: lowercase;
+}
+
+.poster h1 {
+  margin: 8px 0 6px;
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: clamp(40px, 12vw, 58px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: .02em;
+}
+
+.poster-names {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: .2em;
+}
+
+.poster-names span { color: var(--brick); font-size: 16px; }
+
+.poster-ribbon {
+  width: max-content;
+  margin: -18px auto 0;
+  padding: 7px 30px 8px;
+  background: var(--mustard);
+  color: var(--cobalt);
+  font-family: var(--display);
+  font-size: 19px;
+  letter-spacing: .12em;
+  transform: rotate(-3deg);
+  /* swallow-tail ribbon ends */
+  clip-path: polygon(0 0, 100% 0, 94% 50%, 100% 100%, 0 100%, 6% 50%);
+  filter: drop-shadow(2px 2px 0 var(--ink));
+}
+
+.poster-ticket {
+  position: absolute !important;
+  top: 74px;
+  right: 8px;
+  padding: 6px 9px;
+  display: flex;
+  flex-direction: column;
+  border: 1.5px dashed var(--paper-light);
+  outline: 4px solid var(--cobalt);
+  background: var(--cobalt);
+  color: var(--paper-light);
+  transform: rotate(8deg);
+}
+
+.poster-ticket small {
+  font-family: var(--deco);
+  font-size: 9px;
+  letter-spacing: .2em;
+}
+
+.poster-ticket strong {
+  font-family: var(--condensed);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .06em;
+}
+
+.poster-top span,
+.poster-date {
+  padding: 3px 8px;
+  background: var(--paper-light);
+  border: 1.5px solid var(--ink);
+}
+
+.poster-date {
+  display: inline-block;
+  margin: 18px 0 0;
+  color: var(--ink);
+  font-family: var(--condensed);
+  font-size: 11px;
+  letter-spacing: .3em;
+}
+
+.home-intro {
+  margin: 26px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.9;
+  text-align: center;
 }

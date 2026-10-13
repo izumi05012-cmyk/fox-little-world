@@ -6,6 +6,10 @@ import Chat from "./Chat";
 import ChatList from "./ChatList";
 import Splash from "./Splash";
 import HomeNav from "./HomeNav";
+import RetroHero from "./RetroHero";
+import "@fontsource/zcool-qingke-huangyou/400.css";
+import "@fontsource/limelight/400.css";
+import "@fontsource/oswald/500.css";
 
 // Each entry now IS a star of the constellation (`star` = id in constellationStars),
 // so the map reads as one drawing. `side` is where its tiny label sits.
@@ -278,46 +282,13 @@ function Home({ onOpen }) {
 
   return (
     <main className="home-page">
-      <header className="home-header">
-        <div className="home-brand">
-          <span className="home-brand-mark">♢</span>
-          <span>FOX LITTLE WORLD</span>
-        </div>
-        <span className="home-header-note">OUR LITTLE PLACE</span>
-      </header>
+      <RetroHero today={today} dayCount={dayCount} />
 
-      <section className="home-hero">
-        <div className="hero-topline">
-          <span>A LITTLE WORLD FOR TWO</span>
-          <i />
-          <span>ALWAYS</span>
-        </div>
-
-        <div className="hero-names">
-          <div className="hero-name">
-            <strong>曦</strong>
-            <small>DAWN</small>
-          </div>
-          <span className="hero-heart-mark">♡</span>
-          <div className="hero-name">
-            <strong>望舒</strong>
-            <small>MOON</small>
-          </div>
-        </div>
-
-        <p className="hero-eyebrow">YOU AND ME · ALWAYS</p>
-        <h1>我们的小世界</h1>
-        <p className="hero-intro">
-          留下一点今天，
-          <br />
-          也留下一点关于我们的以后。
-        </p>
-
-        <div className="hero-meta">
-          <span>{today.getFullYear()} · {pad(today.getMonth() + 1)} · {pad(today.getDate())}</span>
-          <span>TOGETHER · DAY {dayCount}</span>
-        </div>
-      </section>
+      <p className="home-intro">
+        留下一点今天，
+        <br />
+        也留下一点关于我们的以后。
+      </p>
 
       <section className="fox-post-card">
         <div className="fox-post-header">
