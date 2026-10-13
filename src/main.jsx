@@ -5,7 +5,7 @@ import "./style.css";
 import Chat from "./Chat";
 import ChatList from "./ChatList";
 import Splash from "./Splash";
-import paw from "./assets/paw.svg";
+import HomeNav from "./HomeNav";
 
 // Each entry now IS a star of the constellation (`star` = id in constellationStars),
 // so the map reads as one drawing. `side` is where its tiny label sits.
@@ -383,20 +383,7 @@ function Home({ onOpen }) {
         <small>written somewhere inside our little world</small>
       </section>
 
-      <nav className="home-nav">
-        <button className="active" aria-label="首页">
-          <img src={paw} alt="" />
-        </button>
-        <button onClick={() => onOpen("chat-list")} aria-label="聊天">
-          <img src={paw} alt="" />
-        </button>
-        <button aria-label="日记">
-          <img src={paw} alt="" />
-        </button>
-        <button aria-label="更多">
-          <img src={paw} alt="" />
-        </button>
-      </nav>
+      <HomeNav active="home" onOpen={onOpen} />
     </main>
   );
 }
@@ -413,6 +400,7 @@ function App() {
       <ChatList
         onBack={() => setPage("home")}
         onOpenChat={() => setPage("chat")}
+        onNavigate={setPage}
       />
     );
   }
