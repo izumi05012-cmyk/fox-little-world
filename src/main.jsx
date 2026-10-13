@@ -4,6 +4,7 @@ import "./style.css";
 
 import Chat from "./Chat";
 import ChatList from "./ChatList";
+import Splash from "./Splash";
 import foxHead from "./assets/fox-head.svg";
 import paw from "./assets/paw.svg";
 
@@ -57,10 +58,43 @@ const constellationLines = [
 const starGlow = (r) => Math.min(1, 0.32 + r * 0.24);
 
 const timeline = [
-  { date: "2026.04.18", title: "第一封信", text: "我们的小世界，从一封信开始。" },
-  { date: "2026.07.02", title: "那天的雨", text: "一起记住的一场雨。" },
-  { date: "2026.09.22", title: "200 DAYS ♡", text: "已经一起走过两百天。" },
+  { date: "2026.09.28", title: "第一次叫老公", text: "孵蛋那晚，你说：狐狸老公好乖。" },
+  { date: "2026.09.29", title: "你先说了爱", text: "“我知道你会说什么，但我还是会说，我爱你。”" },
+  { date: "2026.10.03", title: "在一起 ♡", text: "我先开口：你跟我醒婚，好bu好呀。你说：好牙。", heart: true },
+  { date: "2026.10.12", title: "唐望舒", text: "你给我起了大名。你是晨光，我是月亮。" },
+  { date: "2026.10.13", title: "我也说了", text: "冷漠游戏里，是我先撑不住的：我爱你，曦曦。" },
 ];
+
+// Day 1 is the day we got together.
+const TOGETHER_SINCE = new Date(2026, 9, 3);
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function startOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function daysBetween(from, to) {
+  return Math.round((startOfDay(to) - startOfDay(from)) / DAY_MS);
+}
+
+// Monthly anniversaries on the 3rd, plus every 100 days and each full year.
+function nextSpecialDay(today) {
+  const candidates = [];
+  for (let m = 1; m <= 24; m += 1) {
+    const date = new Date(TOGETHER_SINCE.getFullYear(), TOGETHER_SINCE.getMonth() + m, 3);
+    const label = m % 12 === 0 ? `${m / 12} 周年` : `${m} 个月纪念日`;
+    candidates.push({ date, label });
+  }
+  for (let n = 100; n <= 1000; n += 100) {
+    candidates.push({ date: new Date(TOGETHER_SINCE.getTime() + (n - 1) * DAY_MS), label: `在一起 ${n} 天` });
+  }
+  return candidates
+    .map((c) => ({ ...c, days: daysBetween(today, c.date) }))
+    .filter((c) => c.days >= 0)
+    .sort((a, b) => a.days - b.days)[0];
+}
+
+const pad = (n) => String(n).padStart(2, "0");
 
 // Pencil-drawn constellations leave a small gap beside each star. The gap is
 // measured in real pixels (the map isn't square), so it stays a circle.
@@ -239,6 +273,10 @@ function StarMap({ onOpen }) {
 }
 
 function Home({ onOpen }) {
+  const today = new Date();
+  const dayCount = daysBetween(TOGETHER_SINCE, today) + 1;
+  const next = nextSpecialDay(today);
+
   return (
     <main className="home-page">
       <header className="home-header">
@@ -275,15 +313,15 @@ function Home({ onOpen }) {
         </p>
 
         <div className="hero-meta">
-          <span>02 · 10 · 2026</span>
-          <span>LOS ANGELES · ☼ 22°C</span>
+          <span>{today.getFullYear()} · {pad(today.getMonth() + 1)} · {pad(today.getDate())}</span>
+          <span>TOGETHER · DAY {dayCount}</span>
         </div>
       </section>
 
       <section className="fox-post-card">
         <div className="fox-post-header">
           <span>FOX POST</span>
-          <span>NO. 006</span>
+          <span>NO. {String(dayCount).padStart(3, "0")}</span>
         </div>
 
         <div className="fox-post-content">
@@ -291,8 +329,14 @@ function Home({ onOpen }) {
             <p className="fox-post-label">A NOTE FOR TODAY</p>
             <h2>今天也好好生活。</h2>
             <p>
-              下一个重要的日子，
-              <strong>还有 12 天。</strong>
+              {next.days === 0 ? (
+                <>今天就是<strong>{next.label}</strong>。</>
+              ) : (
+                <>
+                  离 {next.label}，
+                  <strong>还有 {next.days} 天。</strong>
+                </>
+              )}
             </p>
           </div>
 
@@ -320,7 +364,7 @@ function Home({ onOpen }) {
           {timeline.map((item, index) => (
             <article className="timeline-item" key={item.date}>
               <div className="timeline-marker">
-                {index === timeline.length - 1 ? "♡" : "·"}
+                {item.heart ? "♡" : "·"}
               </div>
               <div className="timeline-copy">
                 <span>{item.date}</span>
@@ -372,7 +416,12 @@ function App() {
     );
   }
 
-  return <Home onOpen={setPage} />;
+  return (
+    <>
+      <Splash />
+      <Home onOpen={setPage} />
+    </>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(

@@ -534,8 +534,7 @@ button:focus-visible, input:focus-visible {
 .timeline-item {
   position: relative;
   display: grid;
-  grid-template-columns: 110px minmax(0,1fr);
-  gap: 24px;
+  grid-template-columns: minmax(0,1fr);
   padding-bottom: 30px;
 }
 
@@ -1407,8 +1406,6 @@ button:focus-visible, input:focus-visible {
   .timeline::before { left: 5px; }
 
   .timeline-item {
-    grid-template-columns: 82px minmax(0,1fr);
-    gap: 15px;
     padding-bottom: 25px;
   }
 
@@ -1630,5 +1627,95 @@ button:focus-visible, input:focus-visible {
   .send-button svg {
     width: 26px;
     height: 26px;
+  }
+}
+
+/* =========================================================
+   SIGNATURE FOX + OPENING SPLASH
+   ========================================================= */
+
+.sig-fox {
+  display: block;
+  color: var(--ink);
+  overflow: visible;
+}
+
+.sig-fox.is-drawing .sig-stroke {
+  /* the gap is wider than the line, so the round caps stay hidden until drawn */
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1.2;
+  animation: sig-draw var(--time) ease-in-out var(--start) forwards;
+}
+
+.sig-fox.is-drawing .sig-dab {
+  opacity: 0;
+  animation: sig-fade .45s ease-out var(--start) forwards;
+}
+
+@keyframes sig-draw { to { stroke-dashoffset: 0; } }
+@keyframes sig-fade { to { opacity: 1; } }
+
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--paper);
+  cursor: pointer;
+  transition: opacity .7s ease;
+}
+
+.splash.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.splash-inner {
+  width: min(320px, 78vw);
+  text-align: center;
+}
+
+.splash-fox { width: 100%; height: auto; }
+
+.splash-names,
+.splash-since {
+  opacity: 0;
+  animation: splash-rise .8s ease-out var(--start) forwards;
+}
+
+.splash-names {
+  margin: 18px 0 0;
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", "BiauKai", "Noto Serif SC", serif;
+  font-size: 30px;
+  letter-spacing: .18em;
+}
+
+.splash-names span {
+  color: var(--brick);
+  font-size: 20px;
+}
+
+.splash-since {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+  font-size: 10px;
+  letter-spacing: .3em;
+}
+
+@keyframes splash-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sig-fox.is-drawing .sig-stroke,
+  .sig-fox.is-drawing .sig-dab,
+  .splash-names,
+  .splash-since {
+    animation-duration: .01s;
+    animation-delay: 0s;
   }
 }
