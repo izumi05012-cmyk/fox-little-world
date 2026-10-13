@@ -3,24 +3,21 @@
    ========================================================= */
 
 :root {
-  /* magazine poster palette — only these four (plus photo white).
-     No pure black anywhere: deep red does the work ink used to. */
-  --rose-grey: #e8c4b8;
-  --deep-red: #8e2b2b;
-  --mist-blue: #8fa6c8;
-  --gold: #c9a45c;
-  --paper: var(--rose-grey);
-  --paper-light: #f1dcd3;
-  --paper-deep: #e0b6a9;
-  --ink: var(--deep-red);
-  --muted: rgba(142, 43, 43, .68);
-  --line: rgba(142, 43, 43, .28);
-  --brick: var(--deep-red);
-  --brick-pale: #f0d3c9;
-  --brown: var(--mist-blue);
-  --mustard: var(--gold);
-  --navy: var(--mist-blue);
-  --script: "Pinyon Script", "Snell Roundhand", cursive;
+  /* journal: warm white page, soft plum ink (never black), and colour
+     that comes through glass and washi tape */
+  --paper: #faf6f2;
+  --paper-light: #fffdfb;
+  --paper-deep: #f1e9e3;
+  --ink: #5a4a52;
+  --muted: #9a8a90;
+  --line: rgba(90, 74, 82, .16);
+  --brick: #c27a89;
+  --brick-pale: #f6dde2;
+  --brown: #8fa6c8;
+  --mustard: #d9bd78;
+  --navy: #8fa6c8;
+  --glass: rgba(255, 255, 255, .42);
+  --glass-edge: rgba(255, 255, 255, .78);
   --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
   --hand: "Long Cang", "Kaiti SC", "STKaiti", cursive;
   --page-max: 960px;
@@ -60,558 +57,6 @@ button:focus-visible, input:focus-visible {
 }
 
 /* =========================================================
-   HOME
-   ========================================================= */
-
-.home-page {
-  width: 100%;
-  max-width: var(--page-max);
-  min-width: 0;
-  margin: 0 auto;
-  padding: 0 var(--page-pad) 118px;
-  overflow: hidden;
-}
-
-.home-header {
-  min-height: 78px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  border-bottom: 1px solid var(--line);
-  color: var(--muted);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 11px;
-  letter-spacing: .28em;
-  white-space: nowrap;
-}
-
-.home-brand {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.home-brand > span:last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.home-brand-mark {
-  width: 22px;
-  height: 22px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  color: var(--brick);
-  font-size: 12px;
-  letter-spacing: 0;
-}
-
-.home-header-note {
-  max-width: 42%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: .18em;
-}
-
-.home-hero {
-  padding: clamp(32px, 6vw, 58px) 0 clamp(42px, 7vw, 68px);
-  text-align: center;
-  border-bottom: 1px solid var(--line);
-}
-
-.hero-topline {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  color: var(--muted);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 10px;
-  letter-spacing: .3em;
-}
-
-.hero-topline i, .section-label i {
-  flex: 1;
-  height: 1px;
-  background: var(--line);
-}
-
-.hero-foxes {
-  position: relative;
-  width: min(370px, 74vw);
-  height: min(220px, 44vw);
-  margin: 34px auto 20px;
-}
-
-.hero-fox {
-  position: absolute;
-  width: 170px;
-  height: 150px;
-}
-
-.hero-fox img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.hero-fox-left {
-  left: 0;
-  bottom: 0;
-  transform: rotate(-5deg);
-}
-
-.hero-fox-right {
-  right: 0;
-  bottom: 0;
-  transform: scaleX(-1) rotate(-5deg);
-}
-
-.hero-heart {
-  position: absolute;
-  left: 50%;
-  top: 42%;
-  transform: translate(-50%, -50%);
-  color: var(--brick);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 22px;
-}
-
-.hero-eyebrow {
-  margin: 12px 0;
-  color: var(--brick);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 11px;
-  letter-spacing: .36em;
-}
-
-.home-hero h1 {
-  margin: 0;
-  font-size: clamp(34px, 5.8vw, 62px);
-  font-weight: 400;
-  line-height: 1.35;
-  letter-spacing: .08em;
-}
-
-.hero-intro {
-  margin: 20px auto 0;
-  color: var(--muted);
-  font-size: clamp(15px, 2vw, 20px);
-  line-height: 1.9;
-}
-
-.hero-meta {
-  margin-top: 26px;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px 30px;
-  color: var(--muted);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 10px;
-  letter-spacing: .2em;
-}
-
-/* =========================================================
-   FOX POST
-   ========================================================= */
-
-.fox-post-card {
-  margin-top: 30px;
-  padding: 22px clamp(20px, 4vw, 34px) 20px;
-  border: 1px solid var(--line);
-  background: rgba(255, 250, 242, .42);
-}
-
-.fox-post-header {
-  display: flex;
-  justify-content: space-between;
-  padding-bottom: 14px;
-  border-bottom: 1px dashed var(--line);
-  color: var(--muted);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 10px;
-  letter-spacing: .24em;
-}
-
-.fox-post-content {
-  min-width: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 26px;
-  padding: 28px 0;
-}
-
-.fox-post-label {
-  margin: 0 0 13px;
-  color: var(--brick);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 10px;
-  letter-spacing: .25em;
-}
-
-.fox-post-content h2 {
-  margin: 0;
-  font-size: clamp(24px, 4vw, 38px);
-  font-weight: 400;
-  line-height: 1.45;
-}
-
-.fox-post-content p:last-child {
-  margin: 13px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.8;
-}
-
-.fox-post-content strong {
-  color: var(--brick);
-  font-weight: 400;
-}
-
-.fox-post-stamp {
-  width: 86px;
-  height: 86px;
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--brick);
-  border-radius: 50%;
-  color: var(--brick);
-  transform: rotate(-7deg);
-}
-
-.fox-post-stamp span, .fox-post-stamp small {
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 8px;
-  letter-spacing: .24em;
-}
-
-.fox-post-stamp strong {
-  margin: 4px 0;
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 20px;
-  letter-spacing: .08em;
-}
-
-.fox-post-footer {
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-  color: #ad9588;
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 10px;
-  letter-spacing: .18em;
-}
-
-/* =========================================================
-   HOME SECTIONS
-   ========================================================= */
-
-.home-section {
-  width: 100%;
-  padding-top: clamp(44px, 7vw, 68px);
-}
-
-.section-label {
-  display: flex;
-  align-items: center;
-  gap: 17px;
-  color: var(--muted);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 10px;
-  letter-spacing: .3em;
-}
-
-/* =========================================================
-   CONSTELLATION
-   ========================================================= */
-
-.star-map-wrap {
-  margin-top: 20px;
-}
-
-/* Drawn straight onto the paper: no frame, no ring, no guide lines. */
-.star-map {
-  position: relative;
-  width: 100%;
-  max-width: 760px;
-  height: clamp(330px, 58vw, 500px);
-  margin: 0 auto;
-}
-
-.star-map-lines {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-
-/* hairline pencil strokes; each line's opacity is set per line in JSX */
-.star-map-lines path {
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: .7;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
-
-/* a few faint specks scattered on the paper, so the map doesn't float alone */
-.star-dust {
-  position: absolute;
-  width: var(--dust-size, 2px);
-  height: var(--dust-size, 2px);
-  border-radius: 50%;
-  background: var(--ink);
-  opacity: var(--dust-opacity, .2);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.constellation-star,
-.entry-star {
-  position: absolute;
-  transform: translate(-50%, -50%);
-}
-
-/* small ink dots: size follows magnitude, brightness follows --star-opacity */
-.constellation-star {
-  width: var(--star-size);
-  height: var(--star-size);
-  border-radius: 50%;
-  background: var(--ink);
-  opacity: var(--star-opacity, .7);
-  box-shadow: 0 0 calc(var(--star-size) * 1.6) rgba(61, 48, 40, .14);
-  pointer-events: none;
-}
-
-.heart-star {
-  background: var(--brick);
-  opacity: 1;
-  box-shadow:
-    0 0 0 4px rgba(163, 95, 77, .07),
-    0 0 14px rgba(163, 95, 77, .22);
-}
-
-/* An entry is simply one of the constellation's own stars that can be tapped:
-   an ink dot with a hairline brick ring. The 40px button is only the touch area. */
-.entry-star {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.entry-star span {
-  position: relative;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--ink);
-  opacity: .82;
-  box-shadow: 0 0 9px rgba(61, 48, 40, .16);
-  transition: background 180ms ease, opacity 180ms ease, transform 180ms ease;
-}
-
-/* the ring: thin, slightly transparent, like a pencil circle around the star */
-.entry-star span::after {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  border: 1px solid rgba(163, 95, 77, .45);
-  border-radius: 50%;
-  transition: inset 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-}
-
-.entry-star.entry-main span {
-  width: 8px;
-  height: 8px;
-  background: var(--brick);
-  opacity: 1;
-  box-shadow: 0 0 14px rgba(163, 95, 77, .28);
-}
-
-.entry-star.entry-main span::after {
-  inset: -8px;
-  border-color: rgba(163, 95, 77, .6);
-}
-
-.entry-star:hover span,
-.entry-star:focus-visible span,
-.entry-star.selected span {
-  background: var(--brick);
-  opacity: 1;
-}
-
-.entry-star:hover span::after,
-.entry-star:focus-visible span::after,
-.entry-star.selected span::after {
-  inset: -9px;
-  border-color: var(--brick);
-  box-shadow: 0 0 14px rgba(163, 95, 77, .18);
-}
-
-/* tiny handwritten-style label beside each star */
-.entry-star small {
-  position: absolute;
-  white-space: nowrap;
-  color: var(--muted);
-  opacity: .72;
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 8px;
-  letter-spacing: .2em;
-  pointer-events: none;
-  transition: color 180ms ease, opacity 180ms ease;
-}
-
-.entry-star.side-t small { bottom: calc(50% + 13px); left: 50%; transform: translateX(-50%); }
-.entry-star.side-b small { top: calc(50% + 13px); left: 50%; transform: translateX(-50%); }
-.entry-star.side-r small { left: calc(50% + 14px); top: 50%; transform: translateY(-50%); }
-.entry-star.side-l small { right: calc(50% + 14px); top: 50%; transform: translateY(-50%); }
-
-.entry-star.selected small,
-.entry-star:hover small {
-  color: var(--brick);
-  opacity: 1;
-}
-
-/* top-right is the one corner no star or label ever reaches */
-.star-map-note {
-  position: absolute;
-  right: 6%;
-  top: 3%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  color: var(--muted);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  text-align: right;
-}
-
-.star-map-note span {
-  font-size: 9px;
-  letter-spacing: .22em;
-  text-transform: uppercase;
-}
-
-.star-map-note small {
-  margin-top: 5px;
-  font-size: 9px;
-  letter-spacing: .06em;
-}
-
-.star-entry-caption {
-  margin-top: 12px;
-  text-align: center;
-  color: var(--brick);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 11px;
-  letter-spacing: .18em;
-}
-
-/* =========================================================
-   TIMELINE + DAILY NOTE
-   ========================================================= */
-
-.timeline {
-  position: relative;
-  margin-top: 26px;
-  padding-left: 28px;
-}
-
-.timeline::before {
-  content: "";
-  position: absolute;
-  top: 4px;
-  bottom: 0;
-  left: 7px;
-  width: 1px;
-  background: var(--line);
-}
-
-.timeline-item {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0,1fr);
-  padding-bottom: 30px;
-}
-
-.timeline-marker {
-  position: absolute;
-  left: -28px;
-  top: 1px;
-  width: 16px;
-  height: 16px;
-  display: grid;
-  place-items: center;
-  color: var(--brick);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 14px;
-}
-
-.timeline-copy > span {
-  color: var(--muted);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 10px;
-  letter-spacing: .13em;
-}
-
-.timeline-copy h3 {
-  margin: 8px 0 0;
-  font-size: 22px;
-  font-weight: 400;
-}
-
-.timeline-copy p {
-  margin: 7px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.75;
-}
-
-.daily-note {
-  padding: 50px 0 30px;
-  text-align: center;
-}
-
-.daily-note > span {
-  color: var(--brick);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 10px;
-  letter-spacing: .3em;
-}
-
-.daily-note p {
-  margin: 16px 0 0;
-  color: var(--muted);
-  font-size: 18px;
-  line-height: 1.8;
-}
-
-.daily-note small {
-  display: block;
-  margin-top: 10px;
-  color: #ad9588;
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
-  font-size: 9px;
-  letter-spacing: .12em;
-}
-
-/* =========================================================
    SHARED BOTTOM NAV
    ========================================================= */
 
@@ -625,11 +70,12 @@ button:focus-visible, input:focus-visible {
   padding: 8px 6px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0,1fr));
-  border: 1px solid var(--line);
+  border: 1px solid var(--glass-edge);
   border-radius: 999px;
-  background: rgba(251, 247, 239, .92);
-  box-shadow: 0 6px 22px rgba(61, 48, 40, .08);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, .5);
+  box-shadow: 0 10px 30px -14px rgba(110, 80, 110, .45);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  backdrop-filter: blur(18px) saturate(1.3);
 }
 
 .home-nav button {
@@ -1374,115 +820,7 @@ button:focus-visible, input:focus-visible {
 @media (max-width: 640px) {
   :root { --page-pad: 16px; }
 
-  .home-page, .chat-list-page { padding-bottom: 96px; }
-
-  .home-header {
-    min-height: 64px;
-    gap: 12px;
-    font-size: 9px;
-    letter-spacing: .17em;
-  }
-
-  .home-header-note { max-width: 38%; letter-spacing: .08em; }
-
-  .home-hero { padding: 28px 0 44px; }
-
-  .hero-topline {
-    gap: 10px;
-    font-size: 8px;
-    letter-spacing: .18em;
-  }
-
-  .hero-foxes {
-    width: min(310px, 78vw);
-    height: 180px;
-    margin: 26px auto 10px;
-  }
-
-  .hero-fox { width: 138px; height: 128px; }
-  .hero-heart { font-size: 18px; }
-
-  .hero-eyebrow { font-size: 9px; letter-spacing: .25em; }
-
-  .home-hero h1 {
-    font-size: clamp(32px, 10vw, 46px);
-    letter-spacing: .04em;
-  }
-
-  .hero-intro { margin-top: 17px; font-size: 15px; }
-
-  .hero-meta {
-    margin-top: 20px;
-    gap: 8px 18px;
-    font-size: 8px;
-  }
-
-  .fox-post-card {
-    margin-top: 22px;
-    padding: 18px 17px 16px;
-  }
-
-  .fox-post-header { font-size: 8px; }
-
-  .fox-post-content {
-    padding: 22px 0;
-    gap: 15px;
-  }
-
-  .fox-post-content h2 { font-size: 23px; }
-  .fox-post-content p:last-child { font-size: 13px; }
-
-  .fox-post-stamp { width: 68px; height: 68px; }
-  .fox-post-stamp strong { font-size: 16px; }
-  .fox-post-footer { font-size: 8px; }
-
-  .home-section { padding-top: 40px; }
-
-  .section-label {
-    gap: 11px;
-    font-size: 8px;
-    letter-spacing: .22em;
-  }
-
-  .star-map {
-    height: 360px;
-    margin-top: 16px;
-  }
-
-  .star-map-note {
-    right: 7%;
-    top: 3%;
-  }
-
-  .star-map-note span, .star-map-note small { font-size: 8px; }
-
-  .entry-star { width: 38px; height: 38px; }
-
-  .timeline {
-    margin-top: 21px;
-    padding-left: 22px;
-  }
-
-  .timeline::before { left: 5px; }
-
-  .timeline-item {
-    padding-bottom: 25px;
-  }
-
-  .timeline-marker {
-    left: -22px;
-    width: 14px;
-    height: 14px;
-    font-size: 12px;
-  }
-
-  .timeline-copy > span { font-size: 8px; }
-  .timeline-copy h3 { margin-top: 6px; font-size: 18px; }
-  .timeline-copy p { margin-top: 5px; font-size: 12px; }
-
-  .daily-note { padding-top: 36px; }
-  .daily-note p { font-size: 16px; }
-  .daily-note small { font-size: 8px; }
+  .chat-list-page { padding-bottom: 96px; }
 
   /* Chat list */
   .chat-list-header {
@@ -1629,15 +967,6 @@ button:focus-visible, input:focus-visible {
 }
 
 @media (max-width: 380px) {
-  .home-header { font-size: 8px; }
-
-  .hero-foxes { height: 165px; }
-  .hero-fox { width: 126px; height: 116px; }
-  .home-hero h1 { font-size: 31px; }
-  .fox-post-content h2 { font-size: 21px; }
-
-  .star-map { height: 320px; }
-
   .chat-list-item {
     grid-template-columns: 44px minmax(0,1fr) auto;
     gap: 10px;
@@ -1778,206 +1107,256 @@ button:focus-visible, input:focus-visible {
   }
 }
 
+
 /* =========================================================
-   HERO NAMES (text instead of fox heads for now)
+   JOURNAL HOME — taped polaroids + frosted glass
    ========================================================= */
 
-.hero-names {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: clamp(18px, 5vw, 40px);
-  margin: 40px auto 26px;
+.journal {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 26px 20px 132px;
+  overflow: hidden;
+  color: var(--ink);
+  /* own stacking context, so the glow sits above body's background */
+  isolation: isolate;
 }
 
-.hero-name {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+/* soft colour behind the glass, plus a faint dot grid like journal paper */
+.journal-glow {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(rgba(90, 74, 82, .13) 1px, transparent 1.3px) 0 0 / 18px 18px,
+    var(--paper);
 }
 
-.hero-name strong {
-  font-size: clamp(38px, 9vw, 64px);
-  font-weight: 400;
-  line-height: 1;
-  letter-spacing: .08em;
+.journal-glow i {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(46px);
+  opacity: .75;
 }
 
-.hero-name small {
+.journal-glow i:nth-child(1) { left: -70px; top: -60px; width: 280px; height: 260px; background: #ffcdb8; }
+.journal-glow i:nth-child(2) { right: -80px; top: 180px; width: 260px; height: 250px; background: #c9dcf6; }
+.journal-glow i:nth-child(3) { left: -60px; top: 520px; width: 270px; height: 250px; background: #e3d3f5; }
+.journal-glow i:nth-child(4) { right: -50px; bottom: -40px; width: 240px; height: 240px; background: #ffd9e2; }
+
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  border-radius: 22px;
+  box-shadow: 0 10px 30px -16px rgba(110, 80, 110, .4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  backdrop-filter: blur(18px) saturate(1.3);
+}
+
+/* tracing paper: you can still see what's underneath */
+.vellum {
+  background: rgba(255, 255, 255, .5);
+  border: 1px solid rgba(255, 255, 255, .9);
+  box-shadow: 0 6px 16px -10px rgba(90, 74, 82, .4);
+  -webkit-backdrop-filter: blur(2.5px);
+  backdrop-filter: blur(2.5px);
+}
+
+.journal-label {
+  margin: 0;
   color: var(--muted);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
   font-size: 9px;
   letter-spacing: .3em;
 }
 
-.hero-names .hero-heart-mark {
-  padding-bottom: 32px;
-  color: var(--brick);
-  font-size: 20px;
-}
-
-/* =========================================================
-   MAGAZINE COVER HERO
-   ========================================================= */
-
-.cover {
-  position: relative;
-  padding: 36px 6px 20px;
-  color: var(--deep-red);
-}
-
-.cover-title { position: relative; text-align: center; }
-
-.cover-title h1 {
-  margin: 0;
-  font-family: var(--script);
-  font-size: clamp(40px, 11.5vw, 64px);
+.journal-hand, .journal-line, .journal-date, .journal-sign {
+  font-family: var(--hand);
   font-weight: 400;
-  line-height: 1.15;
-  white-space: nowrap;
-  letter-spacing: 0;
 }
 
-.cover-title p {
-  margin: 4px 0 0;
-  font-family: var(--serif);
+.journal-today { padding: 20px 22px 18px; }
+
+.journal-date {
+  margin: 8px 0 0;
+  font-size: 38px;
+  line-height: 1.1;
+}
+
+.journal-date small {
+  margin-left: 10px;
+  font-size: 22px;
+  color: var(--muted);
+}
+
+.journal-count {
+  margin: 10px 0 0;
+  color: var(--muted);
   font-size: 11px;
-  font-weight: 300;
-  letter-spacing: .42em;
+  letter-spacing: .14em;
 }
 
-.cover-moon {
-  position: absolute;
-  top: -6px;
-  right: 10%;
-  width: 20px;
-  transform: rotate(-18deg);
+.journal-count b {
+  color: var(--brick);
+  font-size: 15px;
+  font-weight: 400;
 }
 
-.cover-collage {
+.journal-line {
+  margin: 12px 0 0;
+  font-size: 18px;
+}
+
+.journal-wall {
   position: relative;
-  height: 300px;
-  margin: 34px auto 0;
-  max-width: 360px;
+  height: 470px;
+  margin-top: 30px;
 }
 
-.cover-photo {
+.polaroid {
   position: absolute;
   margin: 0;
-  padding: 4px;
-  background: #fbf4ef;
-  box-shadow: 0 6px 16px -8px rgba(142, 43, 43, .45);
+  padding: 7px 7px 30px;
+  background: #fffdfb;
+  box-shadow: 0 10px 22px -12px rgba(90, 74, 82, .5);
+  cursor: pointer;
 }
 
-.cover-photo img {
+.polaroid img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.cover-photo-back {
-  top: 8px;
-  right: 4%;
-  width: 46%;
-  height: 150px;
-  transform: rotate(6deg);
-}
-
-.cover-photo-low {
-  bottom: 0;
-  left: 2%;
-  width: 36%;
-  height: 128px;
-  transform: rotate(-7deg);
-}
-
-.cover-photo-main {
-  z-index: 1;
-  top: 28px;
-  left: 26%;
-  width: 46%;
-  height: 230px;
-  transform: rotate(-2.5deg);
-}
-
-/* written small on the corner, like the back of a photograph */
-.cover-inscription {
+.polaroid figcaption {
   position: absolute;
-  left: 14px;
-  bottom: 10px;
-  color: var(--deep-red);
+  left: 0;
+  right: 0;
+  bottom: 5px;
   font-family: var(--hand);
-  font-size: 13px;
-  transform: rotate(-8deg);
-  opacity: .85;
+  font-size: 16px;
+  text-align: center;
 }
 
-.cover-pearls {
-  position: absolute;
-  z-index: 2;
-  top: -6px;
-  left: 4%;
-  width: 70%;
-  transform: rotate(-4deg);
-}
+.polaroid-chat { left: 0; top: 10px; width: 52%; height: 250px; transform: rotate(-4deg); z-index: 1; }
+.polaroid-space { right: 0; top: 46px; width: 40%; height: 170px; transform: rotate(5deg); }
+.polaroid-memories { left: 4%; top: 300px; width: 34%; height: 150px; transform: rotate(-7deg); }
 
-.cover-brooch {
+/* small round buttons on each photo: change it, or go back to the default */
+.polaroid-swap, .polaroid-reset {
   position: absolute;
   z-index: 3;
-  left: 66%;
-  top: 214px;
-  width: 50px;
-  transform: rotate(14deg);
-  filter: drop-shadow(0 2px 2px rgba(142, 43, 43, .3));
-}
-
-.cover-date {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 14px;
-  margin-top: 40px;
-}
-
-.cover-date strong {
-  font-family: var(--serif);
-  font-size: clamp(88px, 28vw, 140px);
-  font-weight: 300;
-  line-height: .85;
-  letter-spacing: -.02em;
-}
-
-.cover-date span {
-  padding-bottom: 6px;
-  color: var(--mist-blue);
-  font-family: var(--serif);
-  font-size: 11px;
-  letter-spacing: .24em;
-  writing-mode: vertical-rl;
-}
-
-.cover-copy {
-  max-width: 300px;
-  margin: 46px auto 0;
-  font-family: var(--serif);
-  font-size: 12px;
-  font-weight: 300;
-  line-height: 2.1;
-  letter-spacing: .16em;
-  text-align: center;
-}
-
-.cover-copy p { margin: 0; }
-.cover-copy p + p { margin-top: 10px; }
-
-.home-intro {
-  margin: 56px 0 0;
-  color: var(--muted);
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--glass-edge);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .55);
+  color: var(--ink);
   font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.polaroid-swap { right: 12px; top: 12px; }
+.polaroid-reset { right: 42px; top: 12px; font-size: 15px; }
+
+.washi {
+  position: absolute;
+  z-index: 2;
+  top: -11px;
+  left: 50%;
+  width: 70px;
+  height: 22px;
+  margin-left: -35px;
+  opacity: .6;
+  mix-blend-mode: multiply;
+}
+
+.washi-pink { background: #f2b2bd; transform: rotate(-6deg); }
+.washi-blue { background: #a9c6e3; transform: rotate(8deg); }
+.washi-yellow { background: #e9d27e; transform: rotate(-3deg); }
+
+.journal-diary {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  top: 236px;
+  width: 58%;
+  padding: 18px 18px 20px;
+  transform: rotate(-1.5deg);
+}
+
+.journal-diary .journal-hand {
+  margin: 8px 0 0;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.journal-brooch {
+  position: absolute;
+  z-index: 2;
+  right: 31%;
+  top: -4px;
+  width: 44px;
+  transform: rotate(16deg);
+  filter: drop-shadow(0 2px 2px rgba(90, 74, 82, .3));
+}
+
+.journal-days { padding: 18px 22px 16px; }
+
+.journal-days ol {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.journal-days li {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 12.5px;
   font-weight: 300;
-  letter-spacing: .16em;
-  line-height: 2;
-  text-align: center;
+  letter-spacing: .06em;
+  line-height: 1.8;
+}
+
+.journal-days time { color: var(--brick); }
+
+.journal-doors {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.journal-doors button {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0;
+  color: var(--ink);
+  font-size: 12px;
+  letter-spacing: .14em;
+  cursor: pointer;
+}
+
+.journal-doors i { font-style: normal; font-size: 19px; }
+
+.journal-sign {
+  margin: 26px 8px 0 0;
+  color: var(--brick);
+  font-size: 18px;
+  text-align: right;
+  transform: rotate(-4deg);
 }
