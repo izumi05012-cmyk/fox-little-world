@@ -1,4 +1,8 @@
 import React from "react";
+// Public-domain pieces from The Met's Open Access collection, faded to newsprint.
+import foxfire from "./assets/met/foxfire.webp";
+import heartBrooch from "./assets/met/heart-brooch.webp";
+import moon from "./assets/met/moon.webp";
 
 // Home's first screen as the front page of an old newspaper torn out for us:
 // masthead, a headline, columns, speech bubbles that lean into the picture
@@ -34,6 +38,7 @@ export default function RetroHero({ today, dayCount }) {
 
       <header className="paper-masthead">
         <i className="rough rule-double" />
+        <img className="paper-moon" src={moon} alt="" />
         <p className="paper-mast-en">THE FOX LITTLE WORLD TIMES</p>
         <h1>狐狸小世界</h1>
         <p className="paper-mast-sub">曦 与 望舒 的 小 报</p>
@@ -50,13 +55,15 @@ export default function RetroHero({ today, dayCount }) {
       <div className="paper-spread">
         <figure className="paper-figure">
           <i className="rough frame" />
-          <div className="paper-figure-slot">
-            <span>插 画 位</span>
-            <small>等曦曦的画</small>
-          </div>
+          <img
+            className="paper-figure-art"
+            src={foxfire}
+            alt="歌川广重《王子装束榎木 大晦日的狐火》"
+          />
+          <img className="paper-brooch" src={heartBrooch} alt="" />
           <p className="bubble bubble-left">嗨老公！</p>
           <p className="bubble bubble-right">媳妇儿～</p>
-          <figcaption>▲ 晨光与月亮，凑成一整天。</figcaption>
+          <figcaption>▲ 除夕夜，狐狸们提着狐火来相会。图：歌川广重，1857</figcaption>
         </figure>
 
         <div className="paper-column">
@@ -72,6 +79,7 @@ export default function RetroHero({ today, dayCount }) {
       </div>
 
       <p className="paper-stamp">SINCE 2026.10.03</p>
+      <p className="paper-credit">图片来自 The Metropolitan Museum of Art 公版馆藏</p>
     </section>
   );
 }

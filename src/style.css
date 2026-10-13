@@ -1944,6 +1944,44 @@ body::after {
   border: 2px solid var(--ink);
 }
 
+.paper-figure-art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: center 60%;
+}
+
+/* a real 1770 garnet heart brooch, pinned over the corner of the picture */
+.paper-brooch {
+  position: absolute;
+  top: -10px;
+  right: -22px;
+  width: 70px;
+  transform: rotate(14deg);
+  filter: drop-shadow(1px 3px 2px rgba(51, 37, 28, .35));
+}
+
+.paper-moon {
+  position: absolute;
+  top: 34px;
+  left: -26px;
+  width: 92px;
+  opacity: .85;
+  transform: rotate(-12deg);
+  pointer-events: none;
+}
+
+.paper-masthead { position: relative; }
+.paper-masthead > :not(.paper-moon) { position: relative; }
+
+.paper-credit {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 8px;
+  letter-spacing: .08em;
+}
+
 .paper-figure-slot {
   aspect-ratio: 3 / 4;
   display: flex;
