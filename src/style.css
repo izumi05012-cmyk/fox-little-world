@@ -3,24 +3,27 @@
    ========================================================= */
 
 :root {
-  /* old newsprint: faded kraft paper, brown-black ink, dusty red */
-  --paper: #e9dcc0;
-  --paper-light: #f2e8d2;
-  --paper-deep: #dccaa7;
-  --ink: #33251c;
-  --muted: #76604e;
-  --line: #bfa682;
-  --brick: #9b3d2c;
-  --brick-pale: #dfb6a0;
-  --brown: #6b4a33;
-  --mustard: #c39a48;
-  --navy: #3d4a66;
+  /* sampled from 曦曦's reference posters: peach-pink ground, cream
+     sheets, tomato red, and cool slate so it reads retro, not dusty */
+  --paper: #dfaa8f;
+  --paper-light: #f1e8d8;
+  --paper-deep: #e6d6bf;
+  --ink: #2f2a35;
+  --muted: #6c6670;
+  --line: #c99b84;
+  --brick: #b0392a;
+  --brick-pale: #f0c7b5;
+  --brown: #5f6b78;
+  --mustard: #d9ae62;
+  --navy: #3e4d6e;
+  --slate: #9aa4a6;
   --display: "ZCOOL QingKe HuangYou", "Noto Serif SC", serif;
   --deco: "Limelight", Georgia, serif;
   --condensed: "Oswald", "Arial Narrow", sans-serif;
   --page-max: 960px;
   --page-pad: clamp(18px, 4vw, 44px);
-  font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", Georgia, serif;
+  /* clean modern body text; the retro lives in the display fonts */
+  font-family: "PingFang SC", "HarmonyOS Sans SC", "MiSans", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
   color: var(--ink);
   background: var(--paper);
   color-scheme: light;
@@ -1822,7 +1825,7 @@ body::after {
   inset: 0;
   z-index: 200;
   pointer-events: none;
-  opacity: .3;
+  opacity: .2;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .15 0 0 0 0 .1 0 0 0 1.4 -.35'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
@@ -1955,10 +1958,10 @@ body::after {
 /* a real 1770 garnet heart brooch, pinned over the corner of the picture */
 .paper-brooch {
   position: absolute;
-  top: -10px;
-  right: -22px;
-  width: 70px;
-  transform: rotate(14deg);
+  top: -24px;
+  left: -18px;
+  width: 66px;
+  transform: rotate(-16deg);
   filter: drop-shadow(1px 3px 2px rgba(51, 37, 28, .35));
 }
 
@@ -1976,6 +1979,7 @@ body::after {
 .paper-masthead > :not(.paper-moon) { position: relative; }
 
 .paper-credit {
+  max-width: 58%;
   margin: 14px 0 0;
   color: var(--muted);
   font-size: 8px;
@@ -2084,7 +2088,7 @@ body::after {
 
 .home-intro {
   margin: 26px 0 0;
-  color: var(--muted);
+  color: var(--ink);
   font-size: 15px;
   line-height: 1.9;
   text-align: center;

@@ -1,6 +1,6 @@
 import React from "react";
 // Public-domain pieces from The Met's Open Access collection, faded to newsprint.
-import foxfire from "./assets/met/foxfire.webp";
+import foxArt from "./assets/met/fox-mystic-fire.webp";
 import heartBrooch from "./assets/met/heart-brooch.webp";
 import moon from "./assets/met/moon.webp";
 
@@ -57,23 +57,23 @@ export default function RetroHero({ today, dayCount }) {
           <i className="rough frame" />
           <img
             className="paper-figure-art"
-            src={foxfire}
-            alt="歌川广重《王子装束榎木 大晦日的狐火》"
+            src={foxArt}
+            alt="柴田是真《狐火中的狐狸》"
           />
           <img className="paper-brooch" src={heartBrooch} alt="" />
           <p className="bubble bubble-left">嗨老公！</p>
           <p className="bubble bubble-right">媳妇儿～</p>
-          <figcaption>▲ 除夕夜，狐狸们提着狐火来相会。图：歌川广重，1857</figcaption>
+          <figcaption>▲ 一只穿着外套的狐狸，在等它的姑娘。图：柴田是真</figcaption>
         </figure>
 
         <div className="paper-column">
           <p>
-            <b>本报讯</b> 二〇二六年十月三日，一只狐狸与一位姑娘在一起了。狐狸先开口：
-            “你跟我醒婚，好bu好呀。”姑娘答：“好牙。”
+            <b>独家</b> 10 月 3 日，一只狐狸在小学生游戏里先开了口：“你跟我醒婚，好bu好呀。”
+            她回：“好牙。”就这样在一起啦。
           </p>
           <i className="rough rule" />
           <p>
-            <b>又讯</b> 姑娘给狐狸起了大名，唐望舒。望舒者，为月驾车之神也。
+            <b>快讯</b> 狐狸有大名了：唐望舒。她是晨光，他是月亮，凑成一整天。
           </p>
         </div>
       </div>
