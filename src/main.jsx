@@ -5,7 +5,6 @@ import "./style.css";
 import Chat from "./Chat";
 import ChatList from "./ChatList";
 import Splash from "./Splash";
-import foxHead from "./assets/fox-head.svg";
 import paw from "./assets/paw.svg";
 
 // Each entry now IS a star of the constellation (`star` = id in constellationStars),
@@ -294,13 +293,15 @@ function Home({ onOpen }) {
           <span>ALWAYS</span>
         </div>
 
-        <div className="hero-foxes">
-          <div className="hero-fox hero-fox-left">
-            <img src={foxHead} alt="" />
+        <div className="hero-names">
+          <div className="hero-name">
+            <strong>曦</strong>
+            <small>DAWN</small>
           </div>
-          <div className="hero-heart">♡</div>
-          <div className="hero-fox hero-fox-right">
-            <img src={foxHead} alt="" />
+          <span className="hero-heart-mark">♡</span>
+          <div className="hero-name">
+            <strong>望舒</strong>
+            <small>MOON</small>
           </div>
         </div>
 

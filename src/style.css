@@ -1631,29 +1631,8 @@ button:focus-visible, input:focus-visible {
 }
 
 /* =========================================================
-   SIGNATURE FOX + OPENING SPLASH
+   OPENING SPLASH
    ========================================================= */
-
-.sig-fox {
-  display: block;
-  color: var(--ink);
-  overflow: visible;
-}
-
-.sig-fox.is-drawing .sig-stroke {
-  /* the gap is wider than the line, so the round caps stay hidden until drawn */
-  stroke-dasharray: 1 2;
-  stroke-dashoffset: 1.2;
-  animation: sig-draw var(--time) ease-in-out var(--start) forwards;
-}
-
-.sig-fox.is-drawing .sig-dab {
-  opacity: 0;
-  animation: sig-fade .45s ease-out var(--start) forwards;
-}
-
-@keyframes sig-draw { to { stroke-dashoffset: 0; } }
-@keyframes sig-fade { to { opacity: 1; } }
 
 .splash {
   position: fixed;
@@ -1672,50 +1651,108 @@ button:focus-visible, input:focus-visible {
   pointer-events: none;
 }
 
-.splash-inner {
-  width: min(320px, 78vw);
-  text-align: center;
-}
+.splash-inner { text-align: center; }
 
-.splash-fox { width: 100%; height: auto; }
-
-.splash-names,
-.splash-since {
+.splash-eyebrow {
+  margin: 0;
+  color: var(--muted);
+  font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+  font-size: 9px;
+  letter-spacing: .36em;
   opacity: 0;
-  animation: splash-rise .8s ease-out var(--start) forwards;
+  animation: splash-fade 1s ease-out .1s forwards;
 }
 
 .splash-names {
-  margin: 18px 0 0;
-  font-family: "Kaiti SC", "STKaiti", "KaiTi", "BiauKai", "Noto Serif SC", serif;
-  font-size: 30px;
-  letter-spacing: .18em;
+  margin: 22px 0 0;
+  font-size: clamp(40px, 13vw, 64px);
+  font-weight: 400;
+  letter-spacing: .12em;
+  line-height: 1.2;
 }
 
+/* each character settles in like ink soaking into paper */
 .splash-names span {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(4px);
+  animation: splash-ink .9s ease-out var(--start) forwards;
+}
+
+.splash-names .splash-heart {
+  margin: 0 .1em;
   color: var(--brick);
-  font-size: 20px;
+  font-size: .5em;
+  vertical-align: middle;
+}
+
+.splash-rule {
+  display: block;
+  width: 64px;
+  height: 1px;
+  margin: 22px auto 0;
+  background: var(--line);
+  transform: scaleX(0);
+  animation: splash-rule .8s ease-out var(--start) forwards;
 }
 
 .splash-since {
-  margin: 10px 0 0;
+  margin: 14px 0 0;
   color: var(--muted);
   font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
   font-size: 10px;
   letter-spacing: .3em;
+  opacity: 0;
+  animation: splash-fade .8s ease-out var(--start) forwards;
 }
 
-@keyframes splash-rise {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
-}
+@keyframes splash-ink { to { opacity: 1; filter: none; transform: none; } }
+@keyframes splash-fade { to { opacity: 1; } }
+@keyframes splash-rule { to { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .sig-fox.is-drawing .sig-stroke,
-  .sig-fox.is-drawing .sig-dab,
-  .splash-names,
-  .splash-since {
+  .splash-eyebrow, .splash-names span, .splash-rule, .splash-since {
     animation-duration: .01s;
     animation-delay: 0s;
   }
+}
+
+/* =========================================================
+   HERO NAMES (text instead of fox heads for now)
+   ========================================================= */
+
+.hero-names {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: clamp(18px, 5vw, 40px);
+  margin: 40px auto 26px;
+}
+
+.hero-name {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-name strong {
+  font-size: clamp(38px, 9vw, 64px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: .08em;
+}
+
+.hero-name small {
+  color: var(--muted);
+  font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+  font-size: 9px;
+  letter-spacing: .3em;
+}
+
+.hero-names .hero-heart-mark {
+  padding-bottom: 32px;
+  color: var(--brick);
+  font-size: 20px;
 }

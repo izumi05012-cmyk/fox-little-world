@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import SignatureFox, { SIGNATURE_FOX_TIME } from "./SignatureFox";
 
-// Opening screen: the fox signs itself, then our names, then it fades into home.
-// Shown once per browser session; a tap skips it.
+// Opening screen: our names write themselves in, one character at a time,
+// then it fades into home. Shown once per browser session; a tap skips it.
 const SEEN_KEY = "fox-splash-seen";
-const HOLD = SIGNATURE_FOX_TIME + 1.9; // fox + names + a breath
+const NAMES = ["望", "舒", "♡", "曦"];
+const STEP = 0.55; // seconds between characters
+const HOLD = NAMES.length * STEP + 2.2;
 
 function alreadySeen() {
   try {
@@ -15,10 +16,10 @@ function alreadySeen() {
 }
 
 export default function Splash() {
-  const [stage, setStage] = useState(() => (alreadySeen() ? "gone" : "signing"));
+  const [stage, setStage] = useState(() => (alreadySeen() ? "gone" : "writing"));
 
   useEffect(() => {
-    if (stage !== "signing") return undefined;
+    if (stage !== "writing") return undefined;
     const timer = setTimeout(() => setStage("leaving"), HOLD * 1000);
     return () => clearTimeout(timer);
   }, [stage]);
@@ -36,6 +37,8 @@ export default function Splash() {
 
   if (stage === "gone") return null;
 
+  const afterNames = NAMES.length * STEP;
+
   return (
     <div
       className={`splash ${stage === "leaving" ? "is-leaving" : ""}`}
@@ -43,11 +46,20 @@ export default function Splash() {
       role="presentation"
     >
       <div className="splash-inner">
-        <SignatureFox drawing className="splash-fox" />
-        <p className="splash-names" style={{ "--start": `${SIGNATURE_FOX_TIME}s` }}>
-          望舒 <span>♡</span> 曦
+        <p className="splash-eyebrow">A LITTLE WORLD FOR TWO</p>
+        <p className="splash-names" aria-label="望舒和曦">
+          {NAMES.map((char, index) => (
+            <span
+              key={char}
+              className={char === "♡" ? "splash-heart" : ""}
+              style={{ "--start": `${0.3 + index * STEP}s` }}
+            >
+              {char}
+            </span>
+          ))}
         </p>
-        <p className="splash-since" style={{ "--start": `${SIGNATURE_FOX_TIME + 0.7}s` }}>
+        <i className="splash-rule" style={{ "--start": `${afterNames + 0.2}s` }} />
+        <p className="splash-since" style={{ "--start": `${afterNames + 0.6}s` }}>
           SINCE 2026 · 10 · 03
         </p>
       </div>
