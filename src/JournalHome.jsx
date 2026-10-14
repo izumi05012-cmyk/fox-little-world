@@ -73,6 +73,9 @@ function Polaroid({ item, src, custom, onOpen, onPick, onReset }) {
         type="file"
         accept="image/*"
         hidden
+        // the click we fire on this input bubbles too; without this it
+        // reaches the polaroid and opens the page instead of the picker
+        onClick={(event) => event.stopPropagation()}
         onChange={(event) => {
           const file = event.target.files?.[0];
           if (file) onPick(item.slot, file);
