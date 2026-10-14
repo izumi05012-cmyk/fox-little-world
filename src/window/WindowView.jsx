@@ -1,35 +1,50 @@
 import React, { useEffect, useRef, useState } from "react";
 import { day, night, rain, snow } from "./effects";
+import { depthPhoto } from "./depthPhoto";
 import rainPic from "../assets/window/rain.webp";
 import snowPic from "../assets/window/snow.webp";
 import dayPic from "../assets/window/day.webp";
 import nightPic from "../assets/window/night.webp";
+import rainDepth from "../assets/window/rain-depth.webp";
+import snowDepth from "../assets/window/snow-depth.webp";
+import dayDepth from "../assets/window/day-depth.webp";
+import nightDepth from "../assets/window/night-depth.webp";
 
 // The view out of the little house's window, behind everything on the page.
-// The blurred outside picture drifts a little as you scroll or tilt (depth);
-// the glass — drops, frost, frame — stays put.
+// The outside is a photo with a depth map, so as you scroll or tilt the
+// phone near things shift more than far ones (a real 3D view); the glass —
+// drops, frost, frame — stays put. Without WebGL the plain photo drifts.
 
 const scenes = {
-  rain: { picture: rainPic, effect: rain, glass: "glass-rain" },
-  snow: { picture: snowPic, effect: snow, glass: "glass-snow" },
-  day: { picture: dayPic, effect: day, glass: "glass-clear" },
-  night: { picture: nightPic, effect: night, glass: "glass-clear" },
+  rain: { picture: rainPic, depth: rainDepth, effect: rain, glass: "glass-rain" },
+  snow: { picture: snowPic, depth: snowDepth, effect: snow, glass: "glass-snow" },
+  day: { picture: dayPic, depth: dayDepth, effect: day, glass: "glass-clear" },
+  night: { picture: nightPic, depth: nightDepth, effect: night, glass: "glass-clear" },
 };
 
 const FADE_MS = 1400;
 
-function SceneLayer({ scene, leaving }) {
+function SceneLayer({ scene, leaving, motion }) {
   const canvas = useRef(null);
   const picture = useRef(null);
+  const depth = useRef(null);
+  const [has3d, setHas3d] = useState(false);
 
   useEffect(() => {
     const { effect } = scenes[scene];
     return effect(canvas.current, picture.current);
   }, [scene]);
 
+  useEffect(() => {
+    const { picture: src, depth: depthSrc } = scenes[scene];
+    const stop = depthPhoto(depth.current, src, depthSrc, motion, () => setHas3d(true));
+    return stop || undefined;
+  }, [scene, motion]);
+
   return (
-    <div className={`window-scene ${scenes[scene].glass} ${leaving ? "is-leaving" : ""}`}>
+    <div className={`window-scene ${scenes[scene].glass} ${leaving ? "is-leaving" : ""} ${has3d ? "has-3d" : ""}`}>
       <img ref={picture} className="window-outside" src={scenes[scene].picture} alt="" />
+      <canvas ref={depth} className="window-depth" />
       <canvas ref={canvas} className="window-glass" />
       {scene === "snow" && (
         <>
@@ -45,6 +60,9 @@ export default function WindowView({ scene }) {
   // keep the old scene around while it fades out under the new one
   const [layers, setLayers] = useState([{ scene, key: 0, leaving: false }]);
   const root = useRef(null);
+  // where the viewer is, read every frame by the 3D photo
+  const viewer = useRef({ x: 0, y: 0 });
+  const [motion] = useState(() => () => viewer.current);
 
   useEffect(() => {
     setLayers((current) => {
@@ -67,6 +85,9 @@ export default function WindowView({ scene }) {
     let raf = 0;
     const apply = () => {
       raf = 0;
+      const scrolled = Math.max(-0.5, Math.min(0.5, window.scrollY / 2400));
+      // move the eye opposite to the tilt, like leaning to look past the frame
+      viewer.current = { x: -tiltX, y: -(tiltY + scrolled) };
       el.style.setProperty("--scroll", String(window.scrollY));
       el.style.setProperty("--tilt-x", tiltX.toFixed(3));
       el.style.setProperty("--tilt-y", tiltY.toFixed(3));
@@ -99,7 +120,7 @@ export default function WindowView({ scene }) {
   return (
     <div className="window" ref={root} aria-hidden="true">
       {layers.map((layer) => (
-        <SceneLayer key={layer.key} scene={layer.scene} leaving={layer.leaving} />
+        <SceneLayer key={layer.key} scene={layer.scene} leaving={layer.leaving} motion={motion} />
       ))}
       <i className="window-frame" />
     </div>

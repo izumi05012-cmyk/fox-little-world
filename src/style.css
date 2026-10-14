@@ -1410,6 +1410,19 @@ button:focus-visible, input:focus-visible {
   transition: transform .4s ease-out;
 }
 
+.window-depth {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity .6s ease;
+}
+
+/* once the 3D photo is drawing, it replaces the flat one */
+.has-3d .window-depth { opacity: 1; }
+.has-3d .window-outside { visibility: hidden; }
+
 .window-glass {
   position: absolute;
   inset: 0;
