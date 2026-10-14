@@ -66,17 +66,14 @@ function drawCover(ctx, img, w, h) {
 export function rain(canvas, background) {
   const bg = document.createElement("canvas"); // what the drops refract
   const fog = document.createElement("canvas"); // a light breath on the glass
-  const beads = document.createElement("canvas"); // the many resting drops
-  let resting = [];
   let sliding = [];
-  let columns = []; // where water has run before: drops line up along them
   let streaks = []; // the rain itself, falling outside, out of focus
-  let beadsDirty = true;
   let spawnIn = 0;
-  let redrawIn = 0;
 
+  // Only moving water on the glass: a drop now and then runs down,
+  // wandering, wiping a clear line through the mist. Nothing sits still.
   const { ctx, dpr, resize, size } = setup(canvas, (w, h) => {
-    for (const c of [bg, fog, beads]) {
+    for (const c of [bg, fog]) {
       c.width = w;
       c.height = h;
     }
@@ -84,45 +81,16 @@ export function rain(canvas, background) {
     const f = fog.getContext("2d");
     f.fillStyle = "rgba(200, 210, 226, .08)";
     f.fillRect(0, 0, w, h);
-    columns = Array.from({ length: Math.max(3, Math.round(w / (95 * dpr))) }, () => ({
-      x: rand(0, w),
-      amp: rand(2, 9) * dpr,
-      freq: rand(0.01, 0.03) / dpr,
-      phase: rand(0, Math.PI * 2),
-    }));
     streaks = Array.from({ length: Math.round(w / (3 * dpr)) }, () => newStreak(w, h, true));
-    resting = [];
-    const count = Math.round((w * h) / (3200 * dpr * dpr));
-    for (let i = 0; i < count; i += 1) resting.push(newBead(w, h));
     sliding = [];
-    beadsDirty = true;
   });
 
   // the picture may still be loading on the first frame
   function paintBackground() {
     if (!background.complete || !background.naturalWidth) return;
     drawCover(bg.getContext("2d"), background, bg.width, bg.height);
-    beadsDirty = true;
   }
   background.addEventListener("load", paintBackground);
-
-  function newBead(w, h) {
-    const y = rand(0, h);
-    // about half the drops hang in strings down old trails, some of those
-    // heavy enough to sag into a teardrop
-    if (Math.random() < 0.5 && columns.length) {
-      const col = columns[Math.floor(Math.random() * columns.length)];
-      const big = Math.random() < 0.38;
-      return {
-        x: col.x + Math.sin(y * col.freq + col.phase) * col.amp,
-        y,
-        r: (big ? rand(3.2, 8) : rand(1, 2.8)) * dpr,
-        tail: big && Math.random() < 0.45 ? rand(0.3, 0.9) : 0,
-      };
-    }
-    const big = Math.random() < 0.14;
-    return { x: rand(0, w), y, r: (big ? rand(2.8, 6.5) : rand(0.6, 2)) * dpr, tail: 0 };
-  }
 
   function newStreak(w, h, anywhere = false) {
     const near = Math.random() < 0.25; // nearer rain: longer, faster, fainter
@@ -198,39 +166,21 @@ export function rain(canvas, background) {
     c.fill();
   }
 
-  function renderBeads() {
-    const { w, h } = size();
-    const c = beads.getContext("2d");
-    c.clearRect(0, 0, w, h);
-    for (const b of resting) drawDrop(c, b.x, b.y, b.r, b.tail);
-    beadsDirty = false;
-  }
-
   const stop = loop((dt) => {
     resize();
     const { w, h } = size();
 
-    // now and then a new drop lands on the glass: drawn straight onto the
-    // bead layer, only a full redraw when running drops sweep some away
-    const beadCtx = beads.getContext("2d");
-    if (Math.random() < 0.3 && resting.length < (w * h) / (2600 * dpr * dpr)) {
-      const b = newBead(w, h);
-      resting.push(b);
-      if (!beadsDirty) drawDrop(beadCtx, b.x, b.y, b.r, b.tail);
-    }
-
-    // now and then a heavy drop lets go and runs down one of the strings
     spawnIn -= dt;
-    if (spawnIn <= 0 && columns.length) {
-      spawnIn = rand(2.5, 5);
-      const col = columns[Math.floor(Math.random() * columns.length)];
+    if (spawnIn <= 0) {
+      spawnIn = rand(1.2, 3.2);
       sliding.push({
-        col,
-        x: col.x,
-        y: rand(-20, h * 0.5),
+        x: rand(0.05, 0.95) * w,
+        y: rand(-20, h * 0.4),
         r: rand(3, 5.5) * dpr,
         v: rand(30, 60) * dpr,
-        trail: 0,
+        amp: rand(2, 8) * dpr,
+        freq: rand(0.01, 0.03) / dpr,
+        phase: rand(0, Math.PI * 2),
       });
     }
 
@@ -239,52 +189,26 @@ export function rain(canvas, background) {
     f.globalCompositeOperation = "source-over";
     f.fillStyle = "rgba(200, 210, 226, .002)";
     f.fillRect(0, 0, w, h);
+    f.globalCompositeOperation = "destination-out";
+    f.lineCap = "round";
+    f.strokeStyle = "rgba(0,0,0,.6)";
 
     for (const d of sliding) {
       d.v = Math.min(d.v + 140 * dpr * dt, 260 * dpr);
       const px = d.x;
       const py = d.y;
       d.y += d.v * dt;
-      // it follows the wavy path water took before, with a little jitter
-      d.x = d.col.x + Math.sin(d.y * d.col.freq + d.col.phase) * d.col.amp + rand(-0.6, 0.6) * dpr;
-
-      // it wipes a clear line through the mist...
-      f.globalCompositeOperation = "destination-out";
-      f.lineCap = "round";
+      // it wanders a little as it picks its way down
+      d.x += Math.cos(d.y * d.freq + d.phase) * d.amp * d.freq * d.v * dt + rand(-0.6, 0.6) * dpr;
+      // and wipes a clear line through the mist
       f.lineWidth = d.r * 0.7;
-      f.strokeStyle = "rgba(0,0,0,.6)";
       f.beginPath();
       f.moveTo(px, py);
       f.lineTo(d.x, d.y);
       f.stroke();
-
-      // ...swallows the droplets it meets...
-      const before = resting.length;
-      resting = resting.filter((b) => Math.hypot(b.x - d.x, b.y - d.y) > d.r + b.r);
-      if (resting.length !== before) {
-        d.r = Math.min(d.r + 0.12 * dpr * (before - resting.length), 8 * dpr);
-        beadsDirty = true;
-      }
-
-      // ...and leaves a string of small ones behind it
-      d.trail += d.v * dt;
-      if (d.trail > 14 * dpr) {
-        d.trail = 0;
-        const b = { x: d.x, y: d.y - d.r * 1.8, r: rand(0.9, 2.4) * dpr, tail: 0 };
-        resting.push(b);
-        if (!beadsDirty) drawDrop(beadCtx, b.x, b.y, b.r);
-      }
     }
     sliding = sliding.filter((d) => d.y - d.r < h);
 
-    redrawIn -= dt;
-    if (beadsDirty && redrawIn <= 0) {
-      renderBeads();
-      redrawIn = 0.12;
-    }
-
-    // the outside picture itself is under this canvas (so it can move in
-    // 3D); here we only add what's on the glass
     ctx.clearRect(0, 0, w, h);
 
     // the rain coming down out there, slanting a little in the wind
@@ -304,7 +228,6 @@ export function rain(canvas, background) {
     }
 
     ctx.drawImage(fog, 0, 0);
-    ctx.drawImage(beads, 0, 0);
     for (const d of sliding) drawDrop(ctx, d.x, d.y, d.r, 0.9);
   });
 
