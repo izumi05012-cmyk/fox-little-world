@@ -372,14 +372,21 @@ export function day(canvas) {
 
 // ---------------------------------------------------------------- clear night
 
-export function night(canvas) {
+export function night(canvas, _picture, { sky: skySrc } = {}) {
   let stars = [];
   let meteors = [];
   let nextMeteor = 1.5;
   const moon = document.createElement("canvas");
+  // everything up there is drawn on its own layer, then cut to the sky so
+  // it stays behind the branches (the moon can peek through them)
+  const layer = document.createElement("canvas");
+  const mask = new Image();
+  if (skySrc) mask.src = skySrc;
 
   const { ctx, dpr, resize, size } = setup(canvas, (w, h) => {
-    stars = Array.from({ length: Math.round((w * h) / (2400 * dpr * dpr)) }, () => ({
+    layer.width = w;
+    layer.height = h;
+    stars = Array.from({ length: Math.round((w * h) / (1500 * dpr * dpr)) }, () => ({
       x: rand(0, w),
       y: h * 0.72 * Math.random() ** 1.4, // thicker near the top
       r: rand(0.4, 1.5) * dpr,
@@ -411,16 +418,19 @@ export function night(canvas) {
     resize();
     const { w, h } = size();
     ctx.clearRect(0, 0, w, h);
+    const sky = layer.getContext("2d");
+    sky.globalCompositeOperation = "source-over";
+    sky.clearRect(0, 0, w, h);
 
     for (const s of stars) {
-      ctx.globalAlpha = 0.45 + 0.55 * Math.abs(Math.sin(t * s.speed + s.phase));
-      ctx.fillStyle = "#fffaf0";
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fill();
+      sky.globalAlpha = 0.45 + 0.55 * Math.abs(Math.sin(t * s.speed + s.phase));
+      sky.fillStyle = "#fffaf0";
+      sky.beginPath();
+      sky.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      sky.fill();
     }
-    ctx.globalAlpha = 1;
-    ctx.drawImage(moon, w * 0.76 - moon.width / 2, h * 0.14 - moon.height / 2);
+    sky.globalAlpha = 1;
+    sky.drawImage(moon, w * 0.68 - moon.width / 2, h * 0.2 - moon.height / 2);
 
     // a meteor shower: one every few seconds, sliding down to the left
     nextMeteor -= dt;
@@ -445,17 +455,23 @@ export function night(canvas) {
       const fade = Math.sin(Math.min(1, m.life / m.ttl) * Math.PI);
       const tx = m.x - dx * m.len;
       const ty = m.y - dy * m.len;
-      const grad = ctx.createLinearGradient(m.x, m.y, tx, ty);
+      const grad = sky.createLinearGradient(m.x, m.y, tx, ty);
       grad.addColorStop(0, `rgba(255, 255, 255, ${0.9 * fade})`);
       grad.addColorStop(1, "rgba(255, 255, 255, 0)");
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 1.6 * dpr;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(m.x, m.y);
-      ctx.lineTo(tx, ty);
-      ctx.stroke();
+      sky.strokeStyle = grad;
+      sky.lineWidth = 1.6 * dpr;
+      sky.lineCap = "round";
+      sky.beginPath();
+      sky.moveTo(m.x, m.y);
+      sky.lineTo(tx, ty);
+      sky.stroke();
     }
     meteors = meteors.filter((m) => m.life < m.ttl);
+
+    if (mask.complete && mask.naturalWidth) {
+      sky.globalCompositeOperation = "destination-in";
+      drawCover(sky, mask, w, h);
+    }
+    ctx.drawImage(layer, 0, 0);
   });
 }

@@ -114,7 +114,7 @@ export function depthPhoto(host, pictureSrc, depthSrc, motion, onReady) {
     const target = motion();
     eased.x += (target.x - eased.x) * 0.08;
     eased.y += (target.y - eased.y) * 0.08;
-    gl.uniform2f(uOffset, eased.x * 0.06, eased.y * 0.06);
+    gl.uniform2f(uOffset, eased.x * 0.04, eased.y * 0.04);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     if (!document.hidden) raf = requestAnimationFrame(frame);
   }

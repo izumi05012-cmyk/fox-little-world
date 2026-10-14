@@ -5,10 +5,9 @@ import rainPic from "../assets/window/rain.webp";
 import snowPic from "../assets/window/snow.webp";
 import dayPic from "../assets/window/day.webp";
 import nightPic from "../assets/window/night.webp";
-import rainDepth from "../assets/window/rain-depth.webp";
-import snowDepth from "../assets/window/snow-depth.webp";
-import dayDepth from "../assets/window/day-depth.webp";
-import nightDepth from "../assets/window/night-depth.webp";
+// one view, four weathers: the same depth map and sky mask fit them all
+import depthMap from "../assets/window/depth.webp";
+import skyMask from "../assets/window/sky.webp";
 
 // The view out of the little house's window, behind everything on the page.
 // The outside is a photo with a depth map, so as you scroll or tilt the
@@ -16,10 +15,10 @@ import nightDepth from "../assets/window/night-depth.webp";
 // drops, frost, frame — stays put. Without WebGL the plain photo drifts.
 
 const scenes = {
-  rain: { picture: rainPic, depth: rainDepth, effect: rain, glass: "glass-rain" },
-  snow: { picture: snowPic, depth: snowDepth, effect: snow, glass: "glass-snow" },
-  day: { picture: dayPic, depth: dayDepth, effect: day, glass: "glass-clear" },
-  night: { picture: nightPic, depth: nightDepth, effect: night, glass: "glass-clear" },
+  rain: { picture: rainPic, effect: rain, glass: "glass-rain" },
+  snow: { picture: snowPic, effect: snow, glass: "glass-snow" },
+  day: { picture: dayPic, effect: day, glass: "glass-clear" },
+  night: { picture: nightPic, effect: night, glass: "glass-clear" },
 };
 
 const FADE_MS = 1400;
@@ -32,12 +31,11 @@ function SceneLayer({ scene, leaving, motion }) {
 
   useEffect(() => {
     const { effect } = scenes[scene];
-    return effect(canvas.current, picture.current);
+    return effect(canvas.current, picture.current, { sky: skyMask });
   }, [scene]);
 
   useEffect(() => {
-    const { picture: src, depth: depthSrc } = scenes[scene];
-    const stop = depthPhoto(depth.current, src, depthSrc, motion, () => setHas3d(true));
+    const stop = depthPhoto(depth.current, scenes[scene].picture, depthMap, motion, () => setHas3d(true));
     return stop || undefined;
   }, [scene, motion]);
 
