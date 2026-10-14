@@ -99,7 +99,7 @@ function fingerStroke(img, w, h, thickness) {
   return c;
 }
 
-function runSplash(view, scene) {
+function runSplash(view, scene, onReady) {
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const w = Math.round(view.clientWidth * dpr);
   const h = Math.round(view.clientHeight * dpr);
@@ -119,6 +119,7 @@ function runSplash(view, scene) {
   ready
     .then(([outside, foxImg, heartImg]) => {
       if (stopped) return;
+      onReady();
 
       // the view, sharp, and the same view through fogged glass
       const sharp = canvas(w, h);
@@ -134,14 +135,14 @@ function runSplash(view, scene) {
       sg0.fillRect(0, 0, w, h);
 
       // where things go
-      const artW = Math.min(360 * dpr, w * 0.86);
+      const artW = Math.min(250 * dpr, w * 0.62);
       const artH = (artW * foxImg.naturalHeight) / foxImg.naturalWidth;
       const artX = (w - artW) / 2;
       const artY = h * 0.38 - artH / 2;
-      const thick = 1.3 * dpr;
+      const thick = 1.1 * dpr;
       const foxLines = fingerStroke(foxImg, artW, artH, thick);
       const heartLines = fingerStroke(heartImg, artW, artH, thick);
-      const fontSize = Math.min(52 * dpr, w * 0.12);
+      const fontSize = Math.min(36 * dpr, w * 0.09);
       const signY = artY + artH + fontSize * 1.6;
 
       // signature as a stroke on its own layer
@@ -246,8 +247,11 @@ function runSplash(view, scene) {
   };
 }
 
+const GIVE_UP = 6; // seconds to wait for the pictures before just going in
+
 export default function Splash({ scene = "day" }) {
-  const [stage, setStage] = useState(() => (alreadySeen() ? "gone" : "drawing"));
+  // loading: plain thick fog hiding the page; drawing: the finger at work
+  const [stage, setStage] = useState(() => (alreadySeen() ? "gone" : "loading"));
   const view = useRef(null);
   // the view is chosen once, when the window first fogs up
   const [firstScene] = useState(scene);
@@ -255,12 +259,16 @@ export default function Splash({ scene = "day" }) {
 
   useEffect(() => {
     if (!showing || !view.current) return undefined;
-    return runSplash(view.current, firstScene);
+    return runSplash(view.current, firstScene, () =>
+      setStage((current) => (current === "loading" ? "drawing" : current))
+    );
   }, [showing, firstScene]);
 
+  // the drawing gets its full time, counted from when it actually starts
   useEffect(() => {
-    if (stage !== "drawing") return undefined;
-    const timer = setTimeout(() => setStage("leaving"), HOLD * 1000);
+    if (stage !== "drawing" && stage !== "loading") return undefined;
+    const wait = stage === "drawing" ? HOLD : GIVE_UP;
+    const timer = setTimeout(() => setStage("leaving"), wait * 1000);
     return () => clearTimeout(timer);
   }, [stage]);
 

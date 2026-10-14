@@ -1029,7 +1029,8 @@ button:focus-visible, input:focus-visible {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(238, 236, 240, .9);
+  /* solid fog until the drawing is ready, so the page never peeks through */
+  background: #e9e7ec;
   cursor: pointer;
   transition: opacity 1.2s ease;
 }
