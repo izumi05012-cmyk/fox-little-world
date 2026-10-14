@@ -1,5 +1,5 @@
 import React from "react";
-import paw from "./assets/paw.svg";
+import HomeNav from "./HomeNav";
 import foxHead from "./assets/fox-head.svg";
 
 const chats = [
@@ -27,7 +27,7 @@ const chats = [
   },
 ];
 
-export default function ChatList({ onBack, onOpenChat }) {
+export default function ChatList({ onBack, onOpenChat, onNavigate }) {
   return (
     <main className="chat-list-page">
       <header className="chat-list-header">
@@ -81,20 +81,7 @@ export default function ChatList({ onBack, onOpenChat }) {
         <p>somewhere between today and tomorrow,<br />we are still here.</p>
       </section>
 
-      <nav className="home-nav">
-        <button onClick={onBack} aria-label="首页">
-          <img src={paw} alt="" />
-        </button>
-        <button className="active" aria-label="聊天">
-          <img src={paw} alt="" />
-        </button>
-        <button aria-label="日记">
-          <img src={paw} alt="" />
-        </button>
-        <button aria-label="更多">
-          <img src={paw} alt="" />
-        </button>
-      </nav>
+      <HomeNav active="chat-list" onOpen={onNavigate} />
     </main>
   );
 }
