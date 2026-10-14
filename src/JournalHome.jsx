@@ -209,7 +209,7 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
         ))}
       </nav>
 
-      <p className="journal-sign">嗨老公～</p>
+      <p className="journal-sign">Darling</p>
 
       <HomeNav active="home" onOpen={onOpen} />
     </main>

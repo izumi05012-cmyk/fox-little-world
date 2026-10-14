@@ -1032,7 +1032,7 @@ button:focus-visible, input:focus-visible {
   /* solid fog until the drawing is ready, so the page never peeks through */
   background: #e9e7ec;
   cursor: pointer;
-  transition: opacity 1.2s ease;
+  transition: opacity 1.6s ease;
 }
 
 .splash.is-leaving {
@@ -1087,7 +1087,7 @@ button:focus-visible, input:focus-visible {
   letter-spacing: .3em;
 }
 
-.journal-hand, .journal-line, .journal-date, .journal-sign {
+.journal-hand, .journal-line, .journal-date {
   font-family: var(--hand);
   font-weight: 400;
 }
@@ -1273,7 +1273,9 @@ button:focus-visible, input:focus-visible {
   text-shadow: 0 0 10px rgba(255, 255, 255, .9), 0 0 2px rgba(255, 255, 255, .9);
   margin: 26px 8px 0 0;
   color: var(--brick);
-  font-size: 18px;
+  /* the same signature hand as the opening */
+  font-family: "La Belle Aurore", var(--hand);
+  font-size: 26px;
   text-align: right;
   transform: rotate(-4deg);
 }

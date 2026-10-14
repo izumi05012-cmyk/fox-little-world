@@ -8,6 +8,7 @@ import JournalHome from "./JournalHome";
 import "@fontsource/noto-serif-sc/300.css";
 import "@fontsource/noto-serif-sc/400.css";
 import "@fontsource/long-cang/400.css";
+import "@fontsource/la-belle-aurore/400.css";
 
 // Day 1 is the day we got together.
 const TOGETHER_SINCE = new Date(2026, 9, 3);

@@ -8,22 +8,25 @@ import rainPic from "./assets/window/rain.webp";
 import snowPic from "./assets/window/snow.webp";
 import nightPic from "./assets/window/night.webp";
 
-// Opening screen: breath on a cold window. The cold glass is lightly
-// misted; a breath blooms on it in a soft white patch, and a fingertip
-// draws the two little foxes, a heart and our names into the mist — the lines are wiped clear, so the view outside shows through them
-// sharp, and a couple of them run. Then the fog lifts into home.
-// Shown once per browser session; a tap skips it.
+// Opening screen: a cold window fogged with condensation — uneven mist
+// over the whole glass, tiny beads, a few old runs — and a fingertip draws
+// the two little foxes, a heart and our names into it. The finger lines
+// are wiped clear, so the view outside shows through them sharp. Then the
+// mist slowly thins and the page comes through. Shown once per browser
+// session; a tap skips it.
 const SEEN_KEY = "fox-splash-seen";
 const pictures = { day: dayPic, rain: rainPic, snow: snowPic, night: nightPic };
 
-const BREATH_AT = 0.35; // "hah—": a patch of breath blooms on the glass
-const BREATH_TIME = 0.9;
-const FOXES_AT = 1.2;
+const FOXES_AT = 0.6;
 const FOXES_TIME = 1.4;
-const HEART_AT = 2.7;
-const SIGN_AT = 3.1;
+const HEART_AT = 2.1;
+const SIGN_AT = 2.5;
 const SIGN_TIME = 1.6;
-const HOLD = SIGN_AT + SIGN_TIME + 1.6;
+const LIFT_AT = SIGN_AT + SIGN_TIME + 1.0; // the mist starts to thin
+const LIFT_TIME = 1.8;
+// hand over to the page while the mist is still thinning, so it comes
+// through gradually (the CSS fade overlaps the lift)
+const HOLD = LIFT_AT + 0.5;
 const SIGNATURE = "Wangshu & Xi";
 
 function alreadySeen() {
@@ -101,6 +104,131 @@ function fingerStroke(img, w, h, thickness) {
   return c;
 }
 
+
+const rand = (a, b) => a + Math.random() * (b - a);
+
+// Soft, blotchy noise as an alpha mask: random cells, scaled up smoothly.
+function blotches(w, h, cell, lo, hi) {
+  const sw = Math.max(2, Math.round(w / cell));
+  const sh = Math.max(2, Math.round(h / cell));
+  const small = canvas(sw, sh);
+  const g = small.getContext("2d");
+  const data = g.createImageData(sw, sh);
+  for (let i = 0; i < sw * sh; i += 1) {
+    data.data[i * 4] = data.data[i * 4 + 1] = data.data[i * 4 + 2] = 255;
+    data.data[i * 4 + 3] = Math.round(255 * rand(lo, hi));
+  }
+  g.putImageData(data, 0, 0);
+  const out = canvas(w, h);
+  const o = out.getContext("2d");
+  o.imageSmoothingQuality = "high";
+  o.drawImage(small, 0, 0, w, h);
+  return out;
+}
+
+// Everything that makes the glass look fogged rather than just blurred:
+// the mist's colour (the view itself, softened and lifted), how thick it
+// is from place to place, a fine grain, condensation beads, old runs.
+function condensation(sharp, w, h, dpr) {
+  // colour: the outside, defocused, with light bleeding through
+  const color = softened(sharp, w, h, 26);
+  const cg = color.getContext("2d");
+  cg.fillStyle = "rgba(244, 242, 247, .42)";
+  cg.fillRect(0, 0, w, h);
+
+  // thickness: two scales of blotches multiplied, a little heavier low
+  // down where condensation gathers; drawn larger than the screen so it
+  // can drift slowly
+  const dw = Math.round(w * 1.2);
+  const dh = Math.round(h * 1.2);
+  const density = blotches(dw, dh, 70 * dpr, 0.55, 1);
+  const dg = density.getContext("2d");
+  dg.globalCompositeOperation = "destination-in";
+  dg.drawImage(blotches(dw, dh, 18 * dpr, 0.78, 1), 0, 0);
+  const lean = dg.createLinearGradient(0, 0, 0, dh);
+  lean.addColorStop(0, "rgba(255,255,255,.8)");
+  lean.addColorStop(1, "rgba(255,255,255,1)");
+  dg.fillStyle = lean;
+  dg.fillRect(0, 0, dw, dh);
+
+  // grain: the mist is made of specks, not a flat colour
+  const grain = canvas(w, h);
+  const gg = grain.getContext("2d");
+  for (let i = 0; i < (w * h) / (10 * dpr * dpr); i += 1) {
+    const light = Math.random() < 0.7;
+    gg.fillStyle = light ? `rgba(255,255,255,${rand(0.05, 0.2)})` : `rgba(40,40,52,${rand(0.03, 0.08)})`;
+    const r = rand(0.4, 1.1) * dpr;
+    gg.fillRect(rand(0, w), rand(0, h), r, r);
+  }
+
+  // condensation beads: thousands of tiny lenses, a few bigger ones
+  const beads = canvas(w, h);
+  const bg = beads.getContext("2d");
+  const bead = (x, y, r) => {
+    if (r > 1.6 * dpr) {
+      bg.save();
+      bg.beginPath();
+      bg.arc(x, y, r, 0, Math.PI * 2);
+      bg.clip();
+      bg.translate(x, y);
+      bg.scale(-1, -1);
+      const span = r * 6;
+      bg.drawImage(sharp, x - span / 2, y - span / 2, span, span, -r * 1.05, -r * 1.05, r * 2.1, r * 2.1);
+      bg.restore();
+      bg.beginPath();
+      bg.arc(x, y, r, 0, Math.PI * 2);
+      bg.lineWidth = Math.max(0.5, r * 0.14);
+      bg.strokeStyle = "rgba(30, 32, 44, .3)";
+      bg.stroke();
+    } else {
+      bg.fillStyle = "rgba(36, 38, 50, .14)";
+      bg.beginPath();
+      bg.arc(x, y, r, 0, Math.PI * 2);
+      bg.fill();
+    }
+    bg.fillStyle = "rgba(255, 255, 255, .7)";
+    bg.beginPath();
+    bg.arc(x - r * 0.3, y - r * 0.35, Math.max(0.35, r * 0.28), 0, Math.PI * 2);
+    bg.fill();
+  };
+  for (let i = 0; i < (w * h) / (150 * dpr * dpr); i += 1) {
+    bead(rand(0, w), rand(0, h), rand(0.45, 1.5) * dpr);
+  }
+  for (let i = 0; i < (w * h) / (4200 * dpr * dpr); i += 1) {
+    bead(rand(0, w), rand(0, h), rand(1.7, 3.4) * dpr);
+  }
+
+  // old runs: thin wavy lines where drops slid down before, mist wiped
+  const runs = canvas(w, h);
+  const rg = runs.getContext("2d");
+  rg.lineCap = "round";
+  rg.strokeStyle = rg.fillStyle = "#000";
+  // short, wandering, half fogged over again, a bead left at the end
+  for (let i = 0; i < 5; i += 1) {
+    let x = rand(0.04, 0.96) * w;
+    let y = rand(0, 0.75) * h;
+    const top = y;
+    const end = y + rand(0.06, 0.24) * h;
+    const width = rand(1.2, 2.2) * dpr;
+    while (y < end) {
+      const nx = x + rand(-1.4, 1.4) * dpr;
+      const ny = y + rand(5, 12) * dpr;
+      rg.lineWidth = width * (0.45 + (0.55 * (y - top)) / (end - top)); // thins toward the top
+      rg.beginPath();
+      rg.moveTo(x, y);
+      rg.lineTo(nx, ny);
+      rg.stroke();
+      x = nx;
+      y = ny;
+    }
+    rg.beginPath();
+    rg.arc(x, y, width * 1.1, 0, Math.PI * 2);
+    rg.fill();
+  }
+
+  return { color, density, grain, beads, runs };
+}
+
 function runSplash(view, scene, onReady) {
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const w = Math.round(view.clientWidth * dpr);
@@ -126,15 +254,26 @@ function runSplash(view, scene, onReady) {
       // the view, sharp, and the same view through fogged glass
       const sharp = canvas(w, h);
       cover(sharp.getContext("2d"), outside, w, h);
-      const fogBase = softened(sharp, w, h, 28);
-      const fb = fogBase.getContext("2d");
-      fb.fillStyle = "rgba(240, 238, 242, .5)";
-      fb.fillRect(0, 0, w, h);
-      // through a wiped line the glass is clear, so it reads darker than
-      // the bright fog around it
-      const sg0 = sharp.getContext("2d");
-      sg0.fillStyle = "rgba(20, 22, 34, .22)";
-      sg0.fillRect(0, 0, w, h);
+      const fog = condensation(sharp, w, h, dpr);
+      // through a wiped line the glass is clear, so it reads a touch
+      // darker than the bright mist around it
+      const clear = canvas(w, h);
+      const cl = clear.getContext("2d");
+      cl.drawImage(sharp, 0, 0);
+      cl.fillStyle = "rgba(20, 22, 34, .14)";
+      cl.fillRect(0, 0, w, h);
+
+      // now and then a bead gets heavy and slides, clearing a line
+      const sliders = Array.from({ length: 3 }, (_, i) => ({
+        at: 0.8 + i * 1.4 + rand(0, 0.8),
+        // off to the sides, so none runs through the drawing
+        x: (i % 2 ? rand(0.78, 0.94) : rand(0.06, 0.22)) * w,
+        y: rand(0.05, 0.45) * h,
+        // a real bead runs a little way, slows, and stops
+        reach: rand(0.12, 0.32) * h,
+        v: rand(60, 110) * dpr,
+        r: rand(2.4, 3.6) * dpr,
+      }));
 
       // where things go
       const artW = Math.min(250 * dpr, w * 0.62);
@@ -226,40 +365,65 @@ function runSplash(view, scene, onReady) {
 
         // fog with the wiped lines taken out of it, over the clear view;
         // the edges of a finger line are soft, so soften the mask a little
+        // sliding beads wipe their own lines into the cleared mask
+        for (const d of sliders) {
+          const run = t - d.at;
+          if (run <= 0) continue;
+          d.cy = d.y + d.reach * (1 - Math.exp((-run * d.v) / d.reach));
+          d.cx = d.x + Math.sin(run * 1.7) * 2 * dpr;
+          wp.lineWidth = d.r * 1.1;
+          wp.beginPath();
+          wp.moveTo(d.x, d.y);
+          wp.lineTo(d.cx, d.cy);
+          wp.stroke();
+        }
+
+        // the mist: its colour, thinned to its uneven thickness (drifting
+        // very slowly), with old runs and everything wiped taken out
         fr.globalCompositeOperation = "source-over";
         fr.clearRect(0, 0, w, h);
-        fr.drawImage(fogBase, 0, 0);
-        // the breath: a soft white patch that blooms out from the middle
-        const breathP = ease((t - BREATH_AT) / BREATH_TIME);
-        if (breathP > 0) {
-          const cx = w / 2;
-          const cy = (artY + signY) / 2;
-          const r = Math.max(w, signY - artY) * 0.62 * breathP;
-          const g = fr.createRadialGradient(cx, cy, 0, cx, cy, r);
-          g.addColorStop(0, "rgba(250, 249, 252, .78)");
-          g.addColorStop(0.55, "rgba(250, 249, 252, .6)");
-          g.addColorStop(1, "rgba(250, 249, 252, 0)");
-          fr.fillStyle = g;
-          fr.save();
-          fr.translate(cx, cy);
-          fr.scale(1, 0.72); // a breath spreads wider than it is tall
-          fr.translate(-cx, -cy);
-          fr.fillRect(0, 0, w, h);
-          fr.restore();
-        }
+        fr.drawImage(fog.color, 0, 0);
+        fr.globalCompositeOperation = "destination-in";
+        fr.drawImage(fog.density, -w * 0.1 + Math.sin(t * 0.09) * w * 0.05, -h * 0.1 + t * h * 0.003);
         fr.globalCompositeOperation = "destination-out";
+        fr.globalAlpha = 0.45; // fogged over again, partly
+        fr.drawImage(fog.runs, 0, 0);
+        fr.globalAlpha = 1;
         fr.drawImage(softened(wiped, w, h, 2, maskSmall, maskSoft), 0, 0);
 
-        ctx.drawImage(sharp, 0, 0);
+        // and at the end it thins away
+        const mist = 1 - ease((t - LIFT_AT) / LIFT_TIME);
+
+        ctx.globalAlpha = 1;
+        ctx.drawImage(clear, 0, 0);
+        ctx.globalAlpha = mist;
         ctx.drawImage(frame, 0, 0);
+        ctx.drawImage(fog.grain, 0, 0);
+        ctx.drawImage(fog.beads, 0, 0);
+        ctx.globalAlpha = 1;
+        for (const d of sliders) {
+          if (d.cy === undefined || d.cy > h + d.r) continue;
+          ctx.save();
+          ctx.beginPath();
+          ctx.ellipse(d.cx, d.cy, d.r, d.r * 1.2, 0, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.translate(d.cx, d.cy);
+          ctx.scale(-1, -1);
+          ctx.drawImage(sharp, d.cx - d.r * 3, d.cy - d.r * 3, d.r * 6, d.r * 6, -d.r * 1.1, -d.r * 1.3, d.r * 2.2, d.r * 2.6);
+          ctx.restore();
+          ctx.fillStyle = "rgba(255,255,255,.8)";
+          ctx.beginPath();
+          ctx.arc(d.cx - d.r * 0.3, d.cy - d.r * 0.4, d.r * 0.25, 0, Math.PI * 2);
+          ctx.fill();
+        }
         // fade in from the plain loading fog so there's no jump
-        const settle = 1 - ease(t / 0.5);
+        const settle = 1 - ease(t / 0.6);
         if (settle > 0) {
           ctx.fillStyle = `rgba(233, 231, 236, ${settle})`;
           ctx.fillRect(0, 0, w, h);
         }
 
-        if (!still && t < HOLD + 1.5) raf = requestAnimationFrame(draw);
+        if (!still && t < LIFT_AT + LIFT_TIME + 0.5) raf = requestAnimationFrame(draw);
       }
       raf = requestAnimationFrame(draw);
     })
@@ -305,7 +469,7 @@ export default function Splash({ scene = "day" }) {
     } catch {
       // private mode: it just plays again next time
     }
-    const timer = setTimeout(() => setStage("gone"), 1200);
+    const timer = setTimeout(() => setStage("gone"), 1600);
     return () => clearTimeout(timer);
   }, [stage]);
 
