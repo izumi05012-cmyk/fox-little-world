@@ -1,6 +1,8 @@
 // A photo with a depth map, drawn in WebGL so it reads as a real 3D view:
 // as the viewer moves (tilt, finger, scroll), near things shift more than
 // far ones. motion() returns the current {x, y} in -0.5..0.5.
+// It makes its own <canvas> inside `host` (a lost WebGL context can't be
+// revived, so a canvas is never reused) and removes it on stop().
 // Returns stop(), or null when WebGL isn't available (caller keeps the <img>).
 
 const VERTEX = `
@@ -59,17 +61,22 @@ function texture(gl, img) {
   return tex;
 }
 
-export function depthPhoto(canvas, pictureSrc, depthSrc, motion, onReady) {
+export function depthPhoto(host, pictureSrc, depthSrc, motion, onReady) {
+  const canvas = document.createElement("canvas");
   const gl = canvas.getContext("webgl", { antialias: false, alpha: false });
   if (!gl) return null;
   const vs = compile(gl, gl.VERTEX_SHADER, VERTEX);
   const fs = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT);
   if (!vs || !fs) return null;
+  host.appendChild(canvas);
   const program = gl.createProgram();
   gl.attachShader(program, vs);
   gl.attachShader(program, fs);
   gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return null;
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    canvas.remove();
+    return null;
+  }
   gl.useProgram(program);
 
   const buffer = gl.createBuffer();
@@ -138,5 +145,6 @@ export function depthPhoto(canvas, pictureSrc, depthSrc, motion, onReady) {
     cancelAnimationFrame(raf);
     document.removeEventListener("visibilitychange", onVisibility);
     gl.getExtension("WEBGL_lose_context")?.loseContext();
+    canvas.remove();
   };
 }

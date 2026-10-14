@@ -44,7 +44,7 @@ function SceneLayer({ scene, leaving, motion }) {
   return (
     <div className={`window-scene ${scenes[scene].glass} ${leaving ? "is-leaving" : ""} ${has3d ? "has-3d" : ""}`}>
       <img ref={picture} className="window-outside" src={scenes[scene].picture} alt="" />
-      <canvas ref={depth} className="window-depth" />
+      <div ref={depth} className="window-depth" />
       <canvas ref={canvas} className="window-glass" />
       {scene === "snow" && (
         <>

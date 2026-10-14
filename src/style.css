@@ -1419,6 +1419,12 @@ button:focus-visible, input:focus-visible {
   transition: opacity .6s ease;
 }
 
+.window-depth canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 /* once the 3D photo is drawing, it replaces the flat one */
 .has-3d .window-depth { opacity: 1; }
 .has-3d .window-outside { visibility: hidden; }
