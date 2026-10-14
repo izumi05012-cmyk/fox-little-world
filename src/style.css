@@ -1088,31 +1088,19 @@ button:focus-visible, input:focus-visible {
   to { opacity: 1; transform: none; }
 }
 
-.splash-names {
-  margin: 10px 0 0;
+/* our names, signed in the mist: revealed left to right like a pen moving */
+.splash-sign {
+  margin: 14px 0 0;
   color: var(--ink);
-  font-family: var(--hand);
-  font-size: clamp(46px, 15vw, 72px);
-  font-weight: 400;
-  letter-spacing: .1em;
-  line-height: 1.2;
+  font-family: "La Belle Aurore", var(--hand);
+  font-size: clamp(38px, 12vw, 56px);
+  line-height: 1.3;
+  white-space: nowrap;
+  clip-path: inset(-30% 100% -30% 0);
+  animation: splash-sign var(--time) cubic-bezier(.45, .05, .55, .95) var(--start) forwards;
 }
 
-/* each character appears like a fingertip drawn through the mist */
-.splash-names span {
-  display: inline-block;
-  opacity: 0;
-  filter: blur(6px);
-  transform: translateY(4px);
-  animation: splash-ink .9s ease-out var(--start) forwards;
-}
-
-.splash-names .splash-heart {
-  margin: 0 .1em;
-  color: var(--brick);
-  font-size: .5em;
-  vertical-align: middle;
-}
+@keyframes splash-sign { to { clip-path: inset(-30% -10% -30% 0); } }
 
 .splash-rule {
   display: block;
@@ -1139,7 +1127,7 @@ button:focus-visible, input:focus-visible {
 @keyframes splash-rule { to { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .splash-foxes, .splash-love, .splash-names span, .splash-rule, .splash-since {
+  .splash-foxes, .splash-love, .splash-sign, .splash-rule, .splash-since {
     animation-duration: .01s;
     animation-delay: 0s;
   }
