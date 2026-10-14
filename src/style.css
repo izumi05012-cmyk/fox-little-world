@@ -1048,18 +1048,48 @@ button:focus-visible, input:focus-visible {
 
 .splash-inner { text-align: center; }
 
-.splash-eyebrow {
-  margin: 0;
-  color: var(--muted);
-  font-family: var(--serif);
-  font-size: 9px;
-  letter-spacing: .36em;
+.splash-art {
+  position: relative;
+  width: min(260px, 66vw);
+  margin: 0 auto;
+}
+
+.splash-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* the foxes surface on the mist, then give each other a little nuzzle */
+.splash-foxes {
   opacity: 0;
-  animation: splash-fade 1s ease-out .1s forwards;
+  animation:
+    splash-ink 1s ease-out .2s forwards,
+    splash-nuzzle .7s ease-in-out 1.2s;
+}
+
+/* and a heart pops up over them */
+.splash-love {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform-origin: 51% 13%;
+  animation: splash-pop .6s cubic-bezier(.3, 1.7, .5, 1) 1.6s forwards;
+}
+
+@keyframes splash-nuzzle {
+  0%, 100% { transform: none; }
+  30% { transform: rotate(-2deg) translateY(-2px); }
+  60% { transform: rotate(1.5deg); }
+}
+
+@keyframes splash-pop {
+  from { opacity: 0; transform: scale(.3) translateY(10px); }
+  to { opacity: 1; transform: none; }
 }
 
 .splash-names {
-  margin: 22px 0 0;
+  margin: 10px 0 0;
   color: var(--ink);
   font-family: var(--hand);
   font-size: clamp(46px, 15vw, 72px);
@@ -1109,7 +1139,7 @@ button:focus-visible, input:focus-visible {
 @keyframes splash-rule { to { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .splash-eyebrow, .splash-names span, .splash-rule, .splash-since {
+  .splash-foxes, .splash-love, .splash-names span, .splash-rule, .splash-since {
     animation-duration: .01s;
     animation-delay: 0s;
   }
