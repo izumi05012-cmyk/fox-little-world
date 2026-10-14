@@ -8,18 +8,20 @@ import rainPic from "./assets/window/rain.webp";
 import snowPic from "./assets/window/snow.webp";
 import nightPic from "./assets/window/night.webp";
 
-// Opening screen: breath on a cold window. The glass is fogged over and a
-// fingertip draws the two little foxes, a heart and our names into the
-// mist — the lines are wiped clear, so the view outside shows through them
+// Opening screen: breath on a cold window. The cold glass is lightly
+// misted; a breath blooms on it in a soft white patch, and a fingertip
+// draws the two little foxes, a heart and our names into the mist — the lines are wiped clear, so the view outside shows through them
 // sharp, and a couple of them run. Then the fog lifts into home.
 // Shown once per browser session; a tap skips it.
 const SEEN_KEY = "fox-splash-seen";
 const pictures = { day: dayPic, rain: rainPic, snow: snowPic, night: nightPic };
 
-const FOXES_AT = 0.3;
+const BREATH_AT = 0.35; // "hah—": a patch of breath blooms on the glass
+const BREATH_TIME = 0.9;
+const FOXES_AT = 1.2;
 const FOXES_TIME = 1.4;
-const HEART_AT = 1.8;
-const SIGN_AT = 2.2;
+const HEART_AT = 2.7;
+const SIGN_AT = 3.1;
 const SIGN_TIME = 1.6;
 const HOLD = SIGN_AT + SIGN_TIME + 1.6;
 const SIGNATURE = "Wangshu & Xi";
@@ -99,7 +101,7 @@ function fingerStroke(img, w, h, thickness) {
   return c;
 }
 
-function runSplash(view, scene) {
+function runSplash(view, scene, onReady) {
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const w = Math.round(view.clientWidth * dpr);
   const h = Math.round(view.clientHeight * dpr);
@@ -119,13 +121,14 @@ function runSplash(view, scene) {
   ready
     .then(([outside, foxImg, heartImg]) => {
       if (stopped) return;
+      onReady();
 
       // the view, sharp, and the same view through fogged glass
       const sharp = canvas(w, h);
       cover(sharp.getContext("2d"), outside, w, h);
       const fogBase = softened(sharp, w, h, 28);
       const fb = fogBase.getContext("2d");
-      fb.fillStyle = "rgba(240, 238, 242, .7)";
+      fb.fillStyle = "rgba(240, 238, 242, .5)";
       fb.fillRect(0, 0, w, h);
       // through a wiped line the glass is clear, so it reads darker than
       // the bright fog around it
@@ -134,14 +137,14 @@ function runSplash(view, scene) {
       sg0.fillRect(0, 0, w, h);
 
       // where things go
-      const artW = Math.min(360 * dpr, w * 0.86);
+      const artW = Math.min(250 * dpr, w * 0.62);
       const artH = (artW * foxImg.naturalHeight) / foxImg.naturalWidth;
       const artX = (w - artW) / 2;
       const artY = h * 0.38 - artH / 2;
-      const thick = 1.3 * dpr;
+      const thick = 1.1 * dpr;
       const foxLines = fingerStroke(foxImg, artW, artH, thick);
       const heartLines = fingerStroke(heartImg, artW, artH, thick);
-      const fontSize = Math.min(52 * dpr, w * 0.12);
+      const fontSize = Math.min(36 * dpr, w * 0.09);
       const signY = artY + artH + fontSize * 1.6;
 
       // signature as a stroke on its own layer
@@ -226,11 +229,35 @@ function runSplash(view, scene) {
         fr.globalCompositeOperation = "source-over";
         fr.clearRect(0, 0, w, h);
         fr.drawImage(fogBase, 0, 0);
+        // the breath: a soft white patch that blooms out from the middle
+        const breathP = ease((t - BREATH_AT) / BREATH_TIME);
+        if (breathP > 0) {
+          const cx = w / 2;
+          const cy = (artY + signY) / 2;
+          const r = Math.max(w, signY - artY) * 0.62 * breathP;
+          const g = fr.createRadialGradient(cx, cy, 0, cx, cy, r);
+          g.addColorStop(0, "rgba(250, 249, 252, .78)");
+          g.addColorStop(0.55, "rgba(250, 249, 252, .6)");
+          g.addColorStop(1, "rgba(250, 249, 252, 0)");
+          fr.fillStyle = g;
+          fr.save();
+          fr.translate(cx, cy);
+          fr.scale(1, 0.72); // a breath spreads wider than it is tall
+          fr.translate(-cx, -cy);
+          fr.fillRect(0, 0, w, h);
+          fr.restore();
+        }
         fr.globalCompositeOperation = "destination-out";
         fr.drawImage(softened(wiped, w, h, 2, maskSmall, maskSoft), 0, 0);
 
         ctx.drawImage(sharp, 0, 0);
         ctx.drawImage(frame, 0, 0);
+        // fade in from the plain loading fog so there's no jump
+        const settle = 1 - ease(t / 0.5);
+        if (settle > 0) {
+          ctx.fillStyle = `rgba(233, 231, 236, ${settle})`;
+          ctx.fillRect(0, 0, w, h);
+        }
 
         if (!still && t < HOLD + 1.5) raf = requestAnimationFrame(draw);
       }
@@ -246,8 +273,11 @@ function runSplash(view, scene) {
   };
 }
 
+const GIVE_UP = 6; // seconds to wait for the pictures before just going in
+
 export default function Splash({ scene = "day" }) {
-  const [stage, setStage] = useState(() => (alreadySeen() ? "gone" : "drawing"));
+  // loading: plain thick fog hiding the page; drawing: the finger at work
+  const [stage, setStage] = useState(() => (alreadySeen() ? "gone" : "loading"));
   const view = useRef(null);
   // the view is chosen once, when the window first fogs up
   const [firstScene] = useState(scene);
@@ -255,12 +285,16 @@ export default function Splash({ scene = "day" }) {
 
   useEffect(() => {
     if (!showing || !view.current) return undefined;
-    return runSplash(view.current, firstScene);
+    return runSplash(view.current, firstScene, () =>
+      setStage((current) => (current === "loading" ? "drawing" : current))
+    );
   }, [showing, firstScene]);
 
+  // the drawing gets its full time, counted from when it actually starts
   useEffect(() => {
-    if (stage !== "drawing") return undefined;
-    const timer = setTimeout(() => setStage("leaving"), HOLD * 1000);
+    if (stage !== "drawing" && stage !== "loading") return undefined;
+    const wait = stage === "drawing" ? HOLD : GIVE_UP;
+    const timer = setTimeout(() => setStage("leaving"), wait * 1000);
     return () => clearTimeout(timer);
   }, [stage]);
 
