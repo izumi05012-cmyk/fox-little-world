@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import HomeNav from "./HomeNav";
+import WindowView from "./window/WindowView";
+import { choices, clearSky, loadPref, realWeather, savePref } from "./window/weather";
 import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
 // Default pictures until 曦曦 puts her own in — public domain, from The Met's
 // Open Access collection: Shibata Zeshin, Fox by Mystic Fire; William
@@ -83,6 +85,26 @@ function Polaroid({ item, src, custom, onOpen, onPick, onReset }) {
 
 export default function JournalHome({ today, dayCount, next, onOpen }) {
   const [photos, setPhotos] = useState({});
+  const [pref, setPref] = useState(loadPref);
+  const [outside, setOutside] = useState(() => clearSky());
+
+  useEffect(() => {
+    if (pref !== "auto") return undefined;
+    let alive = true;
+    realWeather().then((found) => {
+      if (alive) setOutside(found);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [pref]);
+
+  const scene = pref === "auto" ? outside : pref === "sun" ? clearSky() : pref;
+
+  function choose(next) {
+    setPref(next);
+    savePref(next);
+  }
 
   useEffect(() => {
     let alive = true;
@@ -109,9 +131,7 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
 
   return (
     <main className="journal">
-      <div className="journal-glow" aria-hidden="true">
-        <i /><i /><i /><i />
-      </div>
+      <WindowView scene={scene} />
 
       <header className="glass journal-today">
         <p className="journal-label">TODAY</p>
@@ -125,6 +145,20 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
           {next && next.days === 0 && <> · 今天是{next.label}</>}
         </p>
         <p className="journal-line">今天也有一点想你。</p>
+        <div className="journal-weather" role="radiogroup" aria-label="窗外的天气">
+          <span>窗外</span>
+          {choices.map((choice) => (
+            <button
+              key={choice.id}
+              role="radio"
+              aria-checked={pref === choice.id}
+              className={pref === choice.id ? "active" : ""}
+              onClick={() => choose(choice.id)}
+            >
+              {choice.label}
+            </button>
+          ))}
+        </div>
       </header>
 
       <section className="journal-wall">
