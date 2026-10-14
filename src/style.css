@@ -1023,6 +1023,8 @@ button:focus-visible, input:focus-visible {
    OPENING SPLASH
    ========================================================= */
 
+/* the window, fogged over; our names are written in the mist, then the
+   glass clears and the view and the page come through */
 .splash {
   position: fixed;
   inset: 0;
@@ -1030,13 +1032,17 @@ button:focus-visible, input:focus-visible {
   display: grid;
   place-items: center;
   padding: 24px;
-  background: var(--paper);
+  background: rgba(244, 240, 240, .5);
+  -webkit-backdrop-filter: blur(26px) saturate(1.1);
+  backdrop-filter: blur(26px) saturate(1.1);
   cursor: pointer;
-  transition: opacity .7s ease;
+  transition: opacity 1.2s ease, backdrop-filter 1.2s ease, -webkit-backdrop-filter 1.2s ease;
 }
 
 .splash.is-leaving {
   opacity: 0;
+  -webkit-backdrop-filter: blur(0) saturate(1);
+  backdrop-filter: blur(0) saturate(1);
   pointer-events: none;
 }
 
@@ -1045,7 +1051,7 @@ button:focus-visible, input:focus-visible {
 .splash-eyebrow {
   margin: 0;
   color: var(--muted);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+  font-family: var(--serif);
   font-size: 9px;
   letter-spacing: .36em;
   opacity: 0;
@@ -1054,13 +1060,15 @@ button:focus-visible, input:focus-visible {
 
 .splash-names {
   margin: 22px 0 0;
-  font-size: clamp(40px, 13vw, 64px);
+  color: var(--ink);
+  font-family: var(--hand);
+  font-size: clamp(46px, 15vw, 72px);
   font-weight: 400;
-  letter-spacing: .12em;
+  letter-spacing: .1em;
   line-height: 1.2;
 }
 
-/* each character settles in like ink soaking into paper */
+/* each character appears like a fingertip drawn through the mist */
 .splash-names span {
   display: inline-block;
   opacity: 0;
@@ -1089,7 +1097,7 @@ button:focus-visible, input:focus-visible {
 .splash-since {
   margin: 14px 0 0;
   color: var(--muted);
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+  font-family: var(--serif);
   font-size: 10px;
   letter-spacing: .3em;
   opacity: 0;

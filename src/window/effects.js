@@ -70,6 +70,7 @@ export function rain(canvas, background) {
   let resting = [];
   let sliding = [];
   let columns = []; // where water has run before: drops line up along them
+  let streaks = []; // the rain itself, falling outside, out of focus
   let beadsDirty = true;
   let spawnIn = 0;
   let redrawIn = 0;
@@ -83,14 +84,15 @@ export function rain(canvas, background) {
     const f = fog.getContext("2d");
     f.fillStyle = "rgba(200, 210, 226, .08)";
     f.fillRect(0, 0, w, h);
-    columns = Array.from({ length: Math.max(5, Math.round(w / (30 * dpr))) }, () => ({
+    columns = Array.from({ length: Math.max(3, Math.round(w / (95 * dpr))) }, () => ({
       x: rand(0, w),
       amp: rand(2, 9) * dpr,
       freq: rand(0.01, 0.03) / dpr,
       phase: rand(0, Math.PI * 2),
     }));
+    streaks = Array.from({ length: Math.round(w / (3 * dpr)) }, () => newStreak(w, h, true));
     resting = [];
-    const count = Math.round((w * h) / (520 * dpr * dpr));
+    const count = Math.round((w * h) / (3200 * dpr * dpr));
     for (let i = 0; i < count; i += 1) resting.push(newBead(w, h));
     sliding = [];
     beadsDirty = true;
@@ -120,6 +122,18 @@ export function rain(canvas, background) {
     }
     const big = Math.random() < 0.14;
     return { x: rand(0, w), y, r: (big ? rand(2.8, 6.5) : rand(0.6, 2)) * dpr, tail: 0 };
+  }
+
+  function newStreak(w, h, anywhere = false) {
+    const near = Math.random() < 0.25; // nearer rain: longer, faster, fainter
+    return {
+      x: rand(-0.1, 1.1) * w,
+      y: anywhere ? rand(0, h) : rand(-0.3, 0) * h,
+      len: (near ? rand(60, 110) : rand(18, 40)) * dpr,
+      v: (near ? rand(900, 1200) : rand(500, 750)) * dpr,
+      alpha: near ? rand(0.06, 0.12) : rand(0.1, 0.22),
+      width: (near ? 1.6 : 0.8) * dpr,
+    };
   }
 
   // a round drop, or a teardrop whose tip points up the way it came
@@ -196,21 +210,19 @@ export function rain(canvas, background) {
     resize();
     const { w, h } = size();
 
-    // new rain landing on the glass: drawn straight onto the bead layer,
-    // only a full redraw when running drops have swept some away
+    // now and then a new drop lands on the glass: drawn straight onto the
+    // bead layer, only a full redraw when running drops sweep some away
     const beadCtx = beads.getContext("2d");
-    for (let i = 0; i < 3; i += 1) {
-      if (resting.length < (w * h) / (440 * dpr * dpr)) {
-        const b = newBead(w, h);
-        resting.push(b);
-        if (!beadsDirty) drawDrop(beadCtx, b.x, b.y, b.r, b.tail);
-      }
+    if (Math.random() < 0.3 && resting.length < (w * h) / (2600 * dpr * dpr)) {
+      const b = newBead(w, h);
+      resting.push(b);
+      if (!beadsDirty) drawDrop(beadCtx, b.x, b.y, b.r, b.tail);
     }
 
     // now and then a heavy drop lets go and runs down one of the strings
     spawnIn -= dt;
     if (spawnIn <= 0 && columns.length) {
-      spawnIn = rand(0.6, 1.8);
+      spawnIn = rand(2.5, 5);
       const col = columns[Math.floor(Math.random() * columns.length)];
       sliding.push({
         col,
@@ -274,6 +286,23 @@ export function rain(canvas, background) {
     // the outside picture itself is under this canvas (so it can move in
     // 3D); here we only add what's on the glass
     ctx.clearRect(0, 0, w, h);
+
+    // the rain coming down out there, slanting a little in the wind
+    const slant = 0.12;
+    ctx.lineCap = "round";
+    for (let i = 0; i < streaks.length; i += 1) {
+      const r = streaks[i];
+      r.y += r.v * dt;
+      r.x += r.v * slant * dt;
+      if (r.y - r.len > h) streaks[i] = newStreak(w, h);
+      ctx.strokeStyle = `rgba(225, 232, 242, ${r.alpha})`;
+      ctx.lineWidth = r.width;
+      ctx.beginPath();
+      ctx.moveTo(r.x, r.y);
+      ctx.lineTo(r.x - r.len * slant, r.y - r.len);
+      ctx.stroke();
+    }
+
     ctx.drawImage(fog, 0, 0);
     ctx.drawImage(beads, 0, 0);
     for (const d of sliding) drawDrop(ctx, d.x, d.y, d.r, 0.9);

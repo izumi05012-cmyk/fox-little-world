@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 
-// Opening screen: our names write themselves in, one character at a time,
-// then it fades into home. Shown once per browser session; a tap skips it.
+// Opening screen: the window is fogged over and our names get written in
+// the mist, one character at a time; then the glass clears into home.
+// Shown once per browser session; a tap skips it.
 const SEEN_KEY = "fox-splash-seen";
 const NAMES = ["望", "舒", "♡", "曦"];
 const STEP = 0.55; // seconds between characters
@@ -31,7 +32,7 @@ export default function Splash() {
     } catch {
       // private mode: it just plays again next time
     }
-    const timer = setTimeout(() => setStage("gone"), 700);
+    const timer = setTimeout(() => setStage("gone"), 1200);
     return () => clearTimeout(timer);
   }, [stage]);
 
