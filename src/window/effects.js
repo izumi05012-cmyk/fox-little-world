@@ -65,10 +65,11 @@ function drawCover(ctx, img, w, h) {
 
 export function rain(canvas, background) {
   const bg = document.createElement("canvas"); // what the drops refract
-  const fog = document.createElement("canvas"); // breath on the glass
+  const fog = document.createElement("canvas"); // a light breath on the glass
   const beads = document.createElement("canvas"); // the many resting drops
   let resting = [];
   let sliding = [];
+  let columns = []; // where water has run before: drops line up along them
   let beadsDirty = true;
   let spawnIn = 0;
   let redrawIn = 0;
@@ -80,10 +81,16 @@ export function rain(canvas, background) {
     }
     paintBackground();
     const f = fog.getContext("2d");
-    f.fillStyle = "rgba(196, 208, 226, .2)";
+    f.fillStyle = "rgba(200, 210, 226, .08)";
     f.fillRect(0, 0, w, h);
+    columns = Array.from({ length: Math.max(5, Math.round(w / (30 * dpr))) }, () => ({
+      x: rand(0, w),
+      amp: rand(2, 9) * dpr,
+      freq: rand(0.01, 0.03) / dpr,
+      phase: rand(0, Math.PI * 2),
+    }));
     resting = [];
-    const count = Math.round((w * h) / (380 * dpr * dpr));
+    const count = Math.round((w * h) / (520 * dpr * dpr));
     for (let i = 0; i < count; i += 1) resting.push(newBead(w, h));
     sliding = [];
     beadsDirty = true;
@@ -98,38 +105,82 @@ export function rain(canvas, background) {
   background.addEventListener("load", paintBackground);
 
   function newBead(w, h) {
-    // mostly mist-fine droplets, a few fat ones
-    const big = Math.random() < 0.07;
-    return {
-      x: rand(0, w),
-      y: rand(0, h),
-      r: (big ? rand(2.6, 6.5) : rand(0.5, 2)) * dpr,
-    };
+    const y = rand(0, h);
+    // about half the drops hang in strings down old trails, some of those
+    // heavy enough to sag into a teardrop
+    if (Math.random() < 0.5 && columns.length) {
+      const col = columns[Math.floor(Math.random() * columns.length)];
+      const big = Math.random() < 0.38;
+      return {
+        x: col.x + Math.sin(y * col.freq + col.phase) * col.amp,
+        y,
+        r: (big ? rand(3.2, 8) : rand(1, 2.8)) * dpr,
+        tail: big && Math.random() < 0.45 ? rand(0.3, 0.9) : 0,
+      };
+    }
+    const big = Math.random() < 0.14;
+    return { x: rand(0, w), y, r: (big ? rand(2.8, 6.5) : rand(0.6, 2)) * dpr, tail: 0 };
   }
 
-  function drawDrop(c, x, y, r) {
-    if (r > 2.2 * dpr) {
-      // a little lens: the world behind it, upside down and squeezed
-      c.save();
+  // a round drop, or a teardrop whose tip points up the way it came
+  function dropPath(c, x, y, r, tail) {
+    c.beginPath();
+    if (!tail) {
+      c.arc(x, y, r, 0, Math.PI * 2);
+      return;
+    }
+    const top = y - r * (1 + tail * 1.6);
+    c.moveTo(x, top);
+    c.bezierCurveTo(x + r * 0.25, y - r * (0.9 + tail), x + r, y - r * 0.55, x + r, y);
+    c.arc(x, y, r, 0, Math.PI);
+    c.bezierCurveTo(x - r, y - r * 0.55, x - r * 0.25, y - r * (0.9 + tail), x, top);
+    c.closePath();
+  }
+
+  function drawDrop(c, x, y, r, tail = 0) {
+    if (r < 1.5 * dpr) {
+      // mist-fine: just a glint and a hairline edge
+      c.fillStyle = "rgba(255, 255, 255, .18)";
       c.beginPath();
       c.arc(x, y, r, 0, Math.PI * 2);
-      c.clip();
-      c.translate(x, y);
-      c.scale(1, -1);
-      const span = r * 7;
-      c.drawImage(bg, x - span / 2, y - span / 2, span, span, -r, -r, r * 2, r * 2);
-      c.restore();
+      c.fill();
+      c.fillStyle = "rgba(255, 255, 255, .75)";
+      c.beginPath();
+      c.arc(x - r * 0.3, y - r * 0.3, Math.max(0.4, r * 0.35), 0, Math.PI * 2);
+      c.fill();
+      return;
     }
-    const rim = c.createRadialGradient(x, y, r * 0.35, x, y, r);
-    rim.addColorStop(0, "rgba(10, 14, 24, 0)");
-    rim.addColorStop(1, `rgba(10, 14, 24, ${r > 2.2 * dpr ? 0.42 : 0.22})`);
-    c.fillStyle = rim;
-    c.beginPath();
-    c.arc(x, y, r, 0, Math.PI * 2);
+    // a clear little lens: the street behind it, upside down and shrunk
+    c.save();
+    dropPath(c, x, y, r, tail);
+    c.clip();
+    c.translate(x, y);
+    c.scale(-1, -1);
+    const span = r * 6;
+    c.drawImage(bg, x - span / 2, y - span / 2, span, span, -r * 1.05, -r * 1.05, r * 2.1, r * 2.1);
+    c.restore();
+    // a bit brighter than what's around it
+    c.save();
+    dropPath(c, x, y, r, tail);
+    c.globalCompositeOperation = "lighter";
+    c.fillStyle = "rgba(255, 255, 255, .07)";
     c.fill();
-    c.fillStyle = `rgba(255, 255, 255, ${r > 2.2 * dpr ? 0.55 : 0.35})`;
+    c.restore();
+    // thin dark outline where the glass bends the light away
+    dropPath(c, x, y, r, tail);
+    c.lineWidth = Math.max(0.6, r * 0.12);
+    c.strokeStyle = "rgba(15, 18, 26, .38)";
+    c.stroke();
+    // light caught along the bottom inside edge
     c.beginPath();
-    c.arc(x - r * 0.35, y - r * 0.4, Math.max(0.5, r * 0.22), 0, Math.PI * 2);
+    c.arc(x, y, r * 0.76, Math.PI * 0.18, Math.PI * 0.82);
+    c.lineWidth = Math.max(0.6, r * 0.14);
+    c.strokeStyle = "rgba(255, 250, 235, .45)";
+    c.stroke();
+    // and a sharp highlight up top
+    c.fillStyle = "rgba(255, 255, 255, .9)";
+    c.beginPath();
+    c.ellipse(x - r * 0.32, y - r * 0.38, Math.max(0.5, r * 0.2), Math.max(0.4, r * 0.13), -0.6, 0, Math.PI * 2);
     c.fill();
   }
 
@@ -137,11 +188,9 @@ export function rain(canvas, background) {
     const { w, h } = size();
     const c = beads.getContext("2d");
     c.clearRect(0, 0, w, h);
-    for (const b of resting) drawDrop(c, b.x, b.y, b.r);
+    for (const b of resting) drawDrop(c, b.x, b.y, b.r, b.tail);
     beadsDirty = false;
   }
-
-  const fogCtx = () => fog.getContext("2d");
 
   const stop = loop((dt) => {
     resize();
@@ -151,47 +200,47 @@ export function rain(canvas, background) {
     // only a full redraw when running drops have swept some away
     const beadCtx = beads.getContext("2d");
     for (let i = 0; i < 3; i += 1) {
-      if (resting.length < (w * h) / (320 * dpr * dpr)) {
+      if (resting.length < (w * h) / (440 * dpr * dpr)) {
         const b = newBead(w, h);
         resting.push(b);
-        if (!beadsDirty) drawDrop(beadCtx, b.x, b.y, b.r);
+        if (!beadsDirty) drawDrop(beadCtx, b.x, b.y, b.r, b.tail);
       }
     }
 
-    // now and then a heavy drop lets go and runs down
+    // now and then a heavy drop lets go and runs down one of the strings
     spawnIn -= dt;
-    if (spawnIn <= 0) {
-      spawnIn = rand(0.5, 1.6);
+    if (spawnIn <= 0 && columns.length) {
+      spawnIn = rand(0.6, 1.8);
+      const col = columns[Math.floor(Math.random() * columns.length)];
       sliding.push({
-        x: rand(0, w),
+        col,
+        x: col.x,
         y: rand(-20, h * 0.5),
-        r: rand(2.6, 5) * dpr,
+        r: rand(3, 5.5) * dpr,
         v: rand(30, 60) * dpr,
-        sway: rand(0, Math.PI * 2),
         trail: 0,
       });
     }
 
-    const f = fogCtx();
-    // the glass slowly fogs back up
+    const f = fog.getContext("2d");
+    // the glass slowly mists back up
     f.globalCompositeOperation = "source-over";
-    f.fillStyle = "rgba(196, 208, 226, .004)";
+    f.fillStyle = "rgba(200, 210, 226, .002)";
     f.fillRect(0, 0, w, h);
 
     for (const d of sliding) {
       d.v = Math.min(d.v + 140 * dpr * dt, 260 * dpr);
-      d.sway += dt * rand(2, 6);
       const px = d.x;
       const py = d.y;
-      // water never runs straight: it wanders as it picks its way down
-      d.x += (Math.sin(d.sway) * 22 + rand(-30, 30)) * dpr * dt;
       d.y += d.v * dt;
+      // it follows the wavy path water took before, with a little jitter
+      d.x = d.col.x + Math.sin(d.y * d.col.freq + d.col.phase) * d.col.amp + rand(-0.6, 0.6) * dpr;
 
-      // it wipes a clear path through the fog...
+      // it wipes a clear line through the mist...
       f.globalCompositeOperation = "destination-out";
       f.lineCap = "round";
-      f.lineWidth = d.r * 0.8;
-      f.strokeStyle = "rgba(0,0,0,.55)";
+      f.lineWidth = d.r * 0.7;
+      f.strokeStyle = "rgba(0,0,0,.6)";
       f.beginPath();
       f.moveTo(px, py);
       f.lineTo(d.x, d.y);
@@ -201,17 +250,17 @@ export function rain(canvas, background) {
       const before = resting.length;
       resting = resting.filter((b) => Math.hypot(b.x - d.x, b.y - d.y) > d.r + b.r);
       if (resting.length !== before) {
-        d.r = Math.min(d.r + 0.15 * dpr * (before - resting.length), 9 * dpr);
+        d.r = Math.min(d.r + 0.12 * dpr * (before - resting.length), 8 * dpr);
         beadsDirty = true;
       }
 
-      // ...and leaves a few small ones behind it
+      // ...and leaves a string of small ones behind it
       d.trail += d.v * dt;
-      if (d.trail > 18 * dpr) {
+      if (d.trail > 14 * dpr) {
         d.trail = 0;
-        const b = { x: d.x + rand(-1, 1) * dpr, y: d.y - d.r * 1.5, r: rand(0.8, 2) * dpr };
+        const b = { x: d.x, y: d.y - d.r * 1.8, r: rand(0.9, 2.4) * dpr, tail: 0 };
         resting.push(b);
-        if (!beadsDirty) drawDrop(beads.getContext("2d"), b.x, b.y, b.r);
+        if (!beadsDirty) drawDrop(beadCtx, b.x, b.y, b.r);
       }
     }
     sliding = sliding.filter((d) => d.y - d.r < h);
@@ -222,19 +271,12 @@ export function rain(canvas, background) {
       redrawIn = 0.12;
     }
 
-    // the outside picture itself is the <img> under this canvas (so it can
-    // drift for depth); here we only add what's on the glass
+    // the outside picture itself is under this canvas (so it can move in
+    // 3D); here we only add what's on the glass
     ctx.clearRect(0, 0, w, h);
     ctx.drawImage(fog, 0, 0);
     ctx.drawImage(beads, 0, 0);
-    for (const d of sliding) {
-      // a running drop is stretched a little along its path
-      ctx.save();
-      ctx.translate(d.x, d.y);
-      ctx.scale(1, 1.25);
-      drawDrop(ctx, 0, 0, d.r);
-      ctx.restore();
-    }
+    for (const d of sliding) drawDrop(ctx, d.x, d.y, d.r, 0.9);
   });
 
   return () => {
@@ -258,10 +300,58 @@ function softDot(radius, color) {
   return c;
 }
 
+// A six-armed snow crystal with little side branches, drawn once and reused.
+function crystal(size, seed) {
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g = c.getContext("2d");
+  const r = size * 0.42;
+  const rnd = (k) => {
+    const v = Math.sin(seed * 97.1 + k * 13.7) * 43758.5;
+    return v - Math.floor(v);
+  };
+  // the same branching on every arm, like a real crystal
+  const branches = [0.35, 0.58, 0.8].map((at, i) => ({ at, len: 0.18 + rnd(i) * 0.22 }));
+  g.translate(size / 2, size / 2);
+  g.strokeStyle = "#ffffff";
+  g.lineCap = "round";
+  g.shadowColor = "rgba(255,255,255,.9)";
+  g.shadowBlur = size * 0.04;
+  for (let arm = 0; arm < 6; arm += 1) {
+    g.save();
+    g.rotate((arm * Math.PI) / 3);
+    g.lineWidth = size * 0.045;
+    g.beginPath();
+    g.moveTo(0, 0);
+    g.lineTo(0, -r);
+    g.stroke();
+    g.lineWidth = size * 0.03;
+    for (const br of branches) {
+      const y = -r * br.at;
+      const len = r * br.len;
+      g.beginPath();
+      g.moveTo(0, y);
+      g.lineTo(len * 0.8, y - len * 0.6);
+      g.moveTo(0, y);
+      g.lineTo(-len * 0.8, y - len * 0.6);
+      g.stroke();
+    }
+    g.restore();
+  }
+  g.fillStyle = "#ffffff";
+  g.beginPath();
+  g.arc(0, 0, size * 0.06, 0, Math.PI * 2);
+  g.fill();
+  return c;
+}
+
 export function snow(canvas) {
   let flakes = [];
+  let stuck = [];
+  let stickIn = 0;
   const sprite = softDot(32, "rgba(255,255,255,.95)");
-  // far, middle and near: near flakes are big, slow-looking and out of focus
+  const crystals = [1, 2, 3, 4, 5].map((seed) => crystal(96, seed));
+  // outside the glass: far, middle and near; the near ones big and blurred
   const layers = [
     { share: 0.55, r: [0.9, 1.8], fall: [18, 30], alpha: 0.7 },
     { share: 0.35, r: [2.2, 3.6], fall: [30, 48], alpha: 0.85 },
@@ -283,13 +373,40 @@ export function snow(canvas) {
         });
       }
     }
+    // a few real crystals drifting right past the glass, in focus
+    for (let i = 0; i < Math.round(w / (60 * dpr)); i += 1) {
+      flakes.push({
+        crystal: crystals[i % crystals.length],
+        x: rand(0, w),
+        y: rand(0, h),
+        r: rand(5, 9) * dpr,
+        v: rand(22, 36) * dpr,
+        phase: rand(0, Math.PI * 2),
+        spin: rand(-0.4, 0.4),
+      });
+    }
+    stuck = [];
+    for (let i = 0; i < Math.round((w * h) / (14000 * dpr * dpr)); i += 1) stuck.push(newStuck(w, h, 1));
   });
+
+  // flakes that land on the glass and stay, crisp, slowly piling up
+  function newStuck(w, h, grown = 0) {
+    return {
+      crystal: crystals[Math.floor(Math.random() * crystals.length)],
+      x: rand(0, w),
+      y: rand(0, h) ** 1.15 / h ** 0.15, // a few more toward the bottom
+      r: rand(4, 11) * dpr,
+      angle: rand(0, Math.PI / 3),
+      grown,
+    };
+  }
 
   return loop((dt, t) => {
     resize();
     const { w, h } = size();
     ctx.clearRect(0, 0, w, h);
     const wind = Math.sin(t * 0.25) * 10 * dpr;
+
     for (const f of flakes) {
       f.y += f.v * dt;
       f.x += (wind + Math.sin(t * 0.8 + f.phase) * 8 * dpr) * dt;
@@ -299,8 +416,32 @@ export function snow(canvas) {
       }
       if (f.x < -f.r) f.x = w + f.r;
       if (f.x > w + f.r) f.x = -f.r;
-      ctx.globalAlpha = f.layer.alpha;
-      ctx.drawImage(sprite, f.x - f.r, f.y - f.r, f.r * 2, f.r * 2);
+      if (f.crystal) {
+        ctx.save();
+        ctx.globalAlpha = 0.85;
+        ctx.translate(f.x, f.y);
+        ctx.rotate(t * f.spin + f.phase);
+        ctx.drawImage(f.crystal, -f.r, -f.r, f.r * 2, f.r * 2);
+        ctx.restore();
+      } else {
+        ctx.globalAlpha = f.layer.alpha;
+        ctx.drawImage(sprite, f.x - f.r, f.y - f.r, f.r * 2, f.r * 2);
+      }
+    }
+
+    stickIn -= dt;
+    if (stickIn <= 0 && stuck.length < (w * h) / (7000 * dpr * dpr)) {
+      stickIn = rand(0.8, 2.2);
+      stuck.push(newStuck(w, h));
+    }
+    for (const s of stuck) {
+      s.grown = Math.min(1, s.grown + dt * 0.8); // fades in as it settles
+      ctx.save();
+      ctx.globalAlpha = 0.92 * s.grown;
+      ctx.translate(s.x, s.y);
+      ctx.rotate(s.angle);
+      ctx.drawImage(s.crystal, -s.r, -s.r, s.r * 2, s.r * 2);
+      ctx.restore();
     }
     ctx.globalAlpha = 1;
   });
