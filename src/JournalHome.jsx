@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import HomeNav from "./HomeNav";
+import Splash from "./Splash";
 import WindowView from "./window/WindowView";
 import { choices, clearSky, loadPref, realWeather, savePref } from "./window/weather";
 import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
@@ -134,6 +135,7 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
 
   return (
     <main className="journal">
+      <Splash scene={scene} />
       <WindowView scene={scene} />
 
       <header className="glass journal-today">

@@ -1023,116 +1023,27 @@ button:focus-visible, input:focus-visible {
    OPENING SPLASH
    ========================================================= */
 
-/* the window, fogged over; our names are written in the mist, then the
-   glass clears and the view and the page come through */
+/* breath on the window: a canvas draws the fog, the finger lines and the
+   view through them; when it's done the whole thing fades into home */
 .splash {
   position: fixed;
   inset: 0;
   z-index: 100;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: rgba(244, 240, 240, .5);
-  -webkit-backdrop-filter: blur(26px) saturate(1.1);
-  backdrop-filter: blur(26px) saturate(1.1);
+  background: rgba(238, 236, 240, .9);
   cursor: pointer;
-  transition: opacity 1.2s ease, backdrop-filter 1.2s ease, -webkit-backdrop-filter 1.2s ease;
+  transition: opacity 1.2s ease;
 }
 
 .splash.is-leaving {
   opacity: 0;
-  -webkit-backdrop-filter: blur(0) saturate(1);
-  backdrop-filter: blur(0) saturate(1);
   pointer-events: none;
 }
 
-.splash-inner { text-align: center; }
-
-.splash-art {
-  position: relative;
-  width: min(260px, 66vw);
-  margin: 0 auto;
-}
-
-.splash-art img {
+.splash-glass {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
 }
-
-/* the foxes surface on the mist, then give each other a little nuzzle */
-.splash-foxes {
-  opacity: 0;
-  animation:
-    splash-ink 1s ease-out .2s forwards,
-    splash-nuzzle .7s ease-in-out 1.2s;
-}
-
-/* and a heart pops up over them */
-.splash-love {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transform-origin: 51% 13%;
-  animation: splash-pop .6s cubic-bezier(.3, 1.7, .5, 1) 1.6s forwards;
-}
-
-@keyframes splash-nuzzle {
-  0%, 100% { transform: none; }
-  30% { transform: rotate(-2deg) translateY(-2px); }
-  60% { transform: rotate(1.5deg); }
-}
-
-@keyframes splash-pop {
-  from { opacity: 0; transform: scale(.3) translateY(10px); }
-  to { opacity: 1; transform: none; }
-}
-
-/* our names, signed in the mist: revealed left to right like a pen moving */
-.splash-sign {
-  margin: 14px 0 0;
-  color: var(--ink);
-  font-family: "La Belle Aurore", var(--hand);
-  font-size: clamp(38px, 12vw, 56px);
-  line-height: 1.3;
-  white-space: nowrap;
-  clip-path: inset(-30% 100% -30% 0);
-  animation: splash-sign var(--time) cubic-bezier(.45, .05, .55, .95) var(--start) forwards;
-}
-
-@keyframes splash-sign { to { clip-path: inset(-30% -10% -30% 0); } }
-
-.splash-rule {
-  display: block;
-  width: 64px;
-  height: 1px;
-  margin: 22px auto 0;
-  background: var(--line);
-  transform: scaleX(0);
-  animation: splash-rule .8s ease-out var(--start) forwards;
-}
-
-.splash-since {
-  margin: 14px 0 0;
-  color: var(--muted);
-  font-family: var(--serif);
-  font-size: 10px;
-  letter-spacing: .3em;
-  opacity: 0;
-  animation: splash-fade .8s ease-out var(--start) forwards;
-}
-
-@keyframes splash-ink { to { opacity: 1; filter: none; transform: none; } }
-@keyframes splash-fade { to { opacity: 1; } }
-@keyframes splash-rule { to { transform: none; } }
-
-@media (prefers-reduced-motion: reduce) {
-  .splash-foxes, .splash-love, .splash-sign, .splash-rule, .splash-since {
-    animation-duration: .01s;
-    animation-delay: 0s;
-  }
-}
-
 
 /* =========================================================
    JOURNAL HOME — taped polaroids + frosted glass
