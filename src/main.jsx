@@ -4,7 +4,6 @@ import "./style.css";
 
 import Chat from "./Chat";
 import ChatList from "./ChatList";
-import Splash from "./Splash";
 import JournalHome from "./JournalHome";
 import "@fontsource/noto-serif-sc/300.css";
 import "@fontsource/noto-serif-sc/400.css";
@@ -68,12 +67,7 @@ function App() {
     );
   }
 
-  return (
-    <>
-      <Splash />
-      <Home onOpen={setPage} />
-    </>
-  );
+  return <Home onOpen={setPage} />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(

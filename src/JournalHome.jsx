@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import HomeNav from "./HomeNav";
+import Splash from "./Splash";
 import WindowView from "./window/WindowView";
 import { choices, clearSky, loadPref, realWeather, savePref } from "./window/weather";
 import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
@@ -73,6 +74,9 @@ function Polaroid({ item, src, custom, onOpen, onPick, onReset }) {
         type="file"
         accept="image/*"
         hidden
+        // the click we fire on this input bubbles too; without this it
+        // reaches the polaroid and opens the page instead of the picker
+        onClick={(event) => event.stopPropagation()}
         onChange={(event) => {
           const file = event.target.files?.[0];
           if (file) onPick(item.slot, file);
@@ -131,6 +135,7 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
 
   return (
     <main className="journal">
+      <Splash scene={scene} />
       <WindowView scene={scene} />
 
       <header className="glass journal-today">
