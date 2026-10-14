@@ -345,10 +345,59 @@ function crystal(size, seed) {
   return c;
 }
 
+// Ice crust on the glass and the window bars in front of it, drawn once:
+// rime is thickest along the bottom, the edges and against the bars.
+function frostAndFrame(w, h, dpr) {
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  const g = c.getContext("2d");
+  const barX = w * 0.58;
+  const barY = h * 0.4;
+  const bar = 13 * dpr;
+  const speck = softDot(8, "rgba(255,255,255,1)");
+  const count = Math.round((w * h) / (30 * dpr * dpr));
+  for (let i = 0; i < count; i += 1) {
+    const x = Math.random() * w;
+    const y = Math.random() * h;
+    const fade = (v) => Math.max(0, v); // 1 right at the edge, 0 past the reach
+    const near = Math.max(
+      (y / h) ** 6,
+      fade(1 - Math.min(x, w - x) / (w * 0.16)) ** 2,
+      fade(1 - Math.min(y, h - y) / (h * 0.08)) ** 2,
+      fade(1 - Math.abs(x - barX) / (w * 0.06)) ** 3,
+      fade(1 - Math.abs(y - barY) / (h * 0.04)) ** 3
+    );
+    if (Math.random() > near) continue;
+    const r = rand(0.6, 3.2) * dpr;
+    g.globalAlpha = rand(0.25, 0.85);
+    g.drawImage(speck, x - r, y - r, r * 2, r * 2);
+  }
+  g.globalAlpha = 1;
+  // the bars: dark painted wood, a soft highlight on one edge
+  g.fillStyle = "#2b2f3c";
+  g.fillRect(barX - bar / 2, 0, bar, h);
+  g.fillRect(0, barY - bar / 2, w, bar);
+  g.fillStyle = "rgba(255, 255, 255, .12)";
+  g.fillRect(barX - bar / 2, 0, bar * 0.25, h);
+  // snow resting on the ledge of the cross bar
+  g.fillStyle = "#f4f7fb";
+  g.beginPath();
+  g.moveTo(0, barY - bar / 2);
+  for (let x = 0; x <= w; x += 6 * dpr) {
+    g.lineTo(x, barY - bar / 2 - rand(1.5, 4.5) * dpr);
+  }
+  g.lineTo(w, barY - bar / 2);
+  g.closePath();
+  g.fill();
+  return c;
+}
+
 export function snow(canvas) {
   let flakes = [];
   let stuck = [];
   let stickIn = 0;
+  let frame = null;
   const sprite = softDot(32, "rgba(255,255,255,.95)");
   const crystals = [1, 2, 3, 4, 5].map((seed) => crystal(96, seed));
   // outside the glass: far, middle and near; the near ones big and blurred
@@ -387,6 +436,7 @@ export function snow(canvas) {
     }
     stuck = [];
     for (let i = 0; i < Math.round((w * h) / (14000 * dpr * dpr)); i += 1) stuck.push(newStuck(w, h, 1));
+    frame = frostAndFrame(w, h, dpr);
   });
 
   // flakes that land on the glass and stay, crisp, slowly piling up
@@ -444,6 +494,7 @@ export function snow(canvas) {
       ctx.restore();
     }
     ctx.globalAlpha = 1;
+    if (frame) ctx.drawImage(frame, 0, 0);
   });
 }
 

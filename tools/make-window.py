@@ -67,20 +67,33 @@ def weathers(im, depth_img, outdir):
     def save(x, name):
         Image.fromarray((np.clip(x, 0, 1) * 255).astype(np.uint8)).save(f"{outdir}/{name}.webp", quality=80, method=6)
 
-    # rain: grey, cool, flat, a bit of haze in the distance
-    x = a * 0.55 + lum * 0.45
-    x = x * [0.86, 0.9, 1.0] * 0.78 + 0.04
-    overcast = (0.55 + 0.1 * (1 - yy)) * np.array([0.78, 0.82, 0.88])
-    x = x * (1 - sky) + overcast * sky
-    x = x * (1 - far[..., None] * 0.35) + np.array([0.6, 0.64, 0.7]) * far[..., None] * 0.35
-    save(x, "rain")
+    # Rain and snow are seen the way a camera sees them through a wet or
+    # frosted window: focused on the glass, so the outside goes soft. That
+    # blur is what makes the drops and crystals read as being on the glass.
+    def defocus(x, k=40):
+        img = Image.fromarray((np.clip(x, 0, 1) * 255).astype(np.uint8))
+        return img.filter(ImageFilter.GaussianBlur(W / k))
 
-    # snow: soft white light, low contrast, sky like snow cloud
-    x = a * 0.6 + lum * 0.4
-    x = x * 0.85 + 0.15
-    x = x * (1 - sky) + np.array([0.86, 0.88, 0.92]) * sky
-    x = x * (1 - far[..., None] * 0.3) + 0.9 * far[..., None] * 0.3
-    save(x, "snow")
+    # rain: keep the colour, dimmer and moodier under a slate sky, a little
+    # warmer low down where wet things hold the light
+    x = (a * 0.85 + lum * 0.15) ** 1.15 * [0.82, 0.83, 0.9]
+    x = x * (1 + np.clip(yy - 0.55, 0, 1) * np.array([0.5, 0.3, 0.05]))
+    overcast = (0.5 + 0.12 * (1 - yy)) * np.array([0.7, 0.75, 0.84])
+    x = x * (1 - sky) + overcast * sky
+    defocus(x).save(f"{outdir}/rain.webp", quality=80, method=6)
+
+    # snow: dusk after snowfall — a pink and peach sky over cold blue shapes,
+    # the snowy peak catching the last warm light
+    dusk = np.select(
+        [yy < 0.25, yy < 0.5],
+        [np.array([0.62, 0.6, 0.76]) + (np.array([0.93, 0.76, 0.76]) - [0.62, 0.6, 0.76]) * (yy / 0.25),
+         np.array([0.93, 0.76, 0.76]) + (np.array([1.0, 0.84, 0.68]) - [0.93, 0.76, 0.76]) * ((yy - 0.25) / 0.25)],
+        np.array([1.0, 0.84, 0.68]),
+    )
+    x = (a * 0.45 + lum * 0.55) * [0.55, 0.62, 0.82]
+    x += np.clip(lum - 0.7, 0, 1) * far[..., None] * [0.9, 0.7, 0.75]  # alpenglow on the snow
+    x = x * (1 - sky) + dusk * sky
+    defocus(x, 36).save(f"{outdir}/snow.webp", quality=80, method=6)
 
     # night: deep blue, moonlit snow on the mountain, sky to night gradient
     night_sky = (np.array([0.04, 0.06, 0.16]) * (1 - yy) + np.array([0.1, 0.13, 0.3]) * yy)
