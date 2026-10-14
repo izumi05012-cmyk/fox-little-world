@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
+// 曦曦's drawing of the two of us, cheek to cheek
+import foxes from "./assets/splash/foxes.webp";
+import heart from "./assets/splash/heart.webp";
+import "@fontsource/la-belle-aurore/400.css";
 
-// Opening screen: the window is fogged over and our names get written in
-// the mist, one character at a time; then the glass clears into home.
-// Shown once per browser session; a tap skips it.
+// Opening screen: the window is fogged over; the two little foxes appear
+// on the mist and nuzzle, a heart pops up, and our names are signed below
+// in one stroke; then the glass clears into home. Shown once per browser
+// session; a tap skips it.
 const SEEN_KEY = "fox-splash-seen";
-const NAMES = ["望", "舒", "♡", "曦"];
-const STEP = 0.55; // seconds between characters
-const HOLD = NAMES.length * STEP + 2.2;
+const SIGN_AT = 2.0; // after the foxes have said hello
+const SIGN_TIME = 1.8; // how long the signature takes to write
+const HOLD = SIGN_AT + SIGN_TIME + 2;
 
 function alreadySeen() {
   try {
@@ -38,7 +43,7 @@ export default function Splash() {
 
   if (stage === "gone") return null;
 
-  const afterNames = NAMES.length * STEP;
+  const afterNames = SIGN_AT + SIGN_TIME;
 
   return (
     <div
@@ -47,17 +52,15 @@ export default function Splash() {
       role="presentation"
     >
       <div className="splash-inner">
-        <p className="splash-eyebrow">A LITTLE WORLD FOR TWO</p>
-        <p className="splash-names" aria-label="望舒和曦">
-          {NAMES.map((char, index) => (
-            <span
-              key={char}
-              className={char === "♡" ? "splash-heart" : ""}
-              style={{ "--start": `${0.3 + index * STEP}s` }}
-            >
-              {char}
-            </span>
-          ))}
+        <div className="splash-art" aria-hidden="true">
+          <img className="splash-foxes" src={foxes} alt="" />
+          <img className="splash-love" src={heart} alt="" />
+        </div>
+        <p
+          className="splash-sign"
+          style={{ "--start": `${SIGN_AT}s`, "--time": `${SIGN_TIME}s` }}
+        >
+          Wangshu &amp; Xi
         </p>
         <i className="splash-rule" style={{ "--start": `${afterNames + 0.2}s` }} />
         <p className="splash-since" style={{ "--start": `${afterNames + 0.6}s` }}>
