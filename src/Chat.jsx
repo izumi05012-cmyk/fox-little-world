@@ -31,6 +31,34 @@ function PawIcon() {
   );
 }
 
+// thin line icons, so every button speaks the same quiet language
+const icons = {
+  back: <path d="M15 5l-7 7 7 7" />,
+  more: (
+    <>
+      <circle cx="5" cy="12" r="1.3" />
+      <circle cx="12" cy="12" r="1.3" />
+      <circle cx="19" cy="12" r="1.3" />
+    </>
+  ),
+  photo: (
+    <>
+      <rect x="3.5" y="5" width="17" height="14" rx="3" />
+      <circle cx="9" cy="10" r="1.6" />
+      <path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5" />
+    </>
+  ),
+  send: <path d="M12 19V5M6 11l6-6 6 6" />,
+};
+
+function Icon({ name }) {
+  return (
+    <svg className="chat-icon" viewBox="0 0 24 24" aria-hidden="true">
+      {icons[name]}
+    </svg>
+  );
+}
+
 function Avatar({ src, fallback }) {
   return (
     <span className="chat-avatar">
@@ -160,8 +188,8 @@ export default function Chat({ onBack, dayCount }) {
       )}
 
       <header className="glass chat-header">
-        <button className="round-button plain" onClick={onBack} aria-label="返回">
-          ←
+        <button className="chat-key" onClick={onBack} aria-label="返回">
+          <Icon name="back" />
         </button>
         <Avatar src={avatars.him || wangshu} />
         <div className="chat-title">
@@ -169,12 +197,12 @@ export default function Chat({ onBack, dayCount }) {
           <span>在一起的第 {dayCount} 天</span>
         </div>
         <button
-          className="round-button plain"
+          className={`chat-key ${panel === "settings" ? "active" : ""}`}
           onClick={() => toggle("settings")}
           aria-label="聊天设置"
           aria-expanded={panel === "settings"}
         >
-          ⋯
+          <Icon name="more" />
         </button>
       </header>
 
@@ -255,8 +283,8 @@ export default function Chat({ onBack, dayCount }) {
           </p>
         )}
         <div className="glass chat-compose-bar">
-          <button className="chat-paw" onClick={() => photoInput.current?.click()} aria-label="发图片">
-            ＋
+          <button className="chat-key" onClick={() => photoInput.current?.click()} aria-label="发图片">
+            <Icon name="photo" />
           </button>
           <input
             ref={photoInput}
@@ -269,7 +297,7 @@ export default function Chat({ onBack, dayCount }) {
             }}
           />
           <button
-            className={`chat-paw ${panel === "stickers" ? "active" : ""}`}
+            className={`chat-key chat-paw ${panel === "stickers" ? "active" : ""}`}
             onClick={() => toggle("stickers")}
             aria-label="表情"
             aria-expanded={panel === "stickers"}
@@ -287,8 +315,8 @@ export default function Chat({ onBack, dayCount }) {
             placeholder="写点什么……"
             enterKeyHint="send"
           />
-          <button className="chat-send" onClick={sendText} disabled={!input.trim()} aria-label="发送">
-            ↑
+          <button className="chat-key chat-send" onClick={sendText} disabled={!input.trim()} aria-label="发送">
+            <Icon name="send" />
           </button>
         </div>
       </footer>
