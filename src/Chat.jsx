@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import WindowView from "./window/WindowView";
 import { useScene } from "./window/useScene";
 import { useAvatars, useChatBackground } from "./useAvatars";
-import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
+import { clearPhoto, loadPhotos, saveBlob, savePhoto } from "./photoStore";
+import { useVoiceRecorder } from "./useVoiceRecorder";
 import ChatMessages from "./ChatMessages";
 import { burstFrom } from "./burst";
 import {
@@ -50,6 +51,18 @@ const icons = {
     </>
   ),
   send: <path d="M12 19V5M6 11l6-6 6 6" />,
+  mic: (
+    <>
+      <rect x="9" y="3.5" width="6" height="11" rx="3" />
+      <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" />
+    </>
+  ),
+  keyboard: (
+    <>
+      <rect x="3" y="6" width="18" height="12" rx="3" />
+      <path d="M7 10h.01M10.5 10h.01M14 10h.01M17.5 10h.01M8 14h8" />
+    </>
+  ),
 };
 
 function Icon({ name }) {
@@ -109,7 +122,9 @@ export default function Chat({ onBack, dayCount }) {
   const [panel, setPanel] = useState(null); // null | "stickers" | "settings"
   const [menuFor, setMenuFor] = useState(null); // the bubble whose menu is open
   const [quoting, setQuoting] = useState(null);
-  const [images, setImages] = useState({}); // photo slot -> url
+  const [images, setImages] = useState({}); // photo or voice slot -> url
+  const [talking, setTalking] = useState(false); // the input is "hold to talk"
+  const [toast, setToast] = useState("");
   const bottom = useRef(null);
   const photoInput = useRef(null);
   const sendKey = useRef(null);
@@ -118,7 +133,7 @@ export default function Chat({ onBack, dayCount }) {
 
   // pictures in the chat live with the polaroid photos, not in the log
   useEffect(() => {
-    const slots = log.filter((m) => m.image).map((m) => m.image);
+    const slots = log.filter((m) => m.image || m.voice).map((m) => m.image || m.voice);
     if (!slots.length) return undefined;
     let alive = true;
     loadPhotos(slots).then((found) => {
@@ -154,6 +169,24 @@ export default function Chat({ onBack, dayCount }) {
     send({ image: slot });
   }
 
+  async function sendVoice(blob, seconds) {
+    const slot = `chat-voice-${newId()}`;
+    const url = await saveBlob(slot, blob);
+    setImages((current) => ({ ...current, [slot]: url }));
+    burstFrom(sendKey.current, "sparkle");
+    send({ voice: slot, seconds });
+  }
+
+  const voice = useVoiceRecorder(sendVoice, () => {
+    setToast("没拿到麦克风，看看浏览器是不是不让用");
+    setTimeout(() => setToast(""), 2600);
+  });
+
+  // 拍一拍: double tap an avatar
+  function pat(who) {
+    setLog((current) => [...current, { id: newId(), from: "pat", who, at: Date.now() }]);
+  }
+
   function act(action, message) {
     setMenuFor(null);
     if (action === "heart") {
@@ -163,8 +196,13 @@ export default function Chat({ onBack, dayCount }) {
       field.current?.focus();
     } else if (action === "copy") {
       navigator.clipboard?.writeText(message.text).catch(() => {});
+    } else if (action === "recall") {
+      if (message.image || message.voice) clearPhoto(message.image || message.voice);
+      setLog((current) =>
+        current.map((m) => (m.id === message.id ? { id: m.id, from: "recalled", at: m.at } : m))
+      );
     } else if (action === "delete") {
-      if (message.image) clearPhoto(message.image);
+      if (message.image || message.voice) clearPhoto(message.image || message.voice);
       setLog((current) => current.filter((m) => m.id !== message.id));
     }
   }
@@ -264,6 +302,7 @@ export default function Chat({ onBack, dayCount }) {
           menuFor={menuFor}
           onMenu={setMenuFor}
           onAction={act}
+          onPat={pat}
           bottomRef={bottom}
         />
       </section>
@@ -311,6 +350,21 @@ export default function Chat({ onBack, dayCount }) {
           >
             <PawIcon />
           </button>
+          {talking ? (
+            <button
+              className={`chat-hold ${voice.state ? "is-down" : ""}`}
+              onPointerDown={(event) => {
+                event.currentTarget.setPointerCapture?.(event.pointerId);
+                voice.start(event);
+              }}
+              onPointerMove={voice.move}
+              onPointerUp={voice.stop}
+              onPointerCancel={voice.stop}
+              onContextMenu={(event) => event.preventDefault()}
+            >
+              {voice.state === "cancel" ? "松开手指，取消发送" : voice.state ? "松开 发送" : "按住 说话"}
+            </button>
+          ) : (
           <input
             ref={field}
             value={input}
@@ -322,11 +376,33 @@ export default function Chat({ onBack, dayCount }) {
             placeholder="写点什么……"
             enterKeyHint="send"
           />
-          <button ref={sendKey} className="chat-key chat-send" onClick={sendText} disabled={!input.trim()} aria-label="发送">
-            <Icon name="send" />
+          )}
+          <button
+            className="chat-key"
+            onClick={() => setTalking((current) => !current)}
+            aria-label={talking ? "打字" : "说话"}
+          >
+            <Icon name={talking ? "keyboard" : "mic"} />
           </button>
+          {!talking && (
+            <button ref={sendKey} className="chat-key chat-send" onClick={sendText} disabled={!input.trim()} aria-label="发送">
+              <Icon name="send" />
+            </button>
+          )}
         </div>
       </footer>
+
+      {voice.state && (
+        <div className={`chat-recording ${voice.state === "cancel" ? "is-cancel" : ""}`} aria-live="polite">
+          <span className="chat-recording-bars">
+            {Array.from({ length: 9 }, (_, i) => (
+              <i key={i} style={{ animationDelay: `${i * 0.09}s` }} />
+            ))}
+          </span>
+          <p>{voice.state === "cancel" ? "松开手指，取消发送" : "上滑取消"}</p>
+        </div>
+      )}
+      {toast && <p className="chat-toast">{toast}</p>}
     </main>
   );
 }
