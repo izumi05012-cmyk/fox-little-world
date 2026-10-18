@@ -1620,37 +1620,17 @@ html[data-turn="back"] { --turn: -1; }
   80% { transform: rotate(calc(var(--tilt) - 2deg)); }
 }
 
-/* white border, torn by hand */
-.sticker-paper {
-  position: relative;
-  padding: 9px;
-  background: #fffdf9;
-}
-
-.sticker-paper svg,
-.sticker-paper img {
+.sticker-art {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 2px;
-}
-.sticker-paper svg { background: #fbf3e8; }
-
-/* one corner lifting off the page */
-.sticker-peel {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 22px;
-  height: 22px;
-  background: linear-gradient(135deg, transparent 50%, #e9e2d8 50%, #fffdf9 78%);
-  box-shadow: -1px -1px 3px rgba(60, 50, 40, .15);
+  pointer-events: none;
 }
 
 .sticker-label {
   position: relative;
   display: table;
-  margin: -6px auto 0;
+  margin: -10px auto 0;
   padding: 4px 12px 5px;
   background: #fffdf9;
   color: #8a3a3f;
@@ -1723,9 +1703,6 @@ html[data-turn="back"] { --turn: -1; }
 .invite-photo {
   position: absolute;
   margin: 0;
-  padding: 4px;
-  background: #fbf4ef;
-  box-shadow: 0 6px 16px -8px rgba(142, 43, 43, .45);
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
@@ -1734,22 +1711,21 @@ html[data-turn="back"] { --turn: -1; }
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
-.invite-photo-back { top: 8px; right: 4%; width: 46%; height: 150px; transform: rotate(6deg); }
-.invite-photo-low { bottom: 0; left: 2%; width: 36%; height: 128px; transform: rotate(-7deg); }
-.invite-photo-main { z-index: 1; top: 28px; left: 26%; width: 46%; height: 230px; transform: rotate(-2.5deg); }
+.invite-photo.is-sticker img {
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(142, 43, 43, .28));
+}
+.invite-photo.is-photo {
+  padding: 4px;
+  background: #fbf4ef;
+  box-shadow: 0 6px 16px -8px rgba(142, 43, 43, .45);
+}
+.invite-photo.is-photo img { object-fit: cover; }
+.invite-photo-main { z-index: 1; top: 18px; left: 14%; width: 72%; height: 250px; transform: rotate(-2deg); }
+.invite-photo-back { z-index: 2; top: -4px; right: -2%; width: 30%; height: 112px; transform: rotate(8deg); }
+.invite-photo-low { z-index: 2; bottom: -8px; left: -2%; width: 32%; height: 124px; transform: rotate(-8deg); }
 .invite-photo.is-editing { z-index: 4; }
-.invite-inscription {
-  position: absolute;
-  left: 14px;
-  bottom: 10px;
-  color: var(--invite-red);
-  font-family: var(--hand);
-  font-size: 13px;
-  transform: rotate(-8deg);
-  opacity: .85;
-}
 .invite-pearls {
   position: absolute;
   z-index: 2;
@@ -1762,8 +1738,8 @@ html[data-turn="back"] { --turn: -1; }
 .invite-brooch {
   position: absolute;
   z-index: 3;
-  left: 66%;
-  top: 214px;
+  left: 72%;
+  top: 236px;
   width: 50px;
   transform: rotate(14deg);
   filter: drop-shadow(0 2px 2px rgba(142, 43, 43, .3));
@@ -1794,7 +1770,6 @@ html[data-turn="back"] { --turn: -1; }
 }
 
 .invite-lead,
-.invite-story,
 .invite-vows {
   max-width: 300px;
   margin: 30px auto 0;
@@ -1806,9 +1781,7 @@ html[data-turn="back"] { --turn: -1; }
   text-align: center;
 }
 .invite-lead { font-size: 13px; font-weight: 400; }
-.invite-story p,
 .invite-vows p { margin: 0; }
-.invite-story p + p { margin-top: 10px; }
 
 .invite-vows {
   padding: 18px 10px;

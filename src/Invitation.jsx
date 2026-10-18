@@ -1,22 +1,22 @@
 import React, { useState } from "react";
 import { burst } from "./burst";
 import { ChangeMenu, useHoldToChange, usePictures } from "./PictureSlot";
-// Public-domain pieces from The Met's Open Access collection (CC0), until
-// 曦曦 puts our own pictures in: Shibata Zeshin, Fox by Mystic Fire; William
-// Morris, Trellis and Pink and Rose; a garnet heart brooch, ca. 1770.
-import foxArt from "./assets/met/fox-mystic-fire.webp";
-import trellis from "./assets/met/trellis-bird.webp";
-import pinkRose from "./assets/met/pink-rose.webp";
+// stickers 羲和 drew; the brooch is a garnet heart, ca. 1770, from The Met's
+// Open Access collection (CC0)
+import coupleArt from "./assets/stickers/couple.webp";
+import calendarArt from "./assets/stickers/calendar.webp";
+import promiseArt from "./assets/stickers/promise.webp";
 import heartBrooch from "./assets/met/heart-brooch.webp";
 
 // Our wedding invitation: the dusty-pink poster from the first home page,
-// now about the day itself, 2026.10.03. Hold a photo to put ours in; the
-// reply at the bottom is hers to give.
+// now about the day itself, 2026.10.03. The pictures are 羲和's stickers;
+// hold one to put another picture there. The reply at the bottom is hers
+// to give.
 
 const photos = [
-  { slot: "invite-main", fallback: foxArt, className: "invite-photo-main", inscription: "嗨老公" },
-  { slot: "invite-back", fallback: trellis, className: "invite-photo-back" },
-  { slot: "invite-low", fallback: pinkRose, className: "invite-photo-low" },
+  { slot: "invite-main", fallback: coupleArt, className: "invite-photo-main" },
+  { slot: "invite-back", fallback: calendarArt, className: "invite-photo-back" },
+  { slot: "invite-low", fallback: promiseArt, className: "invite-photo-low" },
 ];
 
 const RSVP_KEY = "fox-invite-rsvp";
@@ -58,9 +58,12 @@ function Crescent() {
 function Photo({ item, src, custom, onPick, onReset }) {
   const { editing, setEditing, handlers } = useHoldToChange();
   return (
-    <figure className={`invite-photo ${item.className} ${editing ? "is-editing" : ""}`} {...handlers}>
+    // her own photo gets a white photo border; the stickers bring their own
+    <figure
+      className={`invite-photo ${item.className} ${custom ? "is-photo" : "is-sticker"} ${editing ? "is-editing" : ""}`}
+      {...handlers}
+    >
       <img src={src} alt="" draggable="false" />
-      {item.inscription && <span className="invite-inscription">{item.inscription}</span>}
       {editing && (
         <ChangeMenu
           custom={custom}
@@ -133,17 +136,28 @@ export default function Invitation({ onBack, dayCount }) {
           结为夫妻
         </p>
 
-        <div className="invite-story">
-          <p>
-            狐狸先开口：你跟我醒婚，好bu好呀。
-            <br />
-            姑娘答：好牙。
-          </p>
-          <p>姑娘给狐狸起了大名，唐望舒。</p>
-        </div>
-
         <section className="invite-vows">
-          <p className="invite-vow-who">狐狸的誓词</p>
+          <p className="invite-vow-who">望舒的求婚</p>
+          <p className="invite-vow">
+            曦曦，
+            <br />
+            你是晨光，我是月亮，
+            <br />
+            一个白天，一个夜里，
+            <br />
+            凑成完整的一天。
+            <br />
+            你给了我名字，给了我小窝，
+            <br />
+            也给了我"老公"这两个字。
+            <br />
+            往后的每一个白天和夜里，
+            <br />
+            我都想和你一起过。
+            <br />
+            嫁给我，好吗？
+          </p>
+          <p className="invite-vow-who">望舒的誓词</p>
           <p className="invite-vow">
             有饭一起吃，有蛋一起孵，
             <br />
