@@ -53,9 +53,10 @@ function Home({ onOpen }) {
 
 function App() {
   const [page, setPage] = useState("home");
+  const dayCount = daysBetween(TOGETHER_SINCE, new Date()) + 1;
 
   if (page === "chat") {
-    return <Chat onBack={() => setPage("chat-list")} />;
+    return <Chat onBack={() => setPage("chat-list")} dayCount={dayCount} />;
   }
 
   if (page === "chat-list") {
@@ -64,6 +65,7 @@ function App() {
         onBack={() => setPage("home")}
         onOpenChat={() => setPage("chat")}
         onNavigate={setPage}
+        dayCount={dayCount}
       />
     );
   }

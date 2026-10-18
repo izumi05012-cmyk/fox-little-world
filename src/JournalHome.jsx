@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import HomeNav from "./HomeNav";
 import Splash from "./Splash";
 import WindowView from "./window/WindowView";
-import { choices, clearSky, loadPref, realWeather, savePref } from "./window/weather";
+import { choices } from "./window/weather";
+import { useScene } from "./window/useScene";
 import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
 // Default pictures until 曦曦 puts her own in — public domain, from The Met's
 // Open Access collection: Shibata Zeshin, Fox by Mystic Fire; William
@@ -89,26 +90,7 @@ function Polaroid({ item, src, custom, onOpen, onPick, onReset }) {
 
 export default function JournalHome({ today, dayCount, next, onOpen }) {
   const [photos, setPhotos] = useState({});
-  const [pref, setPref] = useState(loadPref);
-  const [outside, setOutside] = useState(() => clearSky());
-
-  useEffect(() => {
-    if (pref !== "auto") return undefined;
-    let alive = true;
-    realWeather().then((found) => {
-      if (alive) setOutside(found);
-    });
-    return () => {
-      alive = false;
-    };
-  }, [pref]);
-
-  const scene = pref === "auto" ? outside : pref === "sun" ? clearSky() : pref;
-
-  function choose(next) {
-    setPref(next);
-    savePref(next);
-  }
+  const { pref, scene, choose } = useScene();
 
   useEffect(() => {
     let alive = true;
