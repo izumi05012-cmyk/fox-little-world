@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import WindowView from "./window/WindowView";
-import { useScene } from "./window/useScene";
 import { useAvatars, useChatBackground } from "./useAvatars";
 import { clearPhoto, loadPhotos, saveBlob, savePhoto } from "./photoStore";
 import { useVoiceRecorder } from "./useVoiceRecorder";
@@ -110,8 +108,7 @@ function PictureSetting({ label, src, fallback, custom, onPick, onReset, wide })
   );
 }
 
-export default function Chat({ onBack, dayCount }) {
-  const { scene } = useScene();
+export default function Chat({ onBack, dayCount, scene }) {
   const avatars = useAvatars();
   const backdrop = useChatBackground();
   const background = backdrop.background;
@@ -225,11 +222,7 @@ export default function Chat({ onBack, dayCount }) {
 
   return (
     <main className="chat-page" data-dark={dark || undefined}>
-      {background ? (
-        <div className="chat-backdrop" style={{ backgroundImage: `url("${background.url}")` }} />
-      ) : (
-        <WindowView scene={scene} />
-      )}
+      {background && <div className="chat-backdrop" style={{ backgroundImage: `url("${background.url}")` }} />}
 
       <header className="glass chat-header">
         <button className="chat-key" onClick={onBack} aria-label="返回">

@@ -5,9 +5,9 @@ import foxes from "./assets/splash/foxes.webp";
 import heart from "./assets/splash/heart.webp";
 import "@fontsource/la-belle-aurore/400.css";
 import dayPic from "./assets/window/day.webp";
-import rainPic from "./assets/window/rain.webp";
 import snowPic from "./assets/window/snow.webp";
 import nightPic from "./assets/window/night.webp";
+import { rainView } from "./window/rainView";
 
 // Opening screen: a cold window fogged with condensation — uneven mist
 // over the whole glass, tiny beads, a few old runs — and a fingertip draws
@@ -16,7 +16,8 @@ import nightPic from "./assets/window/night.webp";
 // mist slowly thins and the page comes through. Shown once per browser
 // session; a tap skips it.
 const SEEN_KEY = "fox-splash-seen";
-const pictures = { day: dayPic, rain: rainPic, snow: snowPic, night: nightPic };
+const pictures = { day: dayPic, snow: snowPic, night: nightPic };
+const pictureFor = (scene) => (scene === "rain" ? rainView().picture : pictures[scene] || dayPic);
 
 const FOXES_AT = 0.6;
 const FOXES_TIME = 1.4;
@@ -255,7 +256,7 @@ function condensation(sharp, w, h, dpr, scene) {
 
 // gpuDrops: the running drops and beads are drawn by the same glass as
 // the rain window (rainGlass), so the 2D ones stay out
-function runSplash(view, scene, onReady, gpuDrops = false, src = pictures[scene] || dayPic) {
+function runSplash(view, scene, onReady, gpuDrops = false, src = pictureFor(scene)) {
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const w = Math.round(view.clientWidth * dpr);
   const h = Math.round(view.clientHeight * dpr);
@@ -478,7 +479,9 @@ export default function Splash({ scene = "day", picture }) {
   // and the picture, once it's known
   const chosen = useRef(undefined);
   if (chosen.current === undefined && picture !== undefined) {
-    chosen.current = picture || pictures[firstScene] || dayPic;
+    // her own picture is for rain and snow; clear skies keep their views
+    const weather = firstScene === "rain" || firstScene === "snow";
+    chosen.current = (weather && picture) || pictureFor(firstScene);
   }
   const known = chosen.current !== undefined;
 

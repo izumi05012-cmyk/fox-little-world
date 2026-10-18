@@ -3,14 +3,13 @@ import { day, night, rain, rainAir, snow } from "./effects";
 import { depthPhoto } from "./depthPhoto";
 import { rainGlass } from "./rainGlass";
 import { useWindowPicture } from "./windowPicture";
-import rainPic from "../assets/window/rain.webp";
+import { rainView } from "./rainView";
 import snowPic from "../assets/window/snow.webp";
 import dayPic from "../assets/window/day.webp";
 import nightPic from "../assets/window/night.webp";
 // sun, snow and night share one view and its depth map; rain has its own
-// (flowers at the glass, a rainy city beyond)
+// (see rainView)
 import depthMap from "../assets/window/depth.webp";
-import rainDepth from "../assets/window/rain-depth.webp";
 import skyMask from "../assets/window/sky.webp";
 
 // The view out of the little house's window, behind everything on the page.
@@ -22,7 +21,7 @@ const scenes = {
   // rain: the water on the glass is drawn on the GPU when it can be
   // (rainGlass), with only the weather beyond on the canvas; without
   // WebGL the canvas draws the drops too
-  rain: { picture: rainPic, depth: rainDepth, effect: rain, gpuGlass: rainGlass, air: rainAir, glass: "glass-rain" },
+  rain: { effect: rain, gpuGlass: rainGlass, air: rainAir, glass: "glass-rain" },
   snow: { picture: snowPic, effect: snow, glass: "glass-snow" },
   day: { picture: dayPic, effect: day, glass: "glass-clear" },
   night: { picture: nightPic, effect: night, glass: "glass-clear" },
@@ -40,20 +39,13 @@ const FLAT_DEPTH = (() => {
   return c.toDataURL();
 })();
 
-const none = () => undefined;
-
 // what one layer shows: the scene as it comes, or rain and snow (the
-// glass) over her own picture; clear skies over it stay plain, as the
-// stars and moon belong to the night view's own sky
+// glass) over her own picture. Clear skies keep the little house's own
+// views: her picture is for the weather to fall on.
 function resolve(scene, custom) {
-  const base = scenes[scene];
-  if (!custom) return { ...base, depth: base.depth || depthMap };
-  return {
-    ...base,
-    picture: custom,
-    depth: FLAT_DEPTH,
-    effect: scene === "rain" || scene === "snow" ? base.effect : scene === "day" ? day : none,
-  };
+  const base = scene === "rain" ? { ...scenes.rain, ...rainView() } : scenes[scene];
+  if (!custom || (scene !== "rain" && scene !== "snow")) return { ...base, depth: base.depth || depthMap };
+  return { ...base, picture: custom, depth: FLAT_DEPTH };
 }
 
 function SceneLayer({ scene, custom, leaving, motion }) {

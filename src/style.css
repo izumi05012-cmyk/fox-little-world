@@ -49,6 +49,9 @@ body {
   overflow-x: hidden;
 }
 
+/* the window (z-index -1) sits behind the pages but in front of the body */
+#root { isolation: isolate; }
+
 button, input { font: inherit; }
 button { color: inherit; }
 button:focus-visible, input:focus-visible {
@@ -736,7 +739,7 @@ button:focus-visible, input:focus-visible {
 .chat-backdrop {
   position: fixed;
   inset: 0;
-  z-index: -2;
+  z-index: -1;
   background: #2b2a33 center / cover no-repeat;
 }
 
@@ -1486,4 +1489,41 @@ html[data-scene="snow"], html[data-scene="snow"] body { background: #968a98; }
     opacity: 0;
     transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1) rotate(var(--spin));
   }
+}
+
+/* Turning pages, smooth as chocolate: the old page melts away and the new
+   one drifts in over the window, which stays live behind them (see
+   turnPage.js). The nav stays where it is between pages that have it. */
+.journal,
+.chat-list-page,
+.chat-page { view-transition-name: page; }
+.home-nav { view-transition-name: nav; }
+
+html[data-turn="forward"] { --turn: 1; }
+html[data-turn="back"] { --turn: -1; }
+
+::view-transition-old(root) { display: none; }
+::view-transition-new(root) { animation: none; }
+::view-transition-group(page) { animation: none; }
+::view-transition-old(page) { animation: page-out .42s cubic-bezier(.4, 0, .6, 1) both; }
+::view-transition-new(page) { animation: page-in .66s cubic-bezier(.16, .8, .3, 1) .08s both; }
+::view-transition-group(nav) { animation-duration: .5s; }
+
+@keyframes page-out {
+  to { opacity: 0; transform: translateX(calc(var(--turn, 1) * -22px)) scale(.985); filter: blur(5px); }
+}
+@keyframes page-in {
+  from { opacity: 0; transform: translateX(calc(var(--turn, 1) * 30px)) scale(1.01); filter: blur(6px); }
+}
+
+/* browsers without view transitions: the new page still fades in */
+@supports not (view-transition-name: none) {
+  .journal,
+  .chat-list-page,
+  .chat-page { animation: page-in .6s cubic-bezier(.16, .8, .3, 1) both; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .journal,
+  .chat-list-page,
+  .chat-page { animation: none; }
 }
