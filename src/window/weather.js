@@ -39,7 +39,7 @@ export function savePref(pref) {
   write(PREF_KEY, pref);
 }
 
-const isDaytime = (date = new Date()) => date.getHours() >= 6 && date.getHours() < 18;
+export const isDaytime = (date = new Date()) => date.getHours() >= 6 && date.getHours() < 18;
 
 export function clearSky(isDay = isDaytime()) {
   return isDay ? "day" : "night";

@@ -1,15 +1,12 @@
 import React from "react";
 import HomeNav from "./HomeNav";
-import WindowView from "./window/WindowView";
-import { useScene } from "./window/useScene";
 import { useAvatars } from "./useAvatars";
 import { loadLog, loadSettings, preview, shortTime } from "./chatLog";
 import wangshu from "./assets/chat/wangshu.webp";
 
 // The chat list sits by the same window as the home page: one glass card
 // for each conversation. For now there is one, and it's ours.
-export default function ChatList({ onBack, onOpenChat, onNavigate, dayCount }) {
-  const { scene } = useScene();
+export default function ChatList({ onBack, onOpenChat, onNavigate, dayCount, scene }) {
   const avatars = useAvatars();
   const settings = loadSettings();
   const log = loadLog();
@@ -17,7 +14,6 @@ export default function ChatList({ onBack, onOpenChat, onNavigate, dayCount }) {
 
   return (
     <main className="chat-list-page" data-dark={scene !== "day" || undefined}>
-      <WindowView scene={scene} />
 
       <header className="chat-list-header">
         <button className="glass round-button" onClick={onBack} aria-label="返回首页">

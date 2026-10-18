@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import HomeNav from "./HomeNav";
 import Splash from "./Splash";
-import WindowView from "./window/WindowView";
 import { choices } from "./window/weather";
-import { useScene } from "./window/useScene";
 import { pickWindowPicture, resetWindowPicture, useWindowPicture } from "./window/windowPicture";
 import { burst } from "./burst";
 import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
@@ -97,10 +95,10 @@ function Polaroid({ item, src, custom, editing, onEdit, onOpen, onPick, onReset 
   );
 }
 
-export default function JournalHome({ today, dayCount, next, onOpen }) {
+export default function JournalHome({ today, dayCount, next, onOpen, weather }) {
   const [photos, setPhotos] = useState({});
   const [editing, setEditing] = useState(null); // the polaroid being changed
-  const { pref, scene, choose } = useScene();
+  const { pref, scene, choose } = weather;
   const view = useWindowPicture();
   const viewInput = useRef(null);
 
@@ -131,7 +129,6 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
   return (
     <main className="journal" onClick={() => setEditing(null)}>
       <Splash scene={scene} picture={view} />
-      <WindowView scene={scene} />
 
       <header className="glass journal-today">
         <p className="journal-label">TODAY</p>

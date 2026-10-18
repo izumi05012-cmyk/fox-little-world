@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { turnPage } from "./turnPage";
+import WindowView from "./window/WindowView";
+import { useScene } from "./window/useScene";
 import ReactDOM from "react-dom/client";
 import "./style.css";
 
@@ -39,7 +42,7 @@ function nextSpecialDay(today) {
     .sort((a, b) => a.days - b.days)[0];
 }
 
-function Home({ onOpen }) {
+function Home({ onOpen, weather }) {
   const today = new Date();
   return (
     <JournalHome
@@ -47,30 +50,53 @@ function Home({ onOpen }) {
       dayCount={daysBetween(TOGETHER_SINCE, today) + 1}
       next={nextSpecialDay(today)}
       onOpen={onOpen}
+      weather={weather}
     />
   );
 }
 
+// deeper pages come in from the right, going back from the left
+const depth = { home: 0, "chat-list": 1, chat: 2 };
+
 function App() {
   const [page, setPage] = useState("home");
+  const weather = useScene();
+  const { scene } = weather;
   const dayCount = daysBetween(TOGETHER_SINCE, new Date()) + 1;
 
-  if (page === "chat") {
-    return <Chat onBack={() => setPage("chat-list")} dayCount={dayCount} />;
-  }
+  const go = (next) => {
+    if (next === page) return;
+    turnPage(() => {
+      setPage(next);
+      window.scrollTo(0, 0);
+    }, depth[next] > depth[page] ? "forward" : "back");
+  };
 
-  if (page === "chat-list") {
-    return (
+  let shown;
+  if (page === "chat") {
+    shown = <Chat onBack={() => go("chat-list")} dayCount={dayCount} scene={scene} />;
+  } else if (page === "chat-list") {
+    shown = (
       <ChatList
-        onBack={() => setPage("home")}
-        onOpenChat={() => setPage("chat")}
-        onNavigate={setPage}
+        onBack={() => go("home")}
+        onOpenChat={() => go("chat")}
+        onNavigate={go}
         dayCount={dayCount}
+        scene={scene}
       />
     );
+  } else {
+    shown = <Home onOpen={go} weather={weather} />;
   }
 
-  return <Home onOpen={setPage} />;
+  // the window stays put (and keeps raining) while the pages change in
+  // front of it
+  return (
+    <>
+      <WindowView scene={scene} />
+      {shown}
+    </>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(

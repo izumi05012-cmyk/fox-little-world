@@ -149,8 +149,8 @@ void main() {
   vec3 small = beads(p, 22.0, t, 0.08, 0.28, 0.34);
   vec3 tiny = beads(p + 0.37, 54.0, t * 1.3, 0.1, 0.32, 0.22);
   // two kinds of running drops: a few big heavy ones, more small ones
-  vec4 bigRun = runners(p, t, aspect, 5.0, 4.7, 0.3);
-  vec4 smallRun = runners(p + vec2(0.031, 0.0), t * 1.15, aspect, 9.0, 8.3, 0.24);
+  vec4 bigRun = runners(p, t, aspect, 6.0, 4.7, 0.16);
+  vec4 smallRun = runners(p + vec2(0.031, 0.0), t * 1.15, aspect, 10.0, 8.3, 0.13);
 
   vec2 n = small.xy * 0.9 + tiny.xy * 0.5 + bigRun.xy + smallRun.xy;
   float drop = clamp(max(max(small.z, tiny.z), max(bigRun.z, smallRun.z)), 0.0, 1.0);
