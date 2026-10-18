@@ -1337,6 +1337,13 @@ html[data-scene="snow"], html[data-scene="snow"] body { background: #968a98; }
   cursor: pointer;
 }
 
+.journal-weather-gap { flex: 1; }
+
+.journal-weather .journal-view {
+  border-style: dashed;
+  background: transparent;
+}
+
 .journal-weather button.active {
   border-color: var(--brick);
   color: var(--brick);

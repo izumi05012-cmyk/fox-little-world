@@ -255,7 +255,7 @@ function condensation(sharp, w, h, dpr, scene) {
 
 // gpuDrops: the running drops and beads are drawn by the same glass as
 // the rain window (rainGlass), so the 2D ones stay out
-function runSplash(view, scene, onReady, gpuDrops = false) {
+function runSplash(view, scene, onReady, gpuDrops = false, src = pictures[scene] || dayPic) {
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const w = Math.round(view.clientWidth * dpr);
   const h = Math.round(view.clientHeight * dpr);
@@ -266,7 +266,7 @@ function runSplash(view, scene, onReady, gpuDrops = false) {
   let stopped = false;
 
   const ready = Promise.all([
-    loadImage(pictures[scene] || dayPic),
+    loadImage(src),
     loadImage(foxes),
     loadImage(heart),
     document.fonts?.load(`48px "La Belle Aurore"`).catch(() => null),
@@ -465,7 +465,9 @@ function runSplash(view, scene, onReady, gpuDrops = false) {
 
 const GIVE_UP = 6; // seconds to wait for the pictures before just going in
 
-export default function Splash({ scene = "day" }) {
+// picture: her own view outside, if she chose one (undefined while that's
+// still being looked up, null for the usual views)
+export default function Splash({ scene = "day", picture }) {
   // loading: plain thick fog hiding the page; drawing: the finger at work
   const [stage, setStage] = useState(() => (alreadySeen() ? "gone" : "loading"));
   const view = useRef(null);
@@ -473,12 +475,18 @@ export default function Splash({ scene = "day" }) {
   // the view is chosen once, when the window first fogs up
   const [firstScene] = useState(scene);
   const showing = stage !== "gone";
+  // and the picture, once it's known
+  const chosen = useRef(undefined);
+  if (chosen.current === undefined && picture !== undefined) {
+    chosen.current = picture || pictures[firstScene] || dayPic;
+  }
+  const known = chosen.current !== undefined;
 
   useEffect(() => {
-    if (!showing || !view.current) return undefined;
+    if (!showing || !view.current || !known) return undefined;
     // the same water as the rain window: drops that hang, slip and leave a
     // clear trail; the opening draws its own fog, so no mist from the glass
-    const stopDrops = rainGlass(drops.current, pictures[firstScene] || dayPic, {
+    const stopDrops = rainGlass(drops.current, chosen.current, {
       mist: 0,
       zoom: 1,
       calm: 0.6,
@@ -488,13 +496,14 @@ export default function Splash({ scene = "day" }) {
       view.current,
       firstScene,
       () => setStage((current) => (current === "loading" ? "drawing" : current)),
-      Boolean(stopDrops)
+      Boolean(stopDrops),
+      chosen.current
     );
     return () => {
       stopSplash?.();
       stopDrops?.();
     };
-  }, [showing, firstScene]);
+  }, [showing, firstScene, known]);
 
   // the drawing gets its full time, counted from when it actually starts
   useEffect(() => {
