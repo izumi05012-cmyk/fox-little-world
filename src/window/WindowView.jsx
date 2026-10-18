@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { day, night, rain, rainAir, snow } from "./effects";
 import { depthPhoto } from "./depthPhoto";
 import { rainGlass } from "./rainGlass";
+import { useWindowPicture } from "./windowPicture";
 import rainPic from "../assets/window/rain.webp";
 import snowPic from "../assets/window/snow.webp";
 import dayPic from "../assets/window/day.webp";
@@ -29,15 +30,43 @@ const scenes = {
 
 const FADE_MS = 1400;
 
-function SceneLayer({ scene, leaving, motion }) {
+// her own picture has no depth map: an even grey moves it as one piece
+const FLAT_DEPTH = (() => {
+  const c = document.createElement("canvas");
+  c.width = c.height = 2;
+  const g = c.getContext("2d");
+  g.fillStyle = "#666";
+  g.fillRect(0, 0, 2, 2);
+  return c.toDataURL();
+})();
+
+const none = () => undefined;
+
+// what one layer shows: the scene as it comes, or rain and snow (the
+// glass) over her own picture; clear skies over it stay plain, as the
+// stars and moon belong to the night view's own sky
+function resolve(scene, custom) {
+  const base = scenes[scene];
+  if (!custom) return { ...base, depth: base.depth || depthMap };
+  return {
+    ...base,
+    picture: custom,
+    depth: FLAT_DEPTH,
+    effect: scene === "rain" || scene === "snow" ? base.effect : scene === "day" ? day : none,
+  };
+}
+
+function SceneLayer({ scene, custom, leaving, motion }) {
   const canvas = useRef(null);
   const picture = useRef(null);
   const depth = useRef(null);
   const glassHost = useRef(null);
   const [has3d, setHas3d] = useState(false);
 
+  const view = resolve(scene, custom);
+
   useEffect(() => {
-    const { effect, gpuGlass, air, picture: src } = scenes[scene];
+    const { effect, gpuGlass, air, picture: src } = resolve(scene, custom);
     const stopGlass = gpuGlass ? gpuGlass(glassHost.current, src) : null;
     const stopEffect = stopGlass
       ? air(canvas.current, picture.current)
@@ -46,20 +75,20 @@ function SceneLayer({ scene, leaving, motion }) {
       stopEffect?.();
       stopGlass?.();
     };
-  }, [scene]);
+  }, [scene, custom]);
 
   useEffect(() => {
-    const { picture: src, depth: map = depthMap } = scenes[scene];
+    const { picture: src, depth: map } = resolve(scene, custom);
     const stop = depthPhoto(depth.current, src, map, motion, () => setHas3d(true));
     return stop || undefined;
-  }, [scene, motion]);
+  }, [scene, custom, motion]);
 
   return (
-    <div className={`window-scene ${scenes[scene].glass} ${leaving ? "is-leaving" : ""} ${has3d ? "has-3d" : ""}`}>
-      <img ref={picture} className="window-outside" src={scenes[scene].picture} alt="" />
+    <div className={`window-scene ${view.glass} ${leaving ? "is-leaving" : ""} ${has3d ? "has-3d" : ""}`}>
+      <img ref={picture} className="window-outside" src={view.picture} alt="" />
       <div ref={depth} className="window-depth" />
       <canvas ref={canvas} className="window-glass" />
-      {scenes[scene].gpuGlass && <div ref={glassHost} className="window-rainglass-host" />}
+      {view.gpuGlass && <div ref={glassHost} className="window-rainglass-host" />}
       {scene === "snow" && (
         <>
           <i className="window-frost" />
@@ -71,25 +100,27 @@ function SceneLayer({ scene, leaving, motion }) {
 }
 
 export default function WindowView({ scene }) {
+  const custom = useWindowPicture();
   // keep the old scene around while it fades out under the new one
-  const [layers, setLayers] = useState([{ scene, key: 0, leaving: false }]);
+  const [layers, setLayers] = useState([]);
   const root = useRef(null);
   // where the viewer is, read every frame by the 3D photo
   const viewer = useRef({ x: 0, y: 0 });
   const [motion] = useState(() => () => viewer.current);
 
   useEffect(() => {
+    if (custom === undefined) return undefined; // still finding out
     setLayers((current) => {
       const top = current[current.length - 1];
-      if (top.scene === scene && !top.leaving) return current;
+      if (top && top.scene === scene && top.custom === custom && !top.leaving) return current;
       return [
         ...current.map((layer) => ({ ...layer, leaving: true })),
-        { scene, key: top.key + 1, leaving: false },
+        { scene, custom, key: top ? top.key + 1 : 0, leaving: false },
       ];
     });
     const timer = setTimeout(() => setLayers((current) => current.filter((l) => !l.leaving)), FADE_MS);
     return () => clearTimeout(timer);
-  }, [scene]);
+  }, [scene, custom]);
 
   // depth: scroll, finger/mouse position and phone tilt nudge the outside
   useEffect(() => {
@@ -134,7 +165,7 @@ export default function WindowView({ scene }) {
   return (
     <div className="window" ref={root} aria-hidden="true">
       {layers.map((layer) => (
-        <SceneLayer key={layer.key} scene={layer.scene} leaving={layer.leaving} motion={motion} />
+        <SceneLayer key={layer.key} scene={layer.scene} custom={layer.custom} leaving={layer.leaving} motion={motion} />
       ))}
     </div>
   );

@@ -4,6 +4,7 @@ import Splash from "./Splash";
 import WindowView from "./window/WindowView";
 import { choices } from "./window/weather";
 import { useScene } from "./window/useScene";
+import { pickWindowPicture, resetWindowPicture, useWindowPicture } from "./window/windowPicture";
 import { burst } from "./burst";
 import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
 // Default pictures until 曦曦 puts her own in — public domain, from The Met's
@@ -100,6 +101,8 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
   const [photos, setPhotos] = useState({});
   const [editing, setEditing] = useState(null); // the polaroid being changed
   const { pref, scene, choose } = useScene();
+  const view = useWindowPicture();
+  const viewInput = useRef(null);
 
   useEffect(() => {
     let alive = true;
@@ -127,7 +130,7 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
 
   return (
     <main className="journal" onClick={() => setEditing(null)}>
-      <Splash scene={scene} />
+      <Splash scene={scene} picture={view} />
       <WindowView scene={scene} />
 
       <header className="glass journal-today">
@@ -155,6 +158,27 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
               {choice.label}
             </button>
           ))}
+          <i className="journal-weather-gap" />
+          {/* her own picture outside; rain and snow fall over it too */}
+          <button className="journal-view" onClick={() => viewInput.current?.click()}>
+            换景
+          </button>
+          {view && (
+            <button className="journal-view" onClick={resetWindowPicture} aria-label="换回原来的窗外">
+              原景
+            </button>
+          )}
+          <input
+            ref={viewInput}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) pickWindowPicture(file);
+              event.target.value = "";
+            }}
+          />
         </div>
       </header>
 
