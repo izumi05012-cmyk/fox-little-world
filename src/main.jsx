@@ -8,6 +8,8 @@ import "./style.css";
 import Chat from "./Chat";
 import ChatList from "./ChatList";
 import JournalHome from "./JournalHome";
+import StickerBook from "./StickerBook";
+import Invitation from "./Invitation";
 import "@fontsource/noto-serif-sc/300.css";
 import "@fontsource/noto-serif-sc/400.css";
 import "@fontsource/long-cang/400.css";
@@ -56,7 +58,7 @@ function Home({ onOpen, weather }) {
 }
 
 // deeper pages come in from the right, going back from the left
-const depth = { home: 0, "chat-list": 1, chat: 2 };
+const depth = { home: 0, "chat-list": 1, more: 1, chat: 2, invite: 2 };
 
 function App() {
   const [page, setPage] = useState("home");
@@ -85,6 +87,10 @@ function App() {
         scene={scene}
       />
     );
+  } else if (page === "more") {
+    shown = <StickerBook onOpen={go} scene={scene} />;
+  } else if (page === "invite") {
+    shown = <Invitation onBack={() => go("more")} dayCount={dayCount} />;
   } else {
     shown = <Home onOpen={go} weather={weather} />;
   }

@@ -1505,7 +1505,9 @@ html[data-scene="snow"], html[data-scene="snow"] body { background: #968a98; }
    turnPage.js). The nav stays where it is between pages that have it. */
 .journal,
 .chat-list-page,
-.chat-page { view-transition-name: page; }
+.chat-page,
+.sticker-page,
+.invite-page { view-transition-name: page; }
 .home-nav { view-transition-name: nav; }
 
 html[data-turn="forward"] { --turn: 1; }
@@ -1529,10 +1531,290 @@ html[data-turn="back"] { --turn: -1; }
 @supports not (view-transition-name: none) {
   .journal,
   .chat-list-page,
-  .chat-page { animation: page-in .6s cubic-bezier(.16, .8, .3, 1) both; }
+  .chat-page,
+  .sticker-page,
+  .invite-page { animation: page-in .6s cubic-bezier(.16, .8, .3, 1) both; }
 }
 @media (prefers-reduced-motion: reduce) {
   .journal,
   .chat-list-page,
-  .chat-page { animation: none; }
+  .chat-page,
+  .sticker-page,
+  .invite-page { animation: none; }
 }
+
+/* =========================================================
+   STICKER BOOK — the "more" page: a sheet of torn-off stickers
+   ========================================================= */
+
+.sticker-page,
+.invite-page {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 26px 20px 132px;
+  color: var(--ink);
+  isolation: isolate;
+}
+
+.sticker-page:not([data-dark]) .chat-list-header { text-shadow: 0 0 8px rgba(255, 255, 255, .95), 0 0 2px rgba(255, 255, 255, .9); }
+.sticker-page[data-dark] .chat-list-header {
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(40, 34, 56, .55);
+}
+.sticker-page[data-dark] .chat-list-header .journal-label { color: rgba(255, 255, 255, .85); }
+
+/* the sheet the stickers sit on: pale sage paper, a little see-through */
+.sticker-sheet {
+  position: relative;
+  padding: 18px 14px 16px;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, .5) 0 1.5px, transparent 2px) 0 0 / 26px 26px,
+    linear-gradient(170deg, rgba(214, 228, 206, .86), rgba(196, 214, 190, .8));
+  box-shadow: 0 18px 40px -24px rgba(40, 50, 40, .55), inset 0 0 0 1px rgba(255, 255, 255, .45);
+  transform: rotate(-.6deg);
+}
+
+.sticker-note,
+.sticker-hint {
+  margin: 0;
+  color: #5d6e58;
+  font-family: var(--hand);
+  text-align: center;
+}
+.sticker-note { font-size: 18px; }
+.sticker-hint { margin-top: 6px; font-size: 13px; opacity: .8; }
+
+.sticker-board {
+  position: relative;
+  height: 0;
+  padding-bottom: 120%;
+  margin-top: 10px;
+}
+
+.sticker {
+  position: absolute;
+  margin: 0;
+  transform: rotate(var(--tilt));
+  transition: transform .25s ease;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  /* the shadow follows the torn edge */
+  filter: drop-shadow(0 3px 3px rgba(60, 50, 40, .22)) drop-shadow(0 10px 14px rgba(60, 50, 40, .12));
+}
+
+.sticker:active { transform: rotate(var(--tilt)) translateY(-3px) scale(1.03); }
+.sticker.is-editing { transform: rotate(var(--tilt)) scale(1.04); }
+.sticker.is-wiggling { animation: sticker-wiggle .55s ease; }
+
+@keyframes sticker-wiggle {
+  20% { transform: rotate(calc(var(--tilt) - 5deg)); }
+  50% { transform: rotate(calc(var(--tilt) + 4deg)); }
+  80% { transform: rotate(calc(var(--tilt) - 2deg)); }
+}
+
+.sticker-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+.sticker-label {
+  position: relative;
+  display: table;
+  margin: -10px auto 0;
+  padding: 4px 12px 5px;
+  background: #fffdf9;
+  color: #8a3a3f;
+  font-family: var(--hand);
+  font-size: 17px;
+  line-height: 1.1;
+  transform: rotate(calc(var(--tilt) * -1.4));
+}
+.sticker-label small {
+  margin-left: 4px;
+  color: var(--muted);
+  font-family: var(--serif);
+  font-size: 9px;
+  letter-spacing: .1em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker, .sticker.is-wiggling { animation: none; transition: none; }
+}
+
+/* =========================================================
+   INVITATION — our wedding invitation, 2026.10.03
+   ========================================================= */
+
+.invite-page .chat-list-header { margin-bottom: 14px; }
+
+.invite-card {
+  --invite-red: #8e2b2b;
+  --invite-blue: #7d9bc4;
+  position: relative;
+  padding: 34px 14px 30px;
+  border-radius: 4px;
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgba(255, 255, 255, .28), transparent 60%),
+    #e8c4b8;
+  color: var(--invite-red);
+  box-shadow: 0 24px 48px -26px rgba(80, 30, 30, .6), inset 0 0 0 6px rgba(255, 250, 245, .35), inset 0 0 0 7px rgba(201, 164, 92, .55);
+}
+
+.invite-title { position: relative; text-align: center; }
+.invite-title h1 {
+  margin: 0;
+  font-family: "La Belle Aurore", var(--hand);
+  font-size: clamp(38px, 11vw, 58px);
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.invite-title p {
+  margin: 2px 0 0;
+  font-family: var(--serif);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: .42em;
+}
+.invite-moon {
+  position: absolute;
+  top: -10px;
+  right: 9%;
+  width: 22px;
+  transform: rotate(-18deg);
+}
+
+.invite-collage {
+  position: relative;
+  height: 300px;
+  margin: 30px auto 0;
+  max-width: 360px;
+}
+.invite-photo {
+  position: absolute;
+  margin: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.invite-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.invite-photo.is-sticker img {
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(142, 43, 43, .28));
+}
+.invite-photo.is-photo {
+  padding: 4px;
+  background: #fbf4ef;
+  box-shadow: 0 6px 16px -8px rgba(142, 43, 43, .45);
+}
+.invite-photo.is-photo img { object-fit: cover; }
+.invite-photo-main { z-index: 1; top: 18px; left: 14%; width: 72%; height: 250px; transform: rotate(-2deg); }
+.invite-photo-back { z-index: 2; top: -4px; right: -2%; width: 30%; height: 112px; transform: rotate(8deg); }
+.invite-photo-low { z-index: 2; bottom: -8px; left: -2%; width: 32%; height: 124px; transform: rotate(-8deg); }
+.invite-photo.is-editing { z-index: 4; }
+.invite-pearls {
+  position: absolute;
+  z-index: 2;
+  top: -6px;
+  left: 4%;
+  width: 70%;
+  transform: rotate(-4deg);
+  pointer-events: none;
+}
+.invite-brooch {
+  position: absolute;
+  z-index: 3;
+  left: 72%;
+  top: 236px;
+  width: 50px;
+  transform: rotate(14deg);
+  filter: drop-shadow(0 2px 2px rgba(142, 43, 43, .3));
+  pointer-events: none;
+}
+
+.invite-date {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 36px;
+}
+.invite-date strong {
+  font-family: var(--serif);
+  font-size: clamp(76px, 24vw, 120px);
+  font-weight: 300;
+  line-height: .85;
+  letter-spacing: -.02em;
+}
+.invite-date span {
+  padding-bottom: 6px;
+  color: var(--invite-blue);
+  font-family: var(--serif);
+  font-size: 11px;
+  letter-spacing: .24em;
+  writing-mode: vertical-rl;
+}
+
+.invite-lead,
+.invite-vows {
+  max-width: 300px;
+  margin: 30px auto 0;
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 2.1;
+  letter-spacing: .16em;
+  text-align: center;
+}
+.invite-lead { font-size: 13px; font-weight: 400; }
+.invite-vows p { margin: 0; }
+
+.invite-vows {
+  padding: 18px 10px;
+  border-top: 1px solid rgba(201, 164, 92, .6);
+  border-bottom: 1px solid rgba(201, 164, 92, .6);
+}
+.invite-vow-who {
+  color: var(--invite-blue);
+  font-size: 10px;
+  letter-spacing: .4em;
+}
+.invite-vow { font-family: var(--hand); font-size: 17px; letter-spacing: .06em; line-height: 1.7; }
+.invite-vow + .invite-vow-who { margin-top: 14px !important; }
+
+.invite-reply {
+  margin-top: 28px;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 11px;
+  letter-spacing: .2em;
+}
+.invite-reply p { margin: 8px 0 0; }
+.invite-yes {
+  padding: 10px 30px;
+  border: 1px solid var(--invite-red);
+  border-radius: 999px;
+  background: rgba(255, 250, 245, .45);
+  color: var(--invite-red);
+  font-family: var(--hand);
+  font-size: 20px;
+  letter-spacing: .1em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.invite-yes.is-answered { background: var(--invite-red); color: #fbf1e6; }
+.invite-count { color: var(--invite-blue); }

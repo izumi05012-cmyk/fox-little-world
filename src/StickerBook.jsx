@@ -1,0 +1,119 @@
+import React, { useState } from "react";
+import HomeNav from "./HomeNav";
+import { burstFrom } from "./burst";
+import { ChangeMenu, useHoldToChange, usePictures } from "./PictureSlot";
+// drawn by 羲和
+import inviteArt from "./assets/stickers/invite.webp";
+import memoriesArt from "./assets/stickers/memories.webp";
+import calendarArt from "./assets/stickers/calendar.webp";
+import promiseArt from "./assets/stickers/promise.webp";
+
+// The "more" page: a sheet of stickers, each one a door into a little
+// corner of the world. 羲和 drew them torn off by hand, so none sit
+// straight; their name tags are torn the same way. Hold a sticker to put
+// another picture on it.
+
+const stickers = [
+  { id: "invite", label: "结婚请帖", page: "invite", tilt: -5, x: 4, y: 0, w: 46, art: inviteArt },
+  { id: "memories", label: "回忆", tilt: 4, x: 56, y: 3, w: 38, art: memoriesArt },
+  { id: "calendar", label: "纪念日", tilt: 6, x: 8, y: 50, w: 36, art: calendarArt },
+  { id: "promise", label: "拉钩本", tilt: -4, x: 50, y: 58, w: 44, art: promiseArt },
+];
+
+// a hand-torn outline for the name tags: points walk round the edge with
+// a little wobble, the same for a tag every time
+function tornEdge(seed) {
+  let s = seed * 9301 + 49297;
+  const rand = () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+  const pts = [];
+  const side = (from, to, fixed, horizontal) => {
+    for (let i = 0; i <= 9; i += 1) {
+      const t = from + ((to - from) * i) / 9;
+      const jag = fixed + (rand() - 0.5) * 3.2 * (fixed < 50 ? 1 : -1);
+      const along = t + (rand() - 0.5) * 1.5;
+      pts.push(horizontal ? `${along.toFixed(1)}% ${jag.toFixed(1)}%` : `${jag.toFixed(1)}% ${along.toFixed(1)}%`);
+    }
+  };
+  side(1.5, 98.5, 1.6, true); // top, left to right
+  side(1.5, 98.5, 98.4, false); // right, top to bottom
+  side(98.5, 1.5, 98.4, true); // bottom, right to left
+  side(98.5, 1.5, 1.6, false); // left, bottom to top
+  return `polygon(${pts.join(", ")})`;
+}
+
+function Sticker({ item, picture, onPick, onReset, onOpen }) {
+  const [wiggle, setWiggle] = useState(false);
+  const { editing, setEditing, handlers } = useHoldToChange((event) => {
+    const el = event.currentTarget;
+    if (item.page) {
+      burstFrom(el, "sparkle");
+      onOpen(item.page);
+      return;
+    }
+    // not drawn yet: a little shake, and a note that it's coming
+    setWiggle(true);
+    setTimeout(() => setWiggle(false), 600);
+  });
+
+  return (
+    <figure
+      className={`sticker ${editing ? "is-editing" : ""} ${wiggle ? "is-wiggling" : ""}`}
+      style={{ left: `${item.x}%`, top: `${item.y}%`, width: `${item.w}%`, "--tilt": `${item.tilt}deg` }}
+      {...handlers}
+    >
+      <img className="sticker-art" src={picture || item.art} alt="" draggable="false" />
+      <figcaption className="sticker-label" style={{ clipPath: tornEdge(item.id.length + 3) }}>
+        {item.label}
+        {!item.page && <small>画着呢</small>}
+      </figcaption>
+      {editing && (
+        <ChangeMenu
+          custom={Boolean(picture)}
+          onPick={(file) => onPick(`sticker-${item.id}`, file)}
+          onReset={() => onReset(`sticker-${item.id}`)}
+          onClose={() => setEditing(false)}
+        />
+      )}
+    </figure>
+  );
+}
+
+export default function StickerBook({ onOpen, scene }) {
+  const { pictures, pick, reset } = usePictures(
+    stickers.map((s) => `sticker-${s.id}`),
+    { raw: true }
+  );
+
+  return (
+    <main className="sticker-page" data-dark={scene !== "day" || undefined}>
+      <header className="chat-list-header">
+        <div>
+          <p className="journal-label">STICKER BOOK · 贴纸本</p>
+          <h1>更多</h1>
+        </div>
+      </header>
+
+      <section className="sticker-sheet">
+        <p className="sticker-note">撕下来一张，就是一扇小门。</p>
+        <div className="sticker-board">
+          {stickers.map((item) => (
+            <Sticker
+              key={item.id}
+              item={item}
+              picture={pictures[`sticker-${item.id}`]}
+              onPick={pick}
+              onReset={reset}
+              onOpen={onOpen}
+            />
+          ))}
+        </div>
+        <p className="sticker-hint">贴纸是羲和画的 · 长按可以换一张</p>
+      </section>
+
+      <HomeNav active="more" onOpen={onOpen} />
+    </main>
+  );
+}
