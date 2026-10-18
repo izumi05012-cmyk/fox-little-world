@@ -137,30 +137,37 @@ export const fogTones = {
   snow: [150, 138, 152],
   night: [36, 40, 60],
 };
-const fogLight = { day: 0.24, rain: 0.2, snow: 0.22, night: 0.12 };
+// fog is milky: light scattered in the droplets. Never plain white,
+// though: a lilac grey by day, a pale blue haze at night, so it reads as
+// fog without glaring
+const fogMilk = {
+  day: "rgba(212, 206, 222, .58)",
+  rain: "rgba(206, 204, 216, .34)",
+  snow: "rgba(218, 206, 216, .36)",
+  night: "rgba(120, 128, 164, .36)",
+};
+// the view through a wiped line is darker and sharper than the fog
+const clearShade = { day: 0.28, rain: 0.26, snow: 0.24, night: 0.12 };
 
 function condensation(sharp, w, h, dpr, scene) {
   // colour: the outside, defocused, with light bleeding through
   const color = softened(sharp, w, h, 26);
   const cg = color.getContext("2d");
-  cg.fillStyle = `rgba(244, 242, 247, ${fogLight[scene] ?? 0.42})`;
+  cg.fillStyle = fogMilk[scene] || fogMilk.day;
   cg.fillRect(0, 0, w, h);
-  // a bright sky behind fog still glares; dim it like a room with the
-  // lights off, so the opening never feels like a flash
-  if (scene === "day") {
-    cg.fillStyle = "rgba(70, 58, 80, .16)";
-    cg.fillRect(0, 0, w, h);
-  }
 
   // thickness: two scales of blotches multiplied, a little heavier low
   // down where condensation gathers; drawn larger than the screen so it
   // can drift slowly
   const dw = Math.round(w * 1.2);
   const dh = Math.round(h * 1.2);
-  const density = blotches(dw, dh, 70 * dpr, 0.55, 1);
+  // sharp views (sun, night) need thicker fog than the soft-focus rain
+  // and snow pictures to read as misted over
+  const sharpView = scene === "day" || scene === "night";
+  const density = blotches(dw, dh, 70 * dpr, sharpView ? 0.86 : 0.55, 1);
   const dg = density.getContext("2d");
   dg.globalCompositeOperation = "destination-in";
-  dg.drawImage(blotches(dw, dh, 18 * dpr, 0.78, 1), 0, 0);
+  dg.drawImage(blotches(dw, dh, 18 * dpr, sharpView ? 0.92 : 0.78, 1), 0, 0);
   const lean = dg.createLinearGradient(0, 0, 0, dh);
   lean.addColorStop(0, "rgba(255,255,255,.8)");
   lean.addColorStop(1, "rgba(255,255,255,1)");
@@ -276,7 +283,7 @@ function runSplash(view, scene, onReady) {
       const clear = canvas(w, h);
       const cl = clear.getContext("2d");
       cl.drawImage(sharp, 0, 0);
-      cl.fillStyle = "rgba(20, 22, 34, .14)";
+      cl.fillStyle = `rgba(20, 22, 34, ${clearShade[scene] ?? 0.14})`;
       cl.fillRect(0, 0, w, h);
 
       // now and then a bead gets heavy and slides, clearing a line
@@ -296,7 +303,7 @@ function runSplash(view, scene, onReady) {
       const artH = (artW * foxImg.naturalHeight) / foxImg.naturalWidth;
       const artX = (w - artW) / 2;
       const artY = h * 0.38 - artH / 2;
-      const thick = 1.1 * dpr;
+      const thick = 1.5 * dpr;
       const foxLines = fingerStroke(foxImg, artW, artH, thick);
       const heartLines = fingerStroke(heartImg, artW, artH, thick);
       const fontSize = Math.min(36 * dpr, w * 0.09);
