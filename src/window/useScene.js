@@ -20,6 +20,17 @@ export function useScene() {
 
   const scene = pref === "auto" ? outside : pref === "sun" ? clearSky() : pref;
 
+  // remembered for next time, so the page can open in the right colour
+  // before anything has loaded (see the little script in index.html)
+  useEffect(() => {
+    document.documentElement.dataset.scene = scene;
+    try {
+      localStorage.setItem("fox-last-scene", scene);
+    } catch {
+      // not remembered: next visit guesses from the clock
+    }
+  }, [scene]);
+
   function choose(next) {
     setPref(next);
     savePref(next);

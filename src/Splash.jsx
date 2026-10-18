@@ -129,11 +129,21 @@ function blotches(w, h, cell, lo, hi) {
 // Everything that makes the glass look fogged rather than just blurred:
 // the mist's colour (the view itself, softened and lifted), how thick it
 // is from place to place, a fine grain, condensation beads, old runs.
-function condensation(sharp, w, h, dpr) {
+// the colour of the fog for each view: pale by day, but at night it's the
+// dark of the room, so opening the page doesn't flash like a camera
+export const fogTones = {
+  day: [233, 231, 236],
+  rain: [96, 98, 112],
+  snow: [150, 138, 152],
+  night: [36, 40, 60],
+};
+const fogLight = { day: 0.42, rain: 0.26, snow: 0.3, night: 0.14 };
+
+function condensation(sharp, w, h, dpr, scene) {
   // colour: the outside, defocused, with light bleeding through
   const color = softened(sharp, w, h, 26);
   const cg = color.getContext("2d");
-  cg.fillStyle = "rgba(244, 242, 247, .42)";
+  cg.fillStyle = `rgba(244, 242, 247, ${fogLight[scene] ?? 0.42})`;
   cg.fillRect(0, 0, w, h);
 
   // thickness: two scales of blotches multiplied, a little heavier low
@@ -254,7 +264,7 @@ function runSplash(view, scene, onReady) {
       // the view, sharp, and the same view through fogged glass
       const sharp = canvas(w, h);
       cover(sharp.getContext("2d"), outside, w, h);
-      const fog = condensation(sharp, w, h, dpr);
+      const fog = condensation(sharp, w, h, dpr, scene);
       // through a wiped line the glass is clear, so it reads a touch
       // darker than the bright mist around it
       const clear = canvas(w, h);
@@ -419,7 +429,7 @@ function runSplash(view, scene, onReady) {
         // fade in from the plain loading fog so there's no jump
         const settle = 1 - ease(t / 0.6);
         if (settle > 0) {
-          ctx.fillStyle = `rgba(233, 231, 236, ${settle})`;
+          ctx.fillStyle = `rgba(${(fogTones[scene] || fogTones.day).join(", ")}, ${settle})`;
           ctx.fillRect(0, 0, w, h);
         }
 
@@ -478,6 +488,7 @@ export default function Splash({ scene = "day" }) {
   return (
     <div
       className={`splash ${stage === "leaving" ? "is-leaving" : ""}`}
+      style={{ background: `rgb(${(fogTones[firstScene] || fogTones.day).join(", ")})` }}
       onClick={() => setStage("leaving")}
       role="img"
       aria-label="Wangshu & Xi"

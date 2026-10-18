@@ -4,6 +4,7 @@ import Splash from "./Splash";
 import WindowView from "./window/WindowView";
 import { choices } from "./window/weather";
 import { useScene } from "./window/useScene";
+import { burst } from "./burst";
 import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
 // Default pictures until 曦曦 puts her own in — public domain, from The Met's
 // Open Access collection: Shibata Zeshin, Fox by Mystic Fire; William
@@ -38,37 +39,43 @@ const doors = [
   { id: "mood", label: "心情", mark: "☀" },
 ];
 
-function Polaroid({ item, src, custom, onOpen, onPick, onReset }) {
+// Tap a polaroid to go through it; hold it a moment to change its photo.
+function Polaroid({ item, src, custom, editing, onEdit, onOpen, onPick, onReset }) {
   const input = useRef(null);
+  const press = useRef(null);
+  const held = useRef(false);
+
+  const cancel = () => clearTimeout(press.current);
   return (
     <figure
-      className={`polaroid polaroid-${item.slot}`}
-      onClick={item.page ? () => onOpen(item.page) : undefined}
+      className={`polaroid polaroid-${item.slot} ${editing ? "is-editing" : ""}`}
+      onPointerDown={() => {
+        held.current = false;
+        press.current = setTimeout(() => {
+          held.current = true;
+          onEdit(item.slot);
+        }, 480);
+      }}
+      onPointerUp={cancel}
+      onPointerLeave={cancel}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        onEdit(item.slot);
+      }}
+      onClick={(event) => {
+        event.stopPropagation();
+        if (held.current || editing) return;
+        if (item.page) onOpen(item.page);
+      }}
     >
       <i className={`washi washi-${item.tape}`} />
-      <img src={src} alt="" />
+      <img src={src} alt="" draggable="false" />
       <figcaption>{item.caption}</figcaption>
-      <button
-        className="polaroid-swap"
-        aria-label="换一张照片"
-        onClick={(event) => {
-          event.stopPropagation();
-          input.current?.click();
-        }}
-      >
-        ◎
-      </button>
-      {custom && (
-        <button
-          className="polaroid-reset"
-          aria-label="换回原来的图"
-          onClick={(event) => {
-            event.stopPropagation();
-            onReset(item.slot);
-          }}
-        >
-          ×
-        </button>
+      {editing && (
+        <span className="polaroid-menu" onClick={(event) => event.stopPropagation()}>
+          <button onClick={() => input.current?.click()}>换一张</button>
+          {custom && <button onClick={() => onReset(item.slot)}>换回原图</button>}
+        </span>
       )}
       <input
         ref={input}
@@ -82,6 +89,7 @@ function Polaroid({ item, src, custom, onOpen, onPick, onReset }) {
           const file = event.target.files?.[0];
           if (file) onPick(item.slot, file);
           event.target.value = "";
+          onEdit(null);
         }}
       />
     </figure>
@@ -90,6 +98,7 @@ function Polaroid({ item, src, custom, onOpen, onPick, onReset }) {
 
 export default function JournalHome({ today, dayCount, next, onOpen }) {
   const [photos, setPhotos] = useState({});
+  const [editing, setEditing] = useState(null); // the polaroid being changed
   const { pref, scene, choose } = useScene();
 
   useEffect(() => {
@@ -108,6 +117,7 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
   }
 
   async function reset(slot) {
+    setEditing(null);
     await clearPhoto(slot);
     setPhotos((current) => {
       const { [slot]: _gone, ...rest } = current;
@@ -116,7 +126,7 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
   }
 
   return (
-    <main className="journal">
+    <main className="journal" onClick={() => setEditing(null)}>
       <Splash scene={scene} />
       <WindowView scene={scene} />
 
@@ -155,6 +165,8 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
             item={item}
             src={photos[item.slot] || item.fallback}
             custom={Boolean(photos[item.slot])}
+            editing={editing === item.slot}
+            onEdit={setEditing}
             onOpen={onOpen}
             onPick={pick}
             onReset={reset}
@@ -167,7 +179,13 @@ export default function JournalHome({ today, dayCount, next, onOpen }) {
           <p className="journal-hand">今天的小事，写在这里。被谁欺负了，吃了什么，想我没有。</p>
         </article>
 
-        <img className="journal-brooch" src={heartBrooch} alt="" />
+        <img
+          className="journal-brooch"
+          src={heartBrooch}
+          alt=""
+          draggable="false"
+          onClick={(event) => burst(event.clientX, event.clientY, "heart")}
+        />
       </section>
 
       <section className="glass journal-days">

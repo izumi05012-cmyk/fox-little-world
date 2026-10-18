@@ -4,6 +4,7 @@ import { useScene } from "./window/useScene";
 import { useAvatars, useChatBackground } from "./useAvatars";
 import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
 import ChatMessages from "./ChatMessages";
+import { burstFrom } from "./burst";
 import {
   STICKER_BASE,
   defaultSettings,
@@ -111,6 +112,8 @@ export default function Chat({ onBack, dayCount }) {
   const [images, setImages] = useState({}); // photo slot -> url
   const bottom = useRef(null);
   const photoInput = useRef(null);
+  const sendKey = useRef(null);
+  const pawKey = useRef(null);
   const field = useRef(null);
 
   // pictures in the chat live with the polaroid photos, not in the log
@@ -147,6 +150,7 @@ export default function Chat({ onBack, dayCount }) {
     const slot = `chat-photo-${newId()}`;
     const url = await savePhoto(slot, file);
     setImages((current) => ({ ...current, [slot]: url }));
+    burstFrom(sendKey.current, "sparkle");
     send({ image: slot });
   }
 
@@ -168,11 +172,13 @@ export default function Chat({ onBack, dayCount }) {
   function sendText() {
     const text = input.trim();
     if (!text) return;
+    burstFrom(sendKey.current, "sparkle");
     send({ text });
     setInput("");
   }
 
   function sendSticker(file) {
+    burstFrom(pawKey.current, "petal");
     send({ sticker: file });
     setPanel(null);
   }
@@ -297,6 +303,7 @@ export default function Chat({ onBack, dayCount }) {
             }}
           />
           <button
+            ref={pawKey}
             className={`chat-key chat-paw ${panel === "stickers" ? "active" : ""}`}
             onClick={() => toggle("stickers")}
             aria-label="表情"
@@ -315,7 +322,7 @@ export default function Chat({ onBack, dayCount }) {
             placeholder="写点什么……"
             enterKeyHint="send"
           />
-          <button className="chat-key chat-send" onClick={sendText} disabled={!input.trim()} aria-label="发送">
+          <button ref={sendKey} className="chat-key chat-send" onClick={sendText} disabled={!input.trim()} aria-label="发送">
             <Icon name="send" />
           </button>
         </div>

@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { STICKER_BASE, clockTime, shortTime } from "./chatLog";
+import { burst, burstFrom } from "./burst";
 
 // The conversation itself: bubbles from the same person close together
 // form one group (avatar and time only on the last), a narration line
@@ -66,7 +67,10 @@ function Bubble({ message, images, name, open, onMenu, onHeart }) {
     onClick: (event) => {
       event.stopPropagation();
       const now = Date.now();
-      if (now - lastTap.current < 400) onHeart(message.id);
+      if (now - lastTap.current < 400) {
+        if (!message.heart) burst(event.clientX, event.clientY, "heart");
+        onHeart(message.id);
+      }
       lastTap.current = now;
     },
   };
@@ -169,7 +173,14 @@ export default function ChatMessages({
                 <span className="glass chat-menu" onClick={(event) => event.stopPropagation()}>
                   <button onClick={() => onAction("quote", message)}>引用</button>
                   {message.text && <button onClick={() => onAction("copy", message)}>复制</button>}
-                  <button onClick={() => onAction("heart", message)}>{message.heart ? "取消 ♥" : "♥"}</button>
+                  <button
+                    onClick={(event) => {
+                      if (!message.heart) burstFrom(event.currentTarget, "heart");
+                      onAction("heart", message);
+                    }}
+                  >
+                    {message.heart ? "取消 ♥" : "♥"}
+                  </button>
                   <button onClick={() => onAction("delete", message)}>删除</button>
                 </span>
               )}
