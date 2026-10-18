@@ -25,7 +25,7 @@
   font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
   color: var(--ink);
   background: var(--paper);
-  color-scheme: light;
+  color-scheme: only light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -438,16 +438,36 @@ button:focus-visible, input:focus-visible {
 
 .chat-row.mine .chat-said { justify-items: end; }
 
-/* every bubble is a plain rounded pane of frosted glass */
+/* every bubble is a clear pane: the view shows through, softened, and
+   only the top edge catches a little light; no drawn outline */
+.chat-page {
+  --pane-hi: rgba(255, 255, 255, .5);
+  --pane-lo: rgba(255, 255, 255, .26);
+  --pane-mine-hi: rgba(255, 228, 235, .56);
+  --pane-mine-lo: rgba(255, 228, 235, .3);
+  --pane-edge: rgba(255, 255, 255, .2);
+  --pane-ink: var(--ink);
+}
+
+.chat-page[data-dark] {
+  --pane-hi: rgba(255, 255, 255, .16);
+  --pane-lo: rgba(255, 255, 255, .05);
+  --pane-mine-hi: rgba(255, 214, 224, .22);
+  --pane-mine-lo: rgba(255, 214, 224, .07);
+  --pane-edge: rgba(255, 255, 255, .16);
+  --pane-ink: #fff;
+}
+
 .chat-bubble {
   margin: 0;
-  padding: 10px 14px;
-  border: 1px solid rgba(255, 255, 255, .85);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, .62);
-  box-shadow: 0 8px 20px -14px rgba(90, 74, 82, .55);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
-  backdrop-filter: blur(14px) saturate(1.2);
+  padding: 10px 15px;
+  border: 1px solid var(--pane-edge);
+  border-radius: 20px;
+  background: linear-gradient(165deg, var(--pane-hi), var(--pane-lo));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 10px 24px -18px rgba(30, 24, 40, .6);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  backdrop-filter: blur(14px) saturate(1.25);
+  color: var(--pane-ink);
   font-size: 15px;
   line-height: 1.6;
   overflow-wrap: anywhere;
@@ -455,7 +475,7 @@ button:focus-visible, input:focus-visible {
 }
 
 .chat-row.mine .chat-bubble {
-  background: rgba(250, 226, 231, .7);
+  background: linear-gradient(165deg, var(--pane-mine-hi), var(--pane-mine-lo));
 }
 
 .chat-sticker {
@@ -556,6 +576,56 @@ button:focus-visible, input:focus-visible {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+/* her own picture behind the chat */
+.chat-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: #2b2a33 center / cover no-repeat;
+}
+
+.chat-setting-bg {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex: none;
+  border: 2px solid rgba(255, 255, 255, .9);
+  border-radius: 12px;
+  background: linear-gradient(160deg, #9fb3cf, #e7c9d1) center / cover;
+  color: #fff;
+  font-family: var(--hand);
+  font-size: 20px;
+}
+
+/* on a dark view the glass goes clear, like a pane of glass at night:
+   thin bright edges, white words, the picture showing through */
+.chat-page[data-dark]::before {
+  background: linear-gradient(180deg, rgba(20, 18, 30, .25), rgba(20, 18, 30, 0) 30%, rgba(20, 18, 30, .35));
+}
+
+.chat-page .chat-header,
+.chat-page .chat-compose-bar {
+  border: 1px solid var(--pane-edge);
+  background: linear-gradient(165deg, var(--pane-hi), var(--pane-lo));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 10px 26px -16px rgba(30, 24, 40, .55);
+  color: var(--pane-ink);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+}
+
+.chat-page[data-dark] .chat-header .round-button,
+.chat-page[data-dark] .chat-compose-bar input { color: #fff; }
+.chat-page[data-dark] .chat-title span,
+.chat-page[data-dark] .chat-compose-bar input::placeholder { color: rgba(255, 255, 255, .7); }
+.chat-page[data-dark] .chat-paw { background: rgba(255, 255, 255, .16); color: #fff; }
+
+.chat-page[data-dark] .vellum.chat-note {
+  border: 1px solid rgba(255, 255, 255, .35);
+  background: rgba(255, 255, 255, .1);
+  color: rgba(255, 255, 255, .8);
 }
 
 @keyframes chat-sheet-in {
