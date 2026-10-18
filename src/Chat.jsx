@@ -2,15 +2,16 @@ import React, { useEffect, useRef, useState } from "react";
 import WindowView from "./window/WindowView";
 import { useScene } from "./window/useScene";
 import { useAvatars, useChatBackground } from "./useAvatars";
+import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
+import ChatMessages from "./ChatMessages";
 import {
   STICKER_BASE,
-  clockTime,
   defaultSettings,
   loadLog,
   loadSettings,
+  preview,
   saveLog,
   saveSettings,
-  shortTime,
   stickers,
 } from "./chatLog";
 import wangshu from "./assets/chat/wangshu.webp";
@@ -26,6 +27,34 @@ function PawIcon() {
       <ellipse cx="17" cy="12" rx="4" ry="5" />
       <ellipse cx="25" cy="12" rx="4" ry="5" />
       <ellipse cx="32" cy="17" rx="4" ry="5" />
+    </svg>
+  );
+}
+
+// thin line icons, so every button speaks the same quiet language
+const icons = {
+  back: <path d="M15 5l-7 7 7 7" />,
+  more: (
+    <>
+      <circle cx="5" cy="12" r="1.3" />
+      <circle cx="12" cy="12" r="1.3" />
+      <circle cx="19" cy="12" r="1.3" />
+    </>
+  ),
+  photo: (
+    <>
+      <rect x="3.5" y="5" width="17" height="14" rx="3" />
+      <circle cx="9" cy="10" r="1.6" />
+      <path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5" />
+    </>
+  ),
+  send: <path d="M12 19V5M6 11l6-6 6 6" />,
+};
+
+function Icon({ name }) {
+  return (
+    <svg className="chat-icon" viewBox="0 0 24 24" aria-hidden="true">
+      {icons[name]}
     </svg>
   );
 }
@@ -67,23 +96,6 @@ function PictureSetting({ label, src, fallback, custom, onPick, onReset, wide })
   );
 }
 
-// a quiet date line wherever a new day starts
-function withDays(log) {
-  const out = [];
-  let lastDay = "";
-  for (const message of log) {
-    const d = new Date(message.at);
-    const day = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-    if (day !== lastDay) {
-      const label = shortTime(message.at);
-      out.push({ divider: true, id: `day-${day}`, label: label.includes(":") ? "今天" : label });
-      lastDay = day;
-    }
-    out.push(message);
-  }
-  return out;
-}
-
 export default function Chat({ onBack, dayCount }) {
   const { scene } = useScene();
   const avatars = useAvatars();
@@ -94,7 +106,27 @@ export default function Chat({ onBack, dayCount }) {
   const [settings, setSettings] = useState(loadSettings);
   const [input, setInput] = useState("");
   const [panel, setPanel] = useState(null); // null | "stickers" | "settings"
+  const [menuFor, setMenuFor] = useState(null); // the bubble whose menu is open
+  const [quoting, setQuoting] = useState(null);
+  const [images, setImages] = useState({}); // photo slot -> url
   const bottom = useRef(null);
+  const photoInput = useRef(null);
+  const field = useRef(null);
+
+  // pictures in the chat live with the polaroid photos, not in the log
+  useEffect(() => {
+    const slots = log.filter((m) => m.image).map((m) => m.image);
+    if (!slots.length) return undefined;
+    let alive = true;
+    loadPhotos(slots).then((found) => {
+      if (alive) setImages((current) => ({ ...found, ...current }));
+    });
+    return () => {
+      alive = false;
+    };
+    // only on arrival: new pictures add their own url when sent
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => saveLog(log), [log]);
   useEffect(() => saveSettings(settings), [settings]);
@@ -102,11 +134,35 @@ export default function Chat({ onBack, dayCount }) {
     bottom.current?.scrollIntoView({ block: "end" });
   }, [log.length]);
 
+  const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+
   function send(message) {
-    setLog((current) => [
-      ...current,
-      { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, from: "me", at: Date.now(), ...message },
-    ]);
+    const quote = quoting ? { from: quoting.from, text: preview(quoting) } : undefined;
+    setLog((current) => [...current, { id: newId(), from: "me", at: Date.now(), ...(quote && { quote }), ...message }]);
+    setQuoting(null);
+  }
+
+  async function sendPhoto(file) {
+    if (!file) return;
+    const slot = `chat-photo-${newId()}`;
+    const url = await savePhoto(slot, file);
+    setImages((current) => ({ ...current, [slot]: url }));
+    send({ image: slot });
+  }
+
+  function act(action, message) {
+    setMenuFor(null);
+    if (action === "heart") {
+      setLog((current) => current.map((m) => (m.id === message.id ? { ...m, heart: !m.heart } : m)));
+    } else if (action === "quote") {
+      setQuoting(message);
+      field.current?.focus();
+    } else if (action === "copy") {
+      navigator.clipboard?.writeText(message.text).catch(() => {});
+    } else if (action === "delete") {
+      if (message.image) clearPhoto(message.image);
+      setLog((current) => current.filter((m) => m.id !== message.id));
+    }
   }
 
   function sendText() {
@@ -132,8 +188,8 @@ export default function Chat({ onBack, dayCount }) {
       )}
 
       <header className="glass chat-header">
-        <button className="round-button plain" onClick={onBack} aria-label="返回">
-          ←
+        <button className="chat-key" onClick={onBack} aria-label="返回">
+          <Icon name="back" />
         </button>
         <Avatar src={avatars.him || wangshu} />
         <div className="chat-title">
@@ -141,12 +197,12 @@ export default function Chat({ onBack, dayCount }) {
           <span>在一起的第 {dayCount} 天</span>
         </div>
         <button
-          className="round-button plain"
+          className={`chat-key ${panel === "settings" ? "active" : ""}`}
           onClick={() => toggle("settings")}
           aria-label="聊天设置"
           aria-expanded={panel === "settings"}
         >
-          ⋯
+          <Icon name="more" />
         </button>
       </header>
 
@@ -186,42 +242,24 @@ export default function Chat({ onBack, dayCount }) {
         </section>
       )}
 
-      <section className="chat-messages" onClick={() => panel && setPanel(null)}>
-        {withDays(log).map((item) => {
-          if (item.divider) {
-            return (
-              <p key={item.id} className="chat-day">
-                {item.label}
-              </p>
-            );
-          }
-          if (item.from === "note") {
-            return (
-              <p key={item.id} className="vellum chat-note">
-                {item.text}
-              </p>
-            );
-          }
-          const mine = item.from === "me";
-          return (
-            <div key={item.id} className={`chat-row ${mine ? "mine" : ""}`}>
-              {mine ? (
-                <Avatar src={avatars.me} fallback="曦" />
-              ) : (
-                <Avatar src={avatars.him || wangshu} />
-              )}
-              <div className="chat-said">
-                {item.sticker ? (
-                  <img className="chat-sticker" src={STICKER_BASE + item.sticker} alt="表情" loading="lazy" />
-                ) : (
-                  <p className="chat-bubble">{item.text}</p>
-                )}
-                <time>{clockTime(item.at)}</time>
-              </div>
-            </div>
-          );
-        })}
-        <i ref={bottom} />
+      <section
+        className="chat-messages"
+        onClick={() => {
+          setPanel(null);
+          setMenuFor(null);
+        }}
+      >
+        <ChatMessages
+          log={log}
+          images={images}
+          name={settings.name}
+          meAvatar={<Avatar src={avatars.me} fallback="曦" />}
+          himAvatar={<Avatar src={avatars.him || wangshu} />}
+          menuFor={menuFor}
+          onMenu={setMenuFor}
+          onAction={act}
+          bottomRef={bottom}
+        />
       </section>
 
       <footer className="chat-compose">
@@ -234,9 +272,32 @@ export default function Chat({ onBack, dayCount }) {
             ))}
           </div>
         )}
+        {quoting && (
+          <p className="chat-quoting">
+            <span>
+              回复 {quoting.from === "me" ? "自己" : settings.name}：{preview(quoting)}
+            </span>
+            <button onClick={() => setQuoting(null)} aria-label="不引用了">
+              ×
+            </button>
+          </p>
+        )}
         <div className="glass chat-compose-bar">
+          <button className="chat-key" onClick={() => photoInput.current?.click()} aria-label="发图片">
+            <Icon name="photo" />
+          </button>
+          <input
+            ref={photoInput}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(event) => {
+              sendPhoto(event.target.files?.[0]);
+              event.target.value = "";
+            }}
+          />
           <button
-            className={`chat-paw ${panel === "stickers" ? "active" : ""}`}
+            className={`chat-key chat-paw ${panel === "stickers" ? "active" : ""}`}
             onClick={() => toggle("stickers")}
             aria-label="表情"
             aria-expanded={panel === "stickers"}
@@ -244,6 +305,7 @@ export default function Chat({ onBack, dayCount }) {
             <PawIcon />
           </button>
           <input
+            ref={field}
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={(event) => {
@@ -253,8 +315,8 @@ export default function Chat({ onBack, dayCount }) {
             placeholder="写点什么……"
             enterKeyHint="send"
           />
-          <button className="chat-send" onClick={sendText} disabled={!input.trim()} aria-label="发送">
-            ↑
+          <button className="chat-key chat-send" onClick={sendText} disabled={!input.trim()} aria-label="发送">
+            <Icon name="send" />
           </button>
         </div>
       </footer>
