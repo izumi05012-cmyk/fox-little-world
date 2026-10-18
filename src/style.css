@@ -1567,27 +1567,26 @@ html[data-turn="back"] { --turn: -1; }
 }
 .sticker-page[data-dark] .chat-list-header .journal-label { color: rgba(255, 255, 255, .85); }
 
-/* the sheet the stickers sit on: pale sage paper, a little see-through */
-.sticker-sheet {
-  position: relative;
-  padding: 18px 14px 16px;
-  border-radius: 6px;
-  background:
-    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, .5) 0 1.5px, transparent 2px) 0 0 / 26px 26px,
-    linear-gradient(170deg, rgba(214, 228, 206, .86), rgba(196, 214, 190, .8));
-  box-shadow: 0 18px 40px -24px rgba(40, 50, 40, .55), inset 0 0 0 1px rgba(255, 255, 255, .45);
-  transform: rotate(-.6deg);
-}
+/* no sheet: the stickers are stuck straight onto the window glass, so
+   the weather goes on behind them */
+.sticker-sheet { position: relative; padding: 4px 4px 12px; }
 
 .sticker-note,
 .sticker-hint {
   margin: 0;
-  color: #5d6e58;
+  color: var(--ink);
   font-family: var(--hand);
   text-align: center;
+  text-shadow: 0 0 8px rgba(255, 255, 255, .95), 0 0 2px rgba(255, 255, 255, .9);
 }
-.sticker-note { font-size: 18px; }
-.sticker-hint { margin-top: 6px; font-size: 13px; opacity: .8; }
+.sticker-note { font-size: 20px; }
+.sticker-hint { margin-top: 10px; font-size: 13px; opacity: .85; }
+
+.sticker-page[data-dark] .sticker-note,
+.sticker-page[data-dark] .sticker-hint {
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(40, 34, 56, .6);
+}
 
 .sticker-board {
   position: relative;
@@ -1606,8 +1605,8 @@ html[data-turn="back"] { --turn: -1; }
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   touch-action: manipulation;
-  /* the shadow follows the torn edge */
-  filter: drop-shadow(0 3px 3px rgba(60, 50, 40, .22)) drop-shadow(0 10px 14px rgba(60, 50, 40, .12));
+  /* stuck flat on the glass: only a faint shadow round the torn edge */
+  filter: drop-shadow(0 1px 1.5px rgba(40, 34, 40, .22)) drop-shadow(0 6px 12px rgba(40, 34, 40, .14));
 }
 
 .sticker:active { transform: rotate(var(--tilt)) translateY(-3px) scale(1.03); }
@@ -1626,6 +1625,10 @@ html[data-turn="back"] { --turn: -1; }
   height: auto;
   pointer-events: none;
 }
+
+/* after dark the room light is low: the stickers dim a little, warm */
+.sticker-page[data-dark] .sticker-art,
+.sticker-page[data-dark] .sticker-label { filter: brightness(.86) sepia(.08); }
 
 .sticker-label {
   position: relative;
