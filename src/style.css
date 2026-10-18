@@ -1371,13 +1371,11 @@ html[data-scene="snow"], html[data-scene="snow"] body { background: #968a98; }
 .window-scene {
   position: absolute;
   inset: 0;
-  animation: window-in 1.4s ease both;
+  opacity: 0;
   transition: opacity 1.4s ease;
 }
 
-.window-scene.is-leaving { opacity: 0; }
-
-@keyframes window-in { from { opacity: 0; } }
+.window-scene.is-ready { opacity: 1; }
 
 /* the outside is further away than the glass, so it drifts against it */
 .window-outside {

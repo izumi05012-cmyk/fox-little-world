@@ -500,13 +500,6 @@ export function snow(canvas) {
 export function day(canvas) {
   let motes = [];
   const sprite = softDot(16, "rgba(255,246,220,.9)");
-  const beams = [
-    { at: 0.18, width: 0.16, alpha: 0.16, speed: 0.13 },
-    { at: 0.42, width: 0.1, alpha: 0.12, speed: 0.19 },
-    { at: 0.6, width: 0.2, alpha: 0.14, speed: 0.09 },
-    { at: 0.86, width: 0.08, alpha: 0.1, speed: 0.23 },
-  ];
-
   const { ctx, dpr, resize, size } = setup(canvas, (w, h) => {
     motes = Array.from({ length: Math.round((w * h) / (9000 * dpr * dpr)) }, () => ({
       x: rand(0, w),
@@ -523,25 +516,16 @@ export function day(canvas) {
     const { w, h } = size();
     ctx.clearRect(0, 0, w, h);
 
-    // sunlight slanting in from the top right
+    // a soft warm light falling from above, like a lamp left on by the
+    // window: no beams, just a glow that slowly breathes
+    const breathe = 0.85 + 0.15 * Math.sin(t * 0.7);
+    const glow = ctx.createRadialGradient(w * 0.3, -h * 0.08, 0, w * 0.3, -h * 0.08, h * 0.75);
+    glow.addColorStop(0, `rgba(255, 226, 180, ${0.2 * breathe})`);
+    glow.addColorStop(0.45, `rgba(255, 232, 196, ${0.07 * breathe})`);
+    glow.addColorStop(1, "rgba(255, 236, 205, 0)");
     ctx.globalCompositeOperation = "lighter";
-    for (const b of beams) {
-      const a = b.alpha * (0.75 + 0.25 * Math.sin(t * b.speed * 6));
-      const x0 = w * (b.at + 0.55);
-      const x1 = w * (b.at - 0.35);
-      const half = (w * b.width) / 2;
-      const grad = ctx.createLinearGradient(x0, 0, x1, h);
-      grad.addColorStop(0, `rgba(255, 244, 210, ${a})`);
-      grad.addColorStop(1, "rgba(255, 244, 210, 0)");
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.moveTo(x0 - half, 0);
-      ctx.lineTo(x0 + half, 0);
-      ctx.lineTo(x1 + half * 2.2, h);
-      ctx.lineTo(x1 - half * 2.2, h);
-      ctx.closePath();
-      ctx.fill();
-    }
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, w, h);
 
     // dust floating in the light
     for (const m of motes) {
@@ -551,7 +535,7 @@ export function day(canvas) {
       if (m.y > h + 4) m.y = -4;
       if (m.x < -4) m.x = w + 4;
       if (m.x > w + 4) m.x = -4;
-      ctx.globalAlpha = 0.35 + 0.35 * Math.sin(t * 1.3 + m.phase);
+      ctx.globalAlpha = 0.22 + 0.22 * Math.sin(t * 1.3 + m.phase);
       ctx.drawImage(sprite, m.x - m.r * 2, m.y - m.r * 2, m.r * 4, m.r * 4);
     }
     ctx.globalAlpha = 1;

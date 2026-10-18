@@ -48,12 +48,24 @@ function resolve(scene, custom) {
   return { ...base, picture: custom, depth: FLAT_DEPTH };
 }
 
-function SceneLayer({ scene, custom, leaving, motion }) {
+function SceneLayer({ scene, custom, motion, onReady }) {
   const canvas = useRef(null);
   const picture = useRef(null);
   const depth = useRef(null);
   const glassHost = useRef(null);
   const [has3d, setHas3d] = useState(false);
+  // shown only once its picture is in, so nothing (the light, the glass)
+  // comes in ahead of the view
+  const [ready, setReady] = useState(false);
+  const shown = () => {
+    if (ready) return;
+    setReady(true);
+    onReady();
+  };
+
+  useEffect(() => {
+    if (picture.current?.complete && picture.current.naturalWidth) shown();
+  });
 
   const view = resolve(scene, custom);
 
@@ -76,8 +88,8 @@ function SceneLayer({ scene, custom, leaving, motion }) {
   }, [scene, custom, motion]);
 
   return (
-    <div className={`window-scene ${view.glass} ${leaving ? "is-leaving" : ""} ${has3d ? "has-3d" : ""}`}>
-      <img ref={picture} className="window-outside" src={view.picture} alt="" />
+    <div className={`window-scene ${view.glass} ${ready ? "is-ready" : ""} ${has3d ? "has-3d" : ""}`}>
+      <img ref={picture} className="window-outside" src={view.picture} alt="" onLoad={shown} onError={shown} />
       <div ref={depth} className="window-depth" />
       <canvas ref={canvas} className="window-glass" />
       {view.gpuGlass && <div ref={glassHost} className="window-rainglass-host" />}
@@ -93,8 +105,10 @@ function SceneLayer({ scene, custom, leaving, motion }) {
 
 export default function WindowView({ scene }) {
   const custom = useWindowPicture();
-  // keep the old scene around while it fades out under the new one
+  // the new scene fades in on top of the old one, which stays as it is
+  // underneath until it's covered (no dark gap in between)
   const [layers, setLayers] = useState([]);
+  const [readyKey, setReadyKey] = useState(-1);
   const root = useRef(null);
   // where the viewer is, read every frame by the 3D photo
   const viewer = useRef({ x: 0, y: 0 });
@@ -104,15 +118,18 @@ export default function WindowView({ scene }) {
     if (custom === undefined) return undefined; // still finding out
     setLayers((current) => {
       const top = current[current.length - 1];
-      if (top && top.scene === scene && top.custom === custom && !top.leaving) return current;
-      return [
-        ...current.map((layer) => ({ ...layer, leaving: true })),
-        { scene, custom, key: top ? top.key + 1 : 0, leaving: false },
-      ];
+      if (top && top.scene === scene && top.custom === custom) return current;
+      return [...current, { scene, custom, key: top ? top.key + 1 : 0 }];
     });
-    const timer = setTimeout(() => setLayers((current) => current.filter((l) => !l.leaving)), FADE_MS);
-    return () => clearTimeout(timer);
   }, [scene, custom]);
+
+  // once the top scene has faded all the way in, the ones under it go
+  useEffect(() => {
+    const top = layers[layers.length - 1];
+    if (!top || top.key !== readyKey || layers.length < 2) return undefined;
+    const timer = setTimeout(() => setLayers((current) => current.filter((l) => l.key >= top.key)), FADE_MS);
+    return () => clearTimeout(timer);
+  }, [layers, readyKey]);
 
   // depth: scroll, finger/mouse position and phone tilt nudge the outside
   useEffect(() => {
@@ -157,7 +174,13 @@ export default function WindowView({ scene }) {
   return (
     <div className="window" ref={root} aria-hidden="true">
       {layers.map((layer) => (
-        <SceneLayer key={layer.key} scene={layer.scene} custom={layer.custom} leaving={layer.leaving} motion={motion} />
+        <SceneLayer
+          key={layer.key}
+          scene={layer.scene}
+          custom={layer.custom}
+          motion={motion}
+          onReady={() => setReadyKey((k) => Math.max(k, layer.key))}
+        />
       ))}
     </div>
   );
