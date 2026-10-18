@@ -120,7 +120,6 @@ export default function WindowView({ scene }) {
       {layers.map((layer) => (
         <SceneLayer key={layer.key} scene={layer.scene} leaving={layer.leaving} motion={motion} />
       ))}
-      <i className="window-frame" />
     </div>
   );
 }

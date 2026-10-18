@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { STICKER_BASE, clockTime, shortTime } from "./chatLog";
 import { burst, burstFrom } from "./burst";
 
@@ -8,6 +8,58 @@ import { burst, burstFrom } from "./burst";
 // bubble can be quoted, copied, hearted or deleted.
 
 const GROUP_MS = 3 * 60 * 1000;
+const RECALL_MS = 2 * 60 * 1000;
+
+// two taps close together, on phones and with a mouse alike
+function doubleTap(callback) {
+  let last = 0;
+  return (event) => {
+    event.stopPropagation();
+    const now = Date.now();
+    if (now - last < 400) {
+      callback(event);
+      last = 0;
+    } else last = now;
+  };
+}
+
+// a voice message: a little glass pill with sound waves and seconds,
+// longer for longer messages; tap to play, tap again to stop
+function Voice({ message, url, mine }) {
+  const audio = useRef(null);
+  const [playing, setPlaying] = useState(false);
+  function toggle(event) {
+    event.stopPropagation();
+    if (!url) return;
+    if (!audio.current) {
+      audio.current = new Audio(url);
+      audio.current.onended = () => setPlaying(false);
+    }
+    if (playing) {
+      audio.current.pause();
+      audio.current.currentTime = 0;
+      setPlaying(false);
+    } else {
+      audio.current.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+    }
+  }
+  const width = Math.min(220, 74 + (message.seconds || 1) * 6);
+  return (
+    <button
+      className={`chat-bubble chat-voice ${playing ? "is-playing" : ""} ${mine ? "mine" : ""}`}
+      style={{ width }}
+      onClick={toggle}
+      aria-label={`语音 ${message.seconds} 秒`}
+    >
+      <span className="chat-voice-waves" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </span>
+      <span>{message.seconds}&apos;&apos;</span>
+    </button>
+  );
+}
 const isAside = (m) => typeof m.text === "string" && /^(\*[^*]+\*|[（(][^）)]+[）)])$/.test(m.text.trim());
 
 function dayKey(at) {
@@ -26,8 +78,8 @@ function layout(log) {
       out.push({ kind: "day", id: `day-${day}`, label: label.includes(":") ? "今天" : label });
       lastDay = day;
     }
-    if (message.from === "note") {
-      out.push({ kind: "note", message });
+    if (message.from === "note" || message.from === "pat" || message.from === "recalled") {
+      out.push({ kind: message.from, message });
       return;
     }
     if (isAside(message)) {
@@ -78,6 +130,8 @@ function Bubble({ message, images, name, open, onMenu, onHeart }) {
   let body;
   if (message.sticker) {
     body = <img className="chat-sticker" src={STICKER_BASE + message.sticker} alt="表情" loading="lazy" draggable="false" />;
+  } else if (message.voice) {
+    body = <Voice message={message} url={images[message.voice]} mine={message.from === "me"} />;
   } else if (message.image) {
     body = images[message.image] ? (
       <img className="chat-photo" src={images[message.image]} alt="图片" draggable="false" />
@@ -114,6 +168,7 @@ export default function ChatMessages({
   menuFor,
   onMenu,
   onAction,
+  onPat,
   bottomRef,
 }) {
   // the last time he spoke: anything of mine before that has been read
@@ -134,6 +189,21 @@ export default function ChatMessages({
           return (
             <p key={message.id} className="vellum chat-note">
               {message.text}
+            </p>
+          );
+        }
+        if (item.kind === "pat") {
+          const who = message.who === "him" ? `「${name}」的狐狸尾巴` : "自己";
+          return (
+            <p key={message.id} className="chat-pat">
+              我拍了拍{who}
+            </p>
+          );
+        }
+        if (item.kind === "recalled") {
+          return (
+            <p key={message.id} className="chat-pat">
+              你撤回了一条消息
             </p>
           );
         }
@@ -159,7 +229,15 @@ export default function ChatMessages({
         const mine = message.from === "me";
         return (
           <div key={message.id} className={`chat-row ${mine ? "mine" : ""} ${item.tail ? "tail" : ""}`}>
-            {mine ? meAvatar : himAvatar}
+            <span
+              className="chat-pat-target"
+              onClick={doubleTap((event) => {
+                burst(event.clientX, event.clientY, "paw");
+                onPat(mine ? "me" : "him");
+              })}
+            >
+              {mine ? meAvatar : himAvatar}
+            </span>
             <div className="chat-said">
               <Bubble
                 message={message}
@@ -181,6 +259,9 @@ export default function ChatMessages({
                   >
                     {message.heart ? "取消 ♥" : "♥"}
                   </button>
+                  {mine && Date.now() - message.at < RECALL_MS && (
+                    <button onClick={() => onAction("recall", message)}>撤回</button>
+                  )}
                   <button onClick={() => onAction("delete", message)}>删除</button>
                 </span>
               )}

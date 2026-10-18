@@ -132,12 +132,12 @@ function blotches(w, h, cell, lo, hi) {
 // the colour of the fog for each view: pale by day, but at night it's the
 // dark of the room, so opening the page doesn't flash like a camera
 export const fogTones = {
-  day: [233, 231, 236],
+  day: [190, 186, 198],
   rain: [96, 98, 112],
   snow: [150, 138, 152],
   night: [36, 40, 60],
 };
-const fogLight = { day: 0.42, rain: 0.26, snow: 0.3, night: 0.14 };
+const fogLight = { day: 0.24, rain: 0.2, snow: 0.22, night: 0.12 };
 
 function condensation(sharp, w, h, dpr, scene) {
   // colour: the outside, defocused, with light bleeding through
@@ -145,6 +145,12 @@ function condensation(sharp, w, h, dpr, scene) {
   const cg = color.getContext("2d");
   cg.fillStyle = `rgba(244, 242, 247, ${fogLight[scene] ?? 0.42})`;
   cg.fillRect(0, 0, w, h);
+  // a bright sky behind fog still glares; dim it like a room with the
+  // lights off, so the opening never feels like a flash
+  if (scene === "day") {
+    cg.fillStyle = "rgba(70, 58, 80, .16)";
+    cg.fillRect(0, 0, w, h);
+  }
 
   // thickness: two scales of blotches multiplied, a little heavier low
   // down where condensation gathers; drawn larger than the screen so it

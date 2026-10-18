@@ -71,3 +71,13 @@ export async function clearPhoto(slot) {
     // nothing stored, nothing to clear
   }
 }
+
+// anything else worth keeping as it is (a voice message, say)
+export async function saveBlob(slot, blob) {
+  try {
+    await run("readwrite", (store) => store.put(blob, slot));
+  } catch {
+    // still playable for this visit even if it couldn't be kept
+  }
+  return URL.createObjectURL(blob);
+}
