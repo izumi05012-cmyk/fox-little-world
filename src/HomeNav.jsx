@@ -26,7 +26,7 @@ export default function HomeNav({ active, onOpen }) {
       {navItems.map((item) => {
         const isActive = item.id === active;
         // only pages that exist can be opened for now
-        const canOpen = !isActive && (item.id === "home" || item.id === "chat-list");
+        const canOpen = !isActive && (item.id === "home" || item.id === "chat-list" || item.id === "more");
         return (
           <button
             key={item.id}
