@@ -10,9 +10,13 @@
 // flips, so the rim picks up darker or brighter bits of the scene on its
 // own, the way real drops do.
 //
-// rainGlass(host, pictureSrc) puts a transparent canvas in `host` and
-// returns stop(), or null without WebGL (the caller falls back to the
-// canvas rain).
+// rainGlass(host, pictureSrc, { mist, zoom }) puts a transparent canvas
+// in `host` and returns stop(), or null without WebGL (the caller falls
+// back to the canvas rain). `mist` is how misted the pane is (0 when
+// something else draws the fog, like the opening); `zoom` matches how the
+// picture underneath is fitted (0.9 for the 3D photo, 1 for a plain cover);
+// `calm` (0..1) thins out the drops; `startAt` is how many seconds of rain
+// have already fallen when it appears.
 
 const VERTEX = `
 attribute vec2 aPos;
@@ -29,6 +33,9 @@ uniform sampler2D uSoft;
 uniform vec2 uRes;
 uniform vec2 uCover;
 uniform float uTime;
+uniform float uMist;
+uniform float uZoom;
+uniform float uCalm;
 varying vec2 vUv;
 
 float hash(vec2 p) {
@@ -37,9 +44,10 @@ float hash(vec2 p) {
   return fract(p.x * p.y);
 }
 
-// the view, fitted like the 3D photo underneath (cover, zoomed a little)
+// the view, fitted like whatever is underneath (cover, maybe zoomed a
+// little, as the 3D photo is)
 vec2 sceneUv(vec2 uv) {
-  vec2 s = (uv - 0.5) * uCover * 0.9 + 0.5;
+  vec2 s = (uv - 0.5) * uCover * uZoom + 0.5;
   return vec2(s.x, 1.0 - s.y);
 }
 
@@ -50,7 +58,7 @@ vec3 beads(vec2 p, float cells, float t, float sizeMin, float sizeMax, float sha
   vec2 id = floor(g);
   vec2 f = fract(g) - 0.5;
   float h = hash(id);
-  if (h > share) return vec3(0.0);
+  if (h > share * (1.0 - 0.45 * uCalm)) return vec3(0.0);
   vec2 c = (vec2(hash(id + 3.1), hash(id + 7.7)) - 0.5) * 0.5;
   float life = fract(t * (0.03 + 0.05 * hash(id + 1.3)) + h * 7.0);
   float grow = smoothstep(0.0, 0.25, life) * smoothstep(1.0, 0.75, life);
@@ -87,9 +95,15 @@ vec4 runners(vec2 p, float t, float aspect, float cols, float seed, float big) {
   float hc = hash(vec2(col + seed, cycle));
   float hd = hash(vec2(cycle, col + seed * 2.0));
   // not every lane has a drop every time: the glass stays calm
-  float on = step(0.32, hc);
+  float on = step(0.32 + 0.4 * uCalm, hc);
   float k = 2.0 + floor(hd * 4.0);
   float y = 1.12 - 1.3 * slip(fract(run), k);
+  // each lane wakes at its own moment in the first few seconds, and a
+  // trail only reaches back to where its drop really set off from
+  float wake = hash(vec2(col, seed + 9.9)) * 8.0;
+  on *= step(wake, t);
+  float runWake = wake * speed + h * 13.0;
+  float top = floor(runWake) == cycle ? 1.12 - 1.3 * slip(fract(runWake), k) : 1.12;
   float centre = (col + 0.25 + 0.5 * hd) * cw;
   float sway = cw * (0.06 + 0.3 * hash(vec2(col, cycle + 3.3)));
   float wh = h + hc;
@@ -111,7 +125,7 @@ vec4 runners(vec2 p, float t, float aspect, float cols, float seed, float big) {
   float px = centre + wander(p.y * (0.7 + 0.6 * hd), wh) * sway;
   float lane = smoothstep(r * 0.66, r * 0.12, abs(p.x - px));
   float trail = lane * smoothstep(-0.01, 0.03, above) * exp(-max(above, 0.0) * 2.2) * on;
-  trail *= step(above, 1.4);
+  trail *= step(above, 1.4) * step(p.y, top + 0.02);
 
   // little drops it leaves behind in the trail
   float step_ = cw * 0.55;
@@ -154,7 +168,7 @@ void main() {
   // the mist: the view softened, a little milkier
   vec3 mist = texture2D(uSoft, sceneUv(vUv)).rgb;
   mist = mix(mist, vec3(0.80, 0.83, 0.88), 0.26);
-  float mistA = 0.5 * (1.0 - clear);
+  float mistA = uMist * (1.0 - clear);
 
   // the wet lane a drop leaves: clear of mist, a thin film of water that
   // sharpens the view and catches a little light
@@ -206,7 +220,7 @@ function softened(img) {
   return c;
 }
 
-export function rainGlass(host, pictureSrc) {
+export function rainGlass(host, pictureSrc, { mist = 0.5, zoom = 0.9, calm = 0, startAt = 40 } = {}) {
   const canvas = document.createElement("canvas");
   canvas.className = "window-rainglass";
   const gl = canvas.getContext("webgl", { premultipliedAlpha: true, alpha: true, antialias: false });
@@ -231,6 +245,9 @@ export function rainGlass(host, pictureSrc) {
   const uRes = gl.getUniformLocation(program, "uRes");
   const uCover = gl.getUniformLocation(program, "uCover");
   const uTime = gl.getUniformLocation(program, "uTime");
+  gl.uniform1f(gl.getUniformLocation(program, "uMist"), mist);
+  gl.uniform1f(gl.getUniformLocation(program, "uZoom"), zoom);
+  gl.uniform1f(gl.getUniformLocation(program, "uCalm"), calm);
   gl.uniform1i(gl.getUniformLocation(program, "uSharp"), 0);
   gl.uniform1i(gl.getUniformLocation(program, "uSoft"), 1);
 
@@ -243,7 +260,9 @@ export function rainGlass(host, pictureSrc) {
   let ready = false;
   let stopped = false;
   let raf = 0;
-  const start = performance.now() - 40000; // begin mid-shower, not on a dry pane
+  // the window begins mid-shower, not on a dry pane; the opening begins
+  // nearly fresh, so drops arrive one by one
+  const start = performance.now() - startAt * 1000;
 
   function frame(now) {
     if (stopped) return;

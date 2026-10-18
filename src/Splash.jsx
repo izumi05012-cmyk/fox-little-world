@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { rainGlass } from "./window/rainGlass";
 // 曦曦's drawing of the two of us, cheek to cheek
 import foxes from "./assets/splash/foxes.webp";
 import heart from "./assets/splash/heart.webp";
@@ -252,7 +253,9 @@ function condensation(sharp, w, h, dpr, scene) {
   return { color, density, grain, beads, runs };
 }
 
-function runSplash(view, scene, onReady) {
+// gpuDrops: the running drops and beads are drawn by the same glass as
+// the rain window (rainGlass), so the 2D ones stay out
+function runSplash(view, scene, onReady, gpuDrops = false) {
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   const w = Math.round(view.clientWidth * dpr);
   const h = Math.round(view.clientHeight * dpr);
@@ -287,7 +290,7 @@ function runSplash(view, scene, onReady) {
       cl.fillRect(0, 0, w, h);
 
       // now and then a bead gets heavy and slides, clearing a line
-      const sliders = Array.from({ length: 3 }, (_, i) => ({
+      const sliders = gpuDrops ? [] : Array.from({ length: 3 }, (_, i) => ({
         at: 0.8 + i * 1.4 + rand(0, 0.8),
         // off to the sides, so none runs through the drawing
         x: (i % 2 ? rand(0.78, 0.94) : rand(0.06, 0.22)) * w,
@@ -422,7 +425,7 @@ function runSplash(view, scene, onReady) {
         ctx.globalAlpha = mist;
         ctx.drawImage(frame, 0, 0);
         ctx.drawImage(fog.grain, 0, 0);
-        ctx.drawImage(fog.beads, 0, 0);
+        if (!gpuDrops) ctx.drawImage(fog.beads, 0, 0);
         ctx.globalAlpha = 1;
         for (const d of sliders) {
           if (d.cy === undefined || d.cy > h + d.r) continue;
@@ -466,15 +469,31 @@ export default function Splash({ scene = "day" }) {
   // loading: plain thick fog hiding the page; drawing: the finger at work
   const [stage, setStage] = useState(() => (alreadySeen() ? "gone" : "loading"));
   const view = useRef(null);
+  const drops = useRef(null);
   // the view is chosen once, when the window first fogs up
   const [firstScene] = useState(scene);
   const showing = stage !== "gone";
 
   useEffect(() => {
     if (!showing || !view.current) return undefined;
-    return runSplash(view.current, firstScene, () =>
-      setStage((current) => (current === "loading" ? "drawing" : current))
+    // the same water as the rain window: drops that hang, slip and leave a
+    // clear trail; the opening draws its own fog, so no mist from the glass
+    const stopDrops = rainGlass(drops.current, pictures[firstScene] || dayPic, {
+      mist: 0,
+      zoom: 1,
+      calm: 0.6,
+      startAt: 0,
+    });
+    const stopSplash = runSplash(
+      view.current,
+      firstScene,
+      () => setStage((current) => (current === "loading" ? "drawing" : current)),
+      Boolean(stopDrops)
     );
+    return () => {
+      stopSplash?.();
+      stopDrops?.();
+    };
   }, [showing, firstScene]);
 
   // the drawing gets its full time, counted from when it actually starts
@@ -507,6 +526,7 @@ export default function Splash({ scene = "day" }) {
       aria-label="Wangshu & Xi"
     >
       <canvas ref={view} className="splash-glass" />
+      <div ref={drops} className="splash-drops" />
     </div>
   );
 }

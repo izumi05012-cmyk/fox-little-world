@@ -1053,6 +1053,13 @@ html[data-scene="snow"], html[data-scene="snow"] body { background: #968a98; }
   height: 100%;
 }
 
+/* the running drops, drawn by the rain window's glass, over the fog */
+.splash-drops {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 /* =========================================================
    JOURNAL HOME — taped polaroids + frosted glass
    ========================================================= */
