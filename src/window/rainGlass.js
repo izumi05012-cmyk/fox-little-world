@@ -55,8 +55,11 @@ vec3 beads(vec2 p, float cells, float t, float sizeMin, float sizeMax, float sha
   float life = fract(t * (0.03 + 0.05 * hash(id + 1.3)) + h * 7.0);
   float grow = smoothstep(0.0, 0.25, life) * smoothstep(1.0, 0.75, life);
   float r = mix(sizeMin, sizeMax, hash(id + 5.2)) * (0.55 + 0.45 * grow);
-  vec2 d = (f - c) * vec2(1.0, 1.08);
-  float dist = length(d);
+  // no two alike: some round, some squashed, some a little lopsided
+  float h2 = hash(id + 9.4);
+  vec2 d = (f - c) * vec2(1.0, 0.85 + 0.45 * h2);
+  float wob = 1.0 + 0.12 * sin(atan(d.y, d.x) * 3.0 + h * 6.28) * hash(id + 2.2);
+  float dist = length(d) / wob;
   float m = smoothstep(r, r * 0.72, dist) * grow;
   return vec3(d / r * m, m);
 }
@@ -71,35 +74,41 @@ float wander(float y, float h) {
   return sin(y * 9.0 + h * 6.28) * 0.5 + sin(y * 23.0 + h * 2.0) * 0.18;
 }
 
-// drops that run: lens (xy), drop (z), and the clear trail behind (w)
-vec4 runners(vec2 p, float t, float aspect) {
-  float cols = 6.0;
+// drops that run: lens (xy), drop (z), and the clear trail behind (w).
+// Each one is its own: size, how heavy (how long its tail), where in its
+// lane it starts, how much it wanders, how fast, how often it stops.
+vec4 runners(vec2 p, float t, float aspect, float cols, float seed, float big) {
   float cw = aspect / cols;
   float col = floor(p.x / cw);
-  float h = hash(vec2(col, 4.7));
-  float speed = 0.06 + 0.06 * h;
+  float h = hash(vec2(col, seed));
+  float speed = 0.05 + 0.08 * h;
   float run = t * speed + h * 13.0;
   float cycle = floor(run);
-  // not every column has a drop every time: the glass stays calm
-  float on = step(0.35, hash(vec2(col, cycle)));
-  float k = 3.0 + floor(hash(vec2(col, cycle + 0.5)) * 3.0);
+  float hc = hash(vec2(col + seed, cycle));
+  float hd = hash(vec2(cycle, col + seed * 2.0));
+  // not every lane has a drop every time: the glass stays calm
+  float on = step(0.32, hc);
+  float k = 2.0 + floor(hd * 4.0);
   float y = 1.12 - 1.3 * slip(fract(run), k);
-  float centre = (col + 0.5) * cw;
-  float sway = cw * 0.22;
-  float x = centre + wander(y, h) * sway;
-  float r = cw * (0.24 + 0.08 * hash(vec2(col, cycle + 1.7)));
+  float centre = (col + 0.25 + 0.5 * hd) * cw;
+  float sway = cw * (0.06 + 0.3 * hash(vec2(col, cycle + 3.3)));
+  float wh = h + hc;
+  float x = centre + wander(y * (0.7 + 0.6 * hd), wh) * sway;
+  float r = cw * big * (0.5 + 0.55 * hash(vec2(col, cycle + 1.7)));
 
-  // the drop: rounder on top, heavier below
+  // the drop: rounder on top, heavier below; heavier drops hang longer
+  float heavy = 0.62 + 0.3 * hash(vec2(col, cycle + 5.9));
   vec2 d = p - vec2(x, y);
-  d.y *= d.y < 0.0 ? 0.78 : 1.12;
-  float dist = length(d);
+  d.x *= 0.9 + 0.25 * hd;
+  d.y *= d.y < 0.0 ? heavy : 1.1;
+  float dist = length(d) * (1.0 + 0.08 * sin(atan(d.y, d.x) * 2.0 + wh * 5.0));
   float m = smoothstep(r, r * 0.7, dist) * on;
   vec2 n = d / r * m;
 
   // the trail: wiped clear along the path it took, closing up again
   // further back
   float above = p.y - y;
-  float px = centre + wander(p.y, h) * sway;
+  float px = centre + wander(p.y * (0.7 + 0.6 * hd), wh) * sway;
   float lane = smoothstep(r * 0.66, r * 0.12, abs(p.x - px));
   float trail = lane * smoothstep(-0.01, 0.03, above) * exp(-max(above, 0.0) * 2.2) * on;
   trail *= step(above, 1.4);
@@ -107,10 +116,10 @@ vec4 runners(vec2 p, float t, float aspect) {
   // little drops it leaves behind in the trail
   float step_ = cw * 0.55;
   float cy = floor(p.y / step_);
-  float th = hash(vec2(col, cy + cycle * 13.0));
+  float th = hash(vec2(col, cy + cycle * 13.0 + seed));
   float ty = (cy + 0.5) * step_ + (th - 0.5) * step_ * 0.3;
-  vec2 td = p - vec2(centre + wander(ty, h) * sway, ty);
-  float tr = r * (0.25 + 0.2 * th);
+  vec2 td = p - vec2(centre + wander(ty * (0.7 + 0.6 * hd), wh) * sway, ty);
+  float tr = r * (0.2 + 0.25 * th);
   float tm = smoothstep(tr, tr * 0.7, length(td)) * step(0.5, th) * smoothstep(0.0, 0.05, ty - y) * trail * 1.6;
   n += td / tr * min(tm, 1.0);
   m = max(m, min(tm, 1.0));
@@ -123,13 +132,15 @@ void main() {
   vec2 p = vec2(vUv.x * aspect, vUv.y);
   float t = uTime;
 
-  vec3 small = beads(p, 24.0, t, 0.10, 0.24, 0.28);
-  vec3 tiny = beads(p + 0.37, 58.0, t * 1.3, 0.12, 0.3, 0.16);
-  vec4 run = runners(p, t, aspect);
+  vec3 small = beads(p, 22.0, t, 0.08, 0.28, 0.34);
+  vec3 tiny = beads(p + 0.37, 54.0, t * 1.3, 0.1, 0.32, 0.22);
+  // two kinds of running drops: a few big heavy ones, more small ones
+  vec4 bigRun = runners(p, t, aspect, 5.0, 4.7, 0.3);
+  vec4 smallRun = runners(p + vec2(0.031, 0.0), t * 1.15, aspect, 9.0, 8.3, 0.24);
 
-  vec2 n = small.xy * 0.9 + tiny.xy * 0.5 + run.xy;
-  float drop = clamp(max(max(small.z, tiny.z), run.z), 0.0, 1.0);
-  float clear = clamp(run.w, 0.0, 1.0);
+  vec2 n = small.xy * 0.9 + tiny.xy * 0.5 + bigRun.xy + smallRun.xy;
+  float drop = clamp(max(max(small.z, tiny.z), max(bigRun.z, smallRun.z)), 0.0, 1.0);
+  float clear = clamp(max(bigRun.w, smallRun.w), 0.0, 1.0);
 
   // a lens flips and spreads what's behind it
   vec2 offset = -n * vec2(1.0 / aspect, 1.0) * 0.045;
