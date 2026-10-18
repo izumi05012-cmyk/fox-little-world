@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import WindowView from "./window/WindowView";
 import { useScene } from "./window/useScene";
-import { useAvatars } from "./useAvatars";
+import { useAvatars, useChatBackground } from "./useAvatars";
 import {
   STICKER_BASE,
   clockTime,
@@ -38,11 +38,17 @@ function Avatar({ src, fallback }) {
   );
 }
 
-function AvatarSetting({ label, src, fallback, custom, onPick, onReset }) {
+function PictureSetting({ label, src, fallback, custom, onPick, onReset, wide }) {
   const input = useRef(null);
   return (
     <div className="chat-setting-row">
-      <Avatar src={src} fallback={fallback} />
+      {wide ? (
+        <span className="chat-setting-bg" style={src ? { backgroundImage: `url("${src}")` } : undefined}>
+          {!src && "窗"}
+        </span>
+      ) : (
+        <Avatar src={src} fallback={fallback} />
+      )}
       <span>{label}</span>
       <button onClick={() => input.current?.click()}>换一张</button>
       {custom && <button onClick={onReset}>换回来</button>}
@@ -81,6 +87,9 @@ function withDays(log) {
 export default function Chat({ onBack, dayCount }) {
   const { scene } = useScene();
   const avatars = useAvatars();
+  const backdrop = useChatBackground();
+  const background = backdrop.background;
+  const dark = background ? background.dark : scene !== "day";
   const [log, setLog] = useState(loadLog);
   const [settings, setSettings] = useState(loadSettings);
   const [input, setInput] = useState("");
@@ -115,8 +124,12 @@ export default function Chat({ onBack, dayCount }) {
   const toggle = (name) => setPanel((current) => (current === name ? null : name));
 
   return (
-    <main className="chat-page" data-dark={scene !== "day" || undefined}>
-      <WindowView scene={scene} />
+    <main className="chat-page" data-dark={dark || undefined}>
+      {background ? (
+        <div className="chat-backdrop" style={{ backgroundImage: `url("${background.url}")` }} />
+      ) : (
+        <WindowView scene={scene} />
+      )}
 
       <header className="glass chat-header">
         <button className="round-button plain" onClick={onBack} aria-label="返回">
@@ -147,20 +160,28 @@ export default function Chat({ onBack, dayCount }) {
               onBlur={() => !settings.name.trim() && setSettings(defaultSettings)}
             />
           </label>
-          <AvatarSetting
+          <PictureSetting
             label="他的头像"
             src={avatars.him || wangshu}
             custom={Boolean(avatars.him)}
             onPick={(file) => avatars.pick("him", file)}
             onReset={() => avatars.reset("him")}
           />
-          <AvatarSetting
+          <PictureSetting
             label="我的头像"
             src={avatars.me}
             fallback="曦"
             custom={Boolean(avatars.me)}
             onPick={(file) => avatars.pick("me", file)}
             onReset={() => avatars.reset("me")}
+          />
+          <PictureSetting
+            wide
+            label={background ? "聊天背景" : "聊天背景 · 窗外"}
+            src={background?.url}
+            custom={Boolean(background)}
+            onPick={backdrop.pick}
+            onReset={backdrop.reset}
           />
         </section>
       )}
