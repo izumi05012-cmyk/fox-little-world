@@ -878,6 +878,11 @@ button:focus-visible, input:focus-visible {
 
 /* breath on the window: a canvas draws the fog, the finger lines and the
    view through them; when it's done the whole thing fades into home */
+/* before anything loads, the page is already the colour of the room */
+html[data-scene="night"], html[data-scene="night"] body { background: #24283c; }
+html[data-scene="rain"], html[data-scene="rain"] body { background: #606270; }
+html[data-scene="snow"], html[data-scene="snow"] body { background: #968a98; }
+
 .splash {
   position: fixed;
   inset: 0;
@@ -1014,27 +1019,47 @@ button:focus-visible, input:focus-visible {
 .polaroid-memories { left: 4%; top: 300px; width: 34%; height: 150px; transform: rotate(-7deg); }
 
 /* small round buttons on each photo: change it, or go back to the default */
-.polaroid-swap, .polaroid-reset {
-  position: absolute;
-  z-index: 3;
-  width: 26px;
-  height: 26px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 1px solid var(--glass-edge);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, .55);
-  color: var(--ink);
-  font-size: 13px;
-  line-height: 1;
-  cursor: pointer;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+/* hold a polaroid: a small clear-glass menu to change its photo */
+.polaroid {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.polaroid-swap { right: 12px; top: 12px; }
-.polaroid-reset { right: 42px; top: 12px; font-size: 15px; }
+/* lifted a little; `scale` keeps each polaroid's own tilt */
+.polaroid.is-editing { scale: 1.03; transition: scale .2s ease; }
+
+.polaroid-menu {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 46%;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, .45);
+  border-radius: 999px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, .5), rgba(255, 255, 255, .22));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), 0 10px 22px -12px rgba(40, 30, 40, .6);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+.polaroid-menu button {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.polaroid-menu button:hover { background: rgba(255, 255, 255, .55); }
+
+.journal-brooch { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
 .washi {
   position: absolute;
@@ -1275,4 +1300,27 @@ button:focus-visible, input:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .window-outside { transform: none; transition: none; }
   .window-scene { animation: none; transition: none; }
+}
+
+/* =========================================================
+   LITTLE BURSTS — hearts, sparkles, petals from a tap
+   ========================================================= */
+
+.burst-bit {
+  position: fixed;
+  z-index: 200;
+  pointer-events: none;
+  line-height: 1;
+  text-shadow: 0 0 8px rgba(255, 255, 255, .95), 0 0 2px rgba(255, 255, 255, .9), 0 2px 8px rgba(120, 50, 70, .35);
+  transform: translate(-50%, -50%) scale(.4);
+  opacity: 0;
+  animation: burst-fly .95s cubic-bezier(.2, .7, .3, 1) forwards;
+}
+
+@keyframes burst-fly {
+  15% { opacity: 1; }
+  to {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1) rotate(var(--spin));
+  }
 }

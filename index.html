@@ -7,6 +7,18 @@
          mode repaint the glass grey and the paper black -->
     <meta name="color-scheme" content="only light" />
     <meta name="theme-color" content="#faf6f2" />
+    <script>
+      // open in the colour of the last view outside (or night by the clock),
+      // so a dark room never starts with a white flash
+      (function () {
+        var scene;
+        try { scene = localStorage.getItem("fox-last-scene"); } catch (e) {}
+        var h = new Date().getHours();
+        if (!scene) scene = h >= 6 && h < 18 ? "day" : "night";
+        if (scene === "day" && (h < 6 || h >= 18)) scene = "night";
+        document.documentElement.dataset.scene = scene;
+      })();
+    </script>
     <title>Fox Little World</title>
   </head>
   <body>
