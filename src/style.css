@@ -393,9 +393,20 @@ button:focus-visible, input:focus-visible {
   flex-direction: column;
   gap: 14px;
   overflow-y: auto;
-  padding: 18px 14px 12px;
+  /* runs on under the header and the input bar (no hard cut where it
+     ends), melting away at the very edges */
+  margin: calc(-1 * var(--under-top)) 0 calc(-1 * var(--under-bottom));
+  padding: calc(var(--under-top) + 18px) 14px calc(var(--under-bottom) + 12px);
+  scroll-padding: var(--under-top) 0 var(--under-bottom);
   overscroll-behavior: contain;
+  -webkit-mask-image: linear-gradient(transparent calc(var(--under-top) * .45), #000 calc(var(--under-top) + 14px), #000 calc(100% - var(--under-bottom) - 12px), transparent calc(100% - var(--under-bottom) * .4));
+  mask-image: linear-gradient(transparent calc(var(--under-top) * .45), #000 calc(var(--under-top) + 14px), #000 calc(100% - var(--under-bottom) - 12px), transparent calc(100% - var(--under-bottom) * .4));
 }
+
+.chat-page { --under-top: 80px; --under-bottom: 74px; }
+.chat-header,
+.chat-settings,
+.chat-compose { position: relative; z-index: 2; }
 
 .chat-day {
   align-self: center;
