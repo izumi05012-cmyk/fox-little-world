@@ -61,6 +61,73 @@ function drawCover(ctx, img, w, h) {
   ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
 }
 
+// ---------------------------------------------------------------- rain air
+
+// The weather beyond the glass when the glass itself is drawn on the GPU
+// (rainGlass.js): rain falling at three distances, nearer is longer,
+// fainter and quicker; and mist drifting slowly across the view so the
+// distance breathes. Nothing here sits on the glass.
+export function rainAir(canvas) {
+  let streaks = [];
+  let mists = [];
+
+  const { ctx, dpr, resize, size } = setup(canvas, (w, h) => {
+    streaks = Array.from({ length: Math.round(w / (4.5 * dpr)) }, () => newStreak(w, h, true));
+    mists = Array.from({ length: 5 }, (_, i) => ({
+      x: rand(0, 1) * w,
+      y: (0.15 + i * 0.17) * h,
+      r: rand(0.35, 0.6) * w,
+      v: rand(6, 14) * dpr * (Math.random() < 0.5 ? -1 : 1),
+      a: rand(0.05, 0.1),
+    }));
+  });
+
+  function newStreak(w, h, anywhere = false) {
+    const depth = Math.random(); // 0 far .. 1 near
+    return {
+      x: rand(-0.1, 1.1) * w,
+      y: anywhere ? rand(0, h) : rand(-0.3, 0) * h,
+      len: (14 + depth * depth * 90) * dpr,
+      v: (420 + depth * 800) * dpr,
+      alpha: 0.16 - depth * 0.1,
+      width: (0.6 + depth * 1.3) * dpr,
+    };
+  }
+
+  return loop((dt) => {
+    resize();
+    const { w, h } = size();
+    ctx.clearRect(0, 0, w, h);
+
+    // mist: soft pale bands that wander sideways
+    for (const m of mists) {
+      m.x += m.v * dt;
+      if (m.x < -m.r) m.x = w + m.r;
+      if (m.x > w + m.r) m.x = -m.r;
+      const g = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.r);
+      g.addColorStop(0, `rgba(214, 220, 234, ${m.a})`);
+      g.addColorStop(1, "rgba(214, 220, 234, 0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(m.x - m.r, m.y - m.r, m.r * 2, m.r * 2);
+    }
+
+    // rain, slanting a little with the wind
+    ctx.lineCap = "round";
+    for (let i = 0; i < streaks.length; i += 1) {
+      const s = streaks[i];
+      s.y += s.v * dt;
+      s.x += s.v * 0.08 * dt;
+      if (s.y - s.len > h) streaks[i] = newStreak(w, h);
+      ctx.strokeStyle = `rgba(226, 232, 244, ${s.alpha})`;
+      ctx.lineWidth = s.width;
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(s.x - s.len * 0.08, s.y - s.len);
+      ctx.stroke();
+    }
+  });
+}
+
 // ---------------------------------------------------------------- rain
 
 export function rain(canvas, background) {

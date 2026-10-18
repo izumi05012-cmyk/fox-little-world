@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
-import { day, night, rain, snow } from "./effects";
+import { day, night, rain, rainAir, snow } from "./effects";
 import { depthPhoto } from "./depthPhoto";
+import { rainGlass } from "./rainGlass";
 import rainPic from "../assets/window/rain.webp";
 import snowPic from "../assets/window/snow.webp";
 import dayPic from "../assets/window/day.webp";
 import nightPic from "../assets/window/night.webp";
-// one view, four weathers: the same depth map and sky mask fit them all
+// sun, snow and night share one view and its depth map; rain has its own
+// (flowers at the glass, a rainy city beyond)
 import depthMap from "../assets/window/depth.webp";
+import rainDepth from "../assets/window/rain-depth.webp";
 import skyMask from "../assets/window/sky.webp";
 
 // The view out of the little house's window, behind everything on the page.
@@ -15,7 +18,10 @@ import skyMask from "../assets/window/sky.webp";
 // drops, frost, frame — stays put. Without WebGL the plain photo drifts.
 
 const scenes = {
-  rain: { picture: rainPic, effect: rain, glass: "glass-rain" },
+  // rain: the water on the glass is drawn on the GPU when it can be
+  // (rainGlass), with only the weather beyond on the canvas; without
+  // WebGL the canvas draws the drops too
+  rain: { picture: rainPic, depth: rainDepth, effect: rain, gpuGlass: rainGlass, air: rainAir, glass: "glass-rain" },
   snow: { picture: snowPic, effect: snow, glass: "glass-snow" },
   day: { picture: dayPic, effect: day, glass: "glass-clear" },
   night: { picture: nightPic, effect: night, glass: "glass-clear" },
@@ -27,15 +33,24 @@ function SceneLayer({ scene, leaving, motion }) {
   const canvas = useRef(null);
   const picture = useRef(null);
   const depth = useRef(null);
+  const glassHost = useRef(null);
   const [has3d, setHas3d] = useState(false);
 
   useEffect(() => {
-    const { effect } = scenes[scene];
-    return effect(canvas.current, picture.current, { sky: skyMask });
+    const { effect, gpuGlass, air, picture: src } = scenes[scene];
+    const stopGlass = gpuGlass ? gpuGlass(glassHost.current, src) : null;
+    const stopEffect = stopGlass
+      ? air(canvas.current, picture.current)
+      : effect(canvas.current, picture.current, { sky: skyMask });
+    return () => {
+      stopEffect?.();
+      stopGlass?.();
+    };
   }, [scene]);
 
   useEffect(() => {
-    const stop = depthPhoto(depth.current, scenes[scene].picture, depthMap, motion, () => setHas3d(true));
+    const { picture: src, depth: map = depthMap } = scenes[scene];
+    const stop = depthPhoto(depth.current, src, map, motion, () => setHas3d(true));
     return stop || undefined;
   }, [scene, motion]);
 
@@ -44,6 +59,7 @@ function SceneLayer({ scene, leaving, motion }) {
       <img ref={picture} className="window-outside" src={scenes[scene].picture} alt="" />
       <div ref={depth} className="window-depth" />
       <canvas ref={canvas} className="window-glass" />
+      {scenes[scene].gpuGlass && <div ref={glassHost} className="window-rainglass-host" />}
       {scene === "snow" && (
         <>
           <i className="window-frost" />

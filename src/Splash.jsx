@@ -142,7 +142,7 @@ export const fogTones = {
 // fog without glaring
 const fogMilk = {
   day: "rgba(212, 206, 222, .58)",
-  rain: "rgba(206, 204, 216, .34)",
+  rain: "rgba(206, 210, 224, .5)",
   snow: "rgba(218, 206, 216, .36)",
   night: "rgba(120, 128, 164, .36)",
 };
@@ -161,9 +161,9 @@ function condensation(sharp, w, h, dpr, scene) {
   // can drift slowly
   const dw = Math.round(w * 1.2);
   const dh = Math.round(h * 1.2);
-  // sharp views (sun, night) need thicker fog than the soft-focus rain
-  // and snow pictures to read as misted over
-  const sharpView = scene === "day" || scene === "night";
+  // sharp views (sun, night, the rain city) need thicker fog than the
+  // soft-focus snow picture to read as misted over
+  const sharpView = scene !== "snow";
   const density = blotches(dw, dh, 70 * dpr, sharpView ? 0.86 : 0.55, 1);
   const dg = density.getContext("2d");
   dg.globalCompositeOperation = "destination-in";

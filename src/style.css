@@ -1436,6 +1436,16 @@ html[data-scene="snow"], html[data-scene="snow"] body { background: #968a98; }
 .glass-clear .window-glass { mix-blend-mode: normal; }
 
 
+/* the water on the rain glass, drawn on the GPU above everything outside */
+.window-rainglass-host,
+.window-rainglass {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .window-outside { transform: none; transition: none; }
   .window-scene { animation: none; transition: none; }
