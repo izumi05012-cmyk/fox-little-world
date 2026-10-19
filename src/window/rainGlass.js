@@ -154,9 +154,16 @@ void main() {
   vec4 bigRun = runners(p, t, aspect, 6.0, 4.7, 0.16);
   vec4 smallRun = runners(p + vec2(0.031, 0.0), t * 1.15, aspect, 10.0, 8.3, 0.13);
 
+  float clear = clamp(max(bigRun.w, smallRun.w), 0.0, 1.0);
+  // a drop running down gathers up the small ones in its way, so its lane
+  // is swept clean; they only gather again once the lane has faded
+  float swept = max(clear, max(bigRun.z, smallRun.z));
+  float keep = 1.0 - smoothstep(0.04, 0.4, swept);
+  small *= keep;
+  tiny *= keep;
+
   vec2 n = small.xy * 0.9 + tiny.xy * 0.5 + bigRun.xy + smallRun.xy;
   float drop = clamp(max(max(small.z, tiny.z), max(bigRun.z, smallRun.z)), 0.0, 1.0);
-  float clear = clamp(max(bigRun.w, smallRun.w), 0.0, 1.0);
 
   // a lens flips and spreads what's behind it
   vec2 offset = -n * vec2(1.0 / aspect, 1.0) * 0.045;
