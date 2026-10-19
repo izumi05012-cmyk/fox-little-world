@@ -1515,7 +1515,8 @@ html[data-scene="snow"], html[data-scene="snow"] body { background: #968a98; }
 .chat-list-page,
 .chat-page,
 .sticker-page,
-.invite-page { view-transition-name: page; }
+.invite-page,
+.promise-page { view-transition-name: page; }
 .home-nav { view-transition-name: nav; }
 
 html[data-turn="forward"] { --turn: 1; }
@@ -1541,14 +1542,16 @@ html[data-turn="back"] { --turn: -1; }
   .chat-list-page,
   .chat-page,
   .sticker-page,
-  .invite-page { animation: page-in .6s cubic-bezier(.16, .8, .3, 1) both; }
+  .invite-page,
+  .promise-page { animation: page-in .6s cubic-bezier(.16, .8, .3, 1) both; }
 }
 @media (prefers-reduced-motion: reduce) {
   .journal,
   .chat-list-page,
   .chat-page,
   .sticker-page,
-  .invite-page { animation: none; }
+  .invite-page,
+  .promise-page { animation: none; }
 }
 
 /* =========================================================
@@ -1556,7 +1559,8 @@ html[data-turn="back"] { --turn: -1; }
    ========================================================= */
 
 .sticker-page,
-.invite-page {
+.invite-page,
+.promise-page {
   position: relative;
   width: 100%;
   max-width: 520px;
@@ -1829,3 +1833,169 @@ html[data-turn="back"] { --turn: -1; }
 }
 .invite-yes.is-answered { background: var(--invite-red); color: #fbf1e6; }
 .invite-count { color: var(--invite-blue); }
+
+/* =========================================================
+   PROMISE BOOK — every pinky promise on a torn-off note
+   ========================================================= */
+
+.promise-page .chat-list-header { position: relative; }
+.promise-page:not([data-dark]) .chat-list-header,
+.promise-page:not([data-dark]) .promise-intro { text-shadow: 0 0 8px rgba(255, 255, 255, .95), 0 0 2px rgba(255, 255, 255, .9); }
+.promise-page[data-dark] .chat-list-header,
+.promise-page[data-dark] .promise-intro { color: #fff; text-shadow: 0 1px 8px rgba(40, 34, 56, .6); }
+.promise-page[data-dark] .chat-list-header .journal-label { color: rgba(255, 255, 255, .85); }
+.promise-page[data-dark] .chat-list-header .glass { color: var(--ink); text-shadow: none; }
+
+.promise-art {
+  position: absolute;
+  right: -4px;
+  top: -10px;
+  width: 92px;
+  transform: rotate(6deg);
+  filter: drop-shadow(0 4px 6px rgba(40, 34, 40, .2));
+  pointer-events: none;
+}
+
+.promise-intro {
+  margin: 0 0 16px;
+  padding-right: 64px;
+  font-family: var(--hand);
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.promise-list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.promise-note {
+  position: relative;
+  padding: 16px 18px 12px;
+  background: #fffaf2;
+  color: #5a4a52;
+  transform: rotate(var(--tilt));
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  filter: drop-shadow(0 2px 3px rgba(40, 34, 40, .18));
+}
+.promise-note:nth-child(even) { background: #fbf1ee; }
+.promise-note:active { transform: rotate(var(--tilt)) scale(.985); }
+
+.promise-note header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--serif);
+  font-size: 11px;
+  letter-spacing: .14em;
+}
+.promise-note time { color: #b8434a; }
+.promise-who { padding: 1px 8px; border-radius: 999px; background: rgba(125, 155, 196, .16); color: #6a86ad; }
+.promise-who-1 { background: rgba(232, 160, 180, .2); color: #c26a82; }
+.promise-who-2 { background: rgba(217, 189, 120, .22); color: #a8823a; }
+
+.promise-note p {
+  margin: 8px 0 0;
+  font-family: var(--hand);
+  font-size: 19px;
+  line-height: 1.5;
+}
+.promise-note small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-family: var(--hand);
+  font-size: 14px;
+}
+.promise-note footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.promise-pinkies { width: 52px; height: 18px; }
+.promise-tear {
+  padding: 2px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* 羲和's red seal, pressed on a little crooked */
+.promise-stamp {
+  position: absolute;
+  right: 12px;
+  bottom: 6px;
+  width: 66px;
+  height: auto;
+  opacity: .88;
+  transform: rotate(-14deg);
+  animation: promise-stamp .32s cubic-bezier(.2, .9, .3, 1.3) both;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+@keyframes promise-stamp {
+  from { opacity: 0; transform: rotate(-14deg) scale(1.8); }
+}
+
+.promise-new {
+  margin-top: 22px;
+  padding: 18px 18px 14px;
+  background: rgba(255, 252, 247, .92);
+  filter: drop-shadow(0 2px 3px rgba(40, 34, 40, .18));
+}
+.promise-new textarea {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 2px;
+  border: 0;
+  border-bottom: 1px dashed rgba(184, 67, 74, .4);
+  outline: 0;
+  resize: none;
+  background: transparent;
+  color: #5a4a52;
+  font-family: var(--hand);
+  font-size: 18px;
+  line-height: 1.5;
+}
+.promise-new-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.promise-new-row > i { flex: 1; }
+.promise-new-row button {
+  padding: 4px 10px;
+  border: 1px solid rgba(90, 74, 82, .18);
+  border-radius: 999px;
+  background: transparent;
+  color: #5a4a52;
+  font-size: 12px;
+  cursor: pointer;
+}
+.promise-new-row button.active { border-color: #b8434a; color: #b8434a; }
+.promise-new-row .promise-hook {
+  padding: 6px 18px;
+  border-color: #b8434a;
+  background: #b8434a;
+  color: #fff8f2;
+  font-family: var(--hand);
+  font-size: 16px;
+}
+.promise-new-row .promise-hook:disabled { opacity: .45; cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .promise-stamp { animation: none; }
+}
