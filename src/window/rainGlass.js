@@ -85,8 +85,10 @@ float wander(float y, float h) {
 // drops that run: lens (xy), drop (z), and the clear trail behind (w).
 // Each one is its own: size, how heavy (how long its tail), where in its
 // lane it starts, how much it wanders, how fast, how often it stops.
+// cols is how many lanes fit across a phone-shaped window; a wider window
+// gets more lanes rather than wider drops
 vec4 runners(vec2 p, float t, float aspect, float cols, float seed, float big) {
-  float cw = aspect / cols;
+  float cw = min(aspect, 0.46) / cols;
   float col = floor(p.x / cw);
   float h = hash(vec2(col, seed));
   float speed = 0.05 + 0.08 * h;
