@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { burst } from "./burst";
 import { tornEdge } from "./tornEdge";
 import promiseArt from "./assets/stickers/promise.webp";
+import stampArt from "./assets/stickers/stamp.webp"; // 羲和's seal
 
 // The pinky-promise book: every promise we've made, on a torn-off note.
 // Tap a note to stamp it 已兑现 (and tap again to lift the stamp); write a
@@ -95,7 +96,7 @@ function Note({ item, index, kept, onStamp, onTear }) {
           </button>
         )}
       </footer>
-      {kept && <i className="promise-stamp">已兑现</i>}
+      {kept && <img className="promise-stamp" src={stampArt} alt="已兑现" />}
     </li>
   );
 }
