@@ -21,7 +21,7 @@ const WEEK = ["日", "一", "二", "三", "四", "五", "六"];
 const polaroids = [
   { slot: "chat", caption: "聊天 →", page: "chat-list", fallback: foxArt, tape: "pink" },
   { slot: "space", caption: "我们的空间", page: null, fallback: trellis, tape: "blue" },
-  { slot: "memories", caption: "回忆", page: null, fallback: pinkRose, tape: "yellow" },
+  { slot: "memories", caption: "回忆 →", page: "memories", fallback: pinkRose, tape: "yellow" },
 ];
 
 const ourDays = [

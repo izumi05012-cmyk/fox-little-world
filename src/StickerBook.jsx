@@ -16,7 +16,7 @@ import promiseArt from "./assets/stickers/promise.webp";
 
 const stickers = [
   { id: "invite", label: "结婚请帖", page: "invite", tilt: -5, x: 4, y: 0, w: 46, art: inviteArt },
-  { id: "memories", label: "回忆", tilt: 4, x: 56, y: 3, w: 38, art: memoriesArt },
+  { id: "memories", label: "回忆", page: "memories", tilt: 4, x: 56, y: 3, w: 38, art: memoriesArt },
   { id: "calendar", label: "纪念日", tilt: 6, x: 8, y: 50, w: 36, art: calendarArt },
   { id: "promise", label: "拉钩本", page: "promise", tilt: -4, x: 50, y: 58, w: 44, art: promiseArt },
 ];

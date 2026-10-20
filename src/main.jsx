@@ -11,6 +11,7 @@ import JournalHome from "./JournalHome";
 import StickerBook from "./StickerBook";
 import Invitation from "./Invitation";
 import PromiseBook from "./PromiseBook";
+import Memories from "./Memories";
 import "@fontsource/noto-serif-sc/300.css";
 import "@fontsource/noto-serif-sc/400.css";
 import "@fontsource/long-cang/400.css";
@@ -59,16 +60,19 @@ function Home({ onOpen, weather }) {
 }
 
 // deeper pages come in from the right, going back from the left
-const depth = { home: 0, "chat-list": 1, more: 1, chat: 2, invite: 2, promise: 2 };
+const depth = { home: 0, "chat-list": 1, more: 1, chat: 2, invite: 2, promise: 2, memories: 2 };
 
 function App() {
   const [page, setPage] = useState("home");
+  // memories opens from the home wall or the sticker book; back goes there
+  const [memoriesFrom, setMemoriesFrom] = useState("more");
   const weather = useScene();
   const { scene } = weather;
   const dayCount = daysBetween(TOGETHER_SINCE, new Date()) + 1;
 
   const go = (next) => {
     if (next === page) return;
+    if (next === "memories") setMemoriesFrom(page === "home" ? "home" : "more");
     turnPage(() => {
       setPage(next);
       window.scrollTo(0, 0);
@@ -92,6 +96,8 @@ function App() {
     shown = <StickerBook onOpen={go} scene={scene} />;
   } else if (page === "promise") {
     shown = <PromiseBook onBack={() => go("more")} scene={scene} />;
+  } else if (page === "memories") {
+    shown = <Memories onBack={() => go(memoriesFrom)} scene={scene} />;
   } else if (page === "invite") {
     shown = <Invitation onBack={() => go("more")} dayCount={dayCount} />;
   } else {
@@ -106,6 +112,11 @@ function App() {
       {shown}
     </>
   );
+}
+
+// lets 小窝 open from the phone's home screen, even with a weak signal
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(
