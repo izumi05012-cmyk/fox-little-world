@@ -1648,6 +1648,27 @@ html[data-turn="back"] { --turn: -1; }
   pointer-events: none;
 }
 
+/* her own picture on a sticker keeps the sticker's torn shape */
+.sticker-cutout { position: relative; display: block; }
+.sticker-sizer { visibility: hidden; }
+.sticker-paper,
+.sticker-photo {
+  position: absolute;
+  inset: 0;
+  -webkit-mask: var(--shape) center / 100% 100% no-repeat;
+  mask: var(--shape) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+.sticker-paper { background: #fbf5ec; }
+.sticker-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-mask-size: 88% 88%;
+  mask-size: 88% 88%;
+}
+.sticker-page[data-dark] .sticker-cutout { filter: brightness(.86) sepia(.08); }
+
 /* after dark the room light is low: the stickers dim a little, warm */
 .sticker-page[data-dark] .sticker-art,
 .sticker-page[data-dark] .sticker-label { filter: brightness(.86) sepia(.08); }
@@ -1741,12 +1762,17 @@ html[data-turn="back"] { --turn: -1; }
   object-fit: contain;
   filter: drop-shadow(0 4px 6px rgba(142, 43, 43, .28));
 }
-.invite-photo.is-photo {
-  padding: 4px;
-  background: #fbf4ef;
-  box-shadow: 0 6px 16px -8px rgba(142, 43, 43, .45);
+.invite-photo.is-cutout { filter: drop-shadow(0 4px 6px rgba(142, 43, 43, .28)); }
+.invite-paper,
+.invite-photo .invite-cut-photo {
+  position: absolute;
+  inset: 0;
+  -webkit-mask: var(--shape) center / contain no-repeat;
+  mask: var(--shape) center / contain no-repeat;
 }
-.invite-photo.is-photo img { object-fit: cover; }
+.invite-paper { background: #fbf4ef; }
+/* a smaller box, so the same shape sits just inside the paper edge */
+.invite-photo .invite-cut-photo { inset: 6%; width: 88%; height: 88%; object-fit: cover; }
 .invite-photo-main { z-index: 1; top: 18px; left: 14%; width: 72%; height: 250px; transform: rotate(-2deg); }
 .invite-photo-back { z-index: 2; top: -4px; right: -2%; width: 30%; height: 112px; transform: rotate(8deg); }
 .invite-photo-low { z-index: 2; bottom: -8px; left: -2%; width: 32%; height: 124px; transform: rotate(-8deg); }
@@ -2097,6 +2123,15 @@ html[data-turn="back"] { --turn: -1; }
 .memory-first .memory-frame { aspect-ratio: 4 / 3; }
 
 .memory-photo { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* a photo just stuck on develops like a real polaroid */
+.memory-photo.is-developing { animation: develop 2.6s ease-out both; }
+@keyframes develop {
+  from { filter: brightness(1.9) saturate(0) blur(2px); }
+  40% { filter: brightness(1.35) saturate(.4) blur(.5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .memory-photo.is-developing { animation: none; }
+}
 
 .memory-blank {
   display: flex;
