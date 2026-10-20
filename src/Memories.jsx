@@ -64,13 +64,29 @@ function today() {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
+// pasted words keep their meaning, not chat formatting like **bold**
+function plain(text) {
+  return text.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*\*/g, "").trim();
+}
+
+// past this many characters a memory is a letter more than a caption
+const LONG = 40;
+
 function Photo({ item, index, src, custom, onPick, onReset, onTear }) {
-  const { editing, setEditing, handlers } = useHoldToChange((event) => burstFrom(event.currentTarget, "heart"));
+  const text = plain(item.text);
+  const long = text.length > LONG;
+  const [open, setOpen] = useState(false);
+  // a tap opens a long one to read in full (and folds it again); a short
+  // one just gets a little burst of hearts
+  const { editing, setEditing, handlers } = useHoldToChange((event) => {
+    if (long) setOpen((was) => !was);
+    else burstFrom(event.currentTarget, "heart");
+  });
   const [developing, setDeveloping] = useState(Boolean(item.fresh));
-  const tilt = item.first ? -2 : ((index * 37) % 9) - 4;
+  const tilt = item.first ? -2 : long ? -1 : ((index * 37) % 9) - 4;
   return (
     <figure
-      className={`memory ${item.first ? "memory-first" : ""} ${custom ? "has-photo" : ""} ${editing ? "is-editing" : ""}`}
+      className={`memory ${item.first ? "memory-first" : ""} ${long ? "memory-long" : ""} ${open ? "is-open" : ""} ${custom ? "has-photo" : ""} ${editing ? "is-editing" : ""}`}
       style={{ "--tilt": `${tilt}deg` }}
       {...handlers}
     >
@@ -88,7 +104,8 @@ function Photo({ item, index, src, custom, onPick, onReset, onTear }) {
       </span>
       <figcaption>
         <time>{item.date}</time>
-        <span>{item.text}</span>
+        <span>{text}</span>
+        {long && <small className="memory-more">{open ? "收起" : "点开读全文"}</small>}
       </figcaption>
       {editing && (
         <ChangeMenu
@@ -131,7 +148,7 @@ export default function Memories({ onBack, scene }) {
     if (!words && !file) return;
     const id = `u${Date.now()}`;
     if (file) await pick(`memory-${id}`, file);
-    const next = [...mine, { id, date: today(), text: words || "这一天" }];
+    const next = [...mine, { id, date: today(), text: plain(words) || "这一天" }];
     setMine(next);
     writeMine(next);
     setFreshId(file ? id : null);
