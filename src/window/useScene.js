@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { clearSky, loadPref, realWeather, savePref } from "./weather";
 
+// roughly the colour at the top of each view, for the phone's status bar
+const barColor = { day: "#eef0f4", night: "#1c2131", rain: "#2f3a4f", snow: "#e6ebf1" };
+
 // The scene outside the window, shared by every page that has the window
 // behind it: 曦曦's pick, or the real weather when she leaves it on "auto".
 export function useScene() {
@@ -24,6 +27,8 @@ export function useScene() {
   // before anything has loaded (see the little script in index.html)
   useEffect(() => {
     document.documentElement.dataset.scene = scene;
+    // the phone's top bar takes the colour of the view, not a black strip
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", barColor[scene] || barColor.day);
     try {
       localStorage.setItem("fox-last-scene", scene);
     } catch {
