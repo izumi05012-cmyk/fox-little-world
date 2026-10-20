@@ -11,11 +11,11 @@ npx cap add android
 npx capacitor-assets generate --android \
   --iconBackgroundColor '#f7e4de' --splashBackgroundColor '#faf6f2'
 
-# the site asks for the microphone (voice messages) and location (the
-# weather outside the window); a WebView can only pass those on if the
-# app holds them too
+# the site asks for the microphone (voice messages), location (the weather
+# outside the window) and the vibration motor (望舒's heartbeat); a WebView
+# can only pass those on if the app holds them too
 manifest=android/app/src/main/AndroidManifest.xml
-sed -i 's#<uses-permission android:name="android.permission.INTERNET" />#&\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />#' "$manifest"
+sed -i 's#<uses-permission android:name="android.permission.INTERNET" />#&\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.VIBRATE" />#' "$manifest"
 grep -q RECORD_AUDIO "$manifest"
 
 (cd android && ./gradlew --no-daemon assembleRelease)

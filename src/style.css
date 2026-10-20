@@ -1235,7 +1235,43 @@ html[data-scene="snow"], html[data-scene="snow"] body { background: #968a98; }
 
 .polaroid-menu button:hover { background: rgba(255, 255, 255, .55); }
 
-.journal-brooch { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.journal-brooch {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  /* hold it to feel the heartbeat: no scrolling or copy menu in the way */
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* while she holds the heart, the room glows rose on every beat */
+.heartbeat {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: calc(118px + var(--inset-bottom));
+  pointer-events: none;
+}
+.heartbeat-glow {
+  position: absolute;
+  inset: 0;
+  /* a blush round the edges of the screen, like the room flushing */
+  background: radial-gradient(ellipse at 50% 45%, transparent 38%, rgba(226, 104, 128, .3) 72%, rgba(196, 58, 88, .58) 100%);
+  opacity: 0;
+}
+.heartbeat span {
+  position: relative;
+  color: #fff;
+  font-family: var(--hand);
+  font-size: 20px;
+  text-shadow: 0 1px 10px rgba(150, 40, 60, .55);
+  opacity: 0;
+  transition: opacity .8s ease;
+}
+.heartbeat.is-on span { opacity: 1; }
 
 .washi {
   position: absolute;
