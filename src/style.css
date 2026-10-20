@@ -1570,7 +1570,25 @@ html[data-turn="back"] { --turn: -1; }
 ::view-transition-group(page) { animation: none; }
 ::view-transition-old(page) { animation: page-out .42s cubic-bezier(.4, 0, .6, 1) both; }
 ::view-transition-new(page) { animation: page-in .66s cubic-bezier(.16, .8, .3, 1) .08s both; }
-::view-transition-group(nav) { animation-duration: .5s; }
+/* the nav stays put while the page turns behind it: between two pages
+   that both have it, show only the new one, still; it only fades when the
+   other page has none */
+::view-transition-group(nav) { animation: none; }
+::view-transition-old(nav):not(:only-child) { display: none; }
+::view-transition-new(nav):not(:only-child) { animation: none; }
+::view-transition-old(nav):only-child { animation: nav-out .3s ease both; }
+::view-transition-new(nav):only-child { animation: nav-in .45s ease .1s both; }
+@keyframes nav-out { to { opacity: 0; } }
+@keyframes nav-in { from { opacity: 0; } }
+
+/* a blurred-glass backdrop can't be photographed for the turn (it comes
+   out as a flat box the colour of whatever is behind), so for that moment
+   the nav wears plain frosted white */
+html[data-turn] .home-nav {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: rgba(250, 247, 246, .78);
+}
 
 @keyframes page-out {
   to { opacity: 0; transform: translateX(calc(var(--turn, 1) * -22px)) scale(.985); filter: blur(5px); }
