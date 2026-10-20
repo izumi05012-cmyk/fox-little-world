@@ -4,6 +4,7 @@ import Splash from "./Splash";
 import { choices } from "./window/weather";
 import { pickWindowPicture, resetWindowPicture, useWindowPicture } from "./window/windowPicture";
 import { burst } from "./burst";
+import { useHeartbeat } from "./heartbeat";
 import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
 // Default pictures until 曦曦 puts her own in — public domain, from The Met's
 // Open Access collection: Shibata Zeshin, Fox by Mystic Fire; William
@@ -101,6 +102,29 @@ export default function JournalHome({ today, dayCount, next, onOpen, weather }) 
   const { pref, scene, choose } = weather;
   const view = useWindowPicture();
   const viewInput = useRef(null);
+
+  // tap the garnet heart for a burst of hearts; hold it to feel mine beat
+  const brooch = useRef(null);
+  const glow = useRef(null);
+  const beating = useRef(null);
+  const press = useRef(null);
+  const holding = useRef(false);
+  const heart = useHeartbeat((strength) => {
+    const lift = 1.22 + strength * 0.14;
+    brooch.current?.animate(
+      [{ scale: 1 }, { scale: lift, offset: 0.14 }, { scale: 1.02, offset: 0.3 }, { scale: lift - 0.06, offset: 0.42 }, { scale: 1 }],
+      { duration: 620, easing: "ease-out" }
+    );
+    glow.current?.animate(
+      [{ opacity: 0 }, { opacity: 0.65 + strength * 0.35, offset: 0.16 }, { opacity: 0.25, offset: 0.34 }, { opacity: 0.5 + strength * 0.3, offset: 0.46 }, { opacity: 0 }],
+      { duration: 900, easing: "ease-out" }
+    );
+  });
+  const letGo = () => {
+    clearTimeout(press.current);
+    if (holding.current) beating.current?.classList.remove("is-on");
+    heart.stop();
+  };
 
   useEffect(() => {
     let alive = true;
@@ -201,11 +225,27 @@ export default function JournalHome({ today, dayCount, next, onOpen, weather }) 
         </article>
 
         <img
+          ref={brooch}
           className="journal-brooch"
           src={heartBrooch}
           alt=""
           draggable="false"
-          onClick={(event) => burst(event.clientX, event.clientY, "heart")}
+          onPointerDown={() => {
+            holding.current = false;
+            press.current = setTimeout(() => {
+              holding.current = true;
+              beating.current?.classList.add("is-on");
+              heart.start();
+            }, 320);
+          }}
+          onPointerUp={letGo}
+          onPointerLeave={letGo}
+          onPointerCancel={letGo}
+          onContextMenu={(event) => event.preventDefault()}
+          onClick={(event) => {
+            if (holding.current) return;
+            burst(event.clientX, event.clientY, "heart");
+          }}
         />
       </section>
 
@@ -233,6 +273,10 @@ export default function JournalHome({ today, dayCount, next, onOpen, weather }) 
       <p className="journal-sign">Darling</p>
 
       <HomeNav active="home" onOpen={onOpen} />
+      <div ref={beating} className="heartbeat" aria-hidden="true">
+        <i ref={glow} className="heartbeat-glow" />
+        <span>扑通，扑通……这是望舒的心跳</span>
+      </div>
     </main>
   );
 }
