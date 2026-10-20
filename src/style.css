@@ -2216,6 +2216,30 @@ html[data-turn] .home-nav {
 .memory figcaption span { font-family: var(--hand); font-size: 16px; line-height: 1.3; }
 .memory-first figcaption span { font-size: 20px; }
 
+/* a long one (a pasted letter) takes the whole row, shows a few lines,
+   and opens to read in full on a tap */
+.memory-long { grid-column: 1 / -1; }
+.memory-long .memory-frame { aspect-ratio: 16 / 9; }
+.memory-long figcaption { padding: 10px 14px 12px; text-align: left; }
+.memory-long figcaption time { text-align: center; }
+.memory-long figcaption span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+  font-size: 17px;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+.memory-long.is-open figcaption span { display: block; -webkit-line-clamp: unset; }
+.memory-more {
+  margin-top: 4px;
+  color: #b8434a;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-align: center;
+}
+
 .memory .polaroid-menu { top: 42%; }
 .memory-tear {
   position: absolute;
