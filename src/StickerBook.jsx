@@ -12,7 +12,7 @@ import promiseArt from "./assets/stickers/promise.webp";
 // The "more" page: a sheet of stickers, each one a door into a little
 // corner of the world. 羲和 drew them torn off by hand, so none sit
 // straight; their name tags are torn the same way. Hold a sticker to put
-// another picture on it.
+// another picture on it: the picture is cut to that sticker's outline.
 
 const stickers = [
   { id: "invite", label: "结婚请帖", page: "invite", tilt: -5, x: 4, y: 0, w: 46, art: inviteArt },
@@ -41,7 +41,17 @@ function Sticker({ item, picture, onPick, onReset, onOpen }) {
       style={{ left: `${item.x}%`, top: `${item.y}%`, width: `${item.w}%`, "--tilt": `${item.tilt}deg` }}
       {...handlers}
     >
-      <img className="sticker-art" src={picture || item.art} alt="" draggable="false" />
+      {picture ? (
+        // her own picture, cut to this sticker's torn outline: a paper
+        // border in the sticker's shape, the photo just inside it
+        <span className="sticker-cutout" style={{ "--shape": `url("${item.art}")` }}>
+          <img className="sticker-art sticker-sizer" src={item.art} alt="" draggable="false" />
+          <span className="sticker-paper" />
+          <img className="sticker-photo" src={picture} alt="" draggable="false" />
+        </span>
+      ) : (
+        <img className="sticker-art" src={item.art} alt="" draggable="false" />
+      )}
       <figcaption className="sticker-label" style={{ clipPath: tornEdge(item.id.length + 3) }}>
         {item.label}
         {!item.page && <small>画着呢</small>}

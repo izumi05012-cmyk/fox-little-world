@@ -1648,6 +1648,27 @@ html[data-turn="back"] { --turn: -1; }
   pointer-events: none;
 }
 
+/* her own picture on a sticker keeps the sticker's torn shape */
+.sticker-cutout { position: relative; display: block; }
+.sticker-sizer { visibility: hidden; }
+.sticker-paper,
+.sticker-photo {
+  position: absolute;
+  inset: 0;
+  -webkit-mask: var(--shape) center / 100% 100% no-repeat;
+  mask: var(--shape) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+.sticker-paper { background: #fbf5ec; }
+.sticker-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-mask-size: 88% 88%;
+  mask-size: 88% 88%;
+}
+.sticker-page[data-dark] .sticker-cutout { filter: brightness(.86) sepia(.08); }
+
 /* after dark the room light is low: the stickers dim a little, warm */
 .sticker-page[data-dark] .sticker-art,
 .sticker-page[data-dark] .sticker-label { filter: brightness(.86) sepia(.08); }
