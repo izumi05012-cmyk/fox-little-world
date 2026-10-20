@@ -2070,6 +2070,17 @@ html[data-turn="back"] { --turn: -1; }
   pointer-events: none;
 }
 .memory-first .memory-tape { width: 92px; }
+/* a pressed flower tucked under the first photo's corner */
+.memory-flower {
+  position: absolute;
+  z-index: 2;
+  right: -18px;
+  bottom: 18px;
+  width: 64px;
+  transform: rotate(18deg);
+  filter: drop-shadow(0 2px 3px rgba(40, 34, 40, .2));
+  pointer-events: none;
+}
 
 .memory-frame {
   display: block;

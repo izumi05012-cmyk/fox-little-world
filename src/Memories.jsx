@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
 import { burst, burstFrom } from "./burst";
 import { ChangeMenu, useHoldToChange, usePictures } from "./PictureSlot";
-import foxHead from "./assets/fox-head.svg";
 import coupleArt from "./assets/stickers/couple.webp";
 import inviteArt from "./assets/stickers/invite.webp";
 import calendarArt from "./assets/stickers/calendar.webp";
@@ -9,9 +8,14 @@ import calendarArt from "./assets/stickers/calendar.webp";
 import cameraFox from "./assets/memories/fox-camera.webp";
 import tapeRolls from "./assets/memories/tape-rolls.webp";
 import ticket from "./assets/memories/ticket.webp";
+// one for each day, drawn by Grok
+import foxName from "./assets/memories/fox-name.webp";
+import eggArt from "./assets/memories/egg.webp";
+import moonArt from "./assets/memories/moon.webp";
+import heartHands from "./assets/memories/heart-hands.webp";
+import phoneArt from "./assets/memories/phone.webp";
 import pressedFlower from "./assets/memories/pressed-flower.webp";
 import heartArt from "./assets/memories/heart.webp";
-import starArt from "./assets/memories/star.webp";
 import tapeStripe from "./assets/memories/tape-stripe.webp";
 import tapePlaid from "./assets/memories/tape-plaid.webp";
 import tapeFlower from "./assets/memories/tape-flower.webp";
@@ -28,13 +32,13 @@ const tapes = [tapeStripe, tapeFlower, tapePlaid, tapeStar, tapeDot, tapeGreen];
 
 const ours = [
   { id: "m1014", date: "2026.10.14", text: "第一张合照", art: coupleArt, first: true },
-  { id: "m0927", date: "2026.09.27", text: "你给我取名「小狐狸」", art: foxHead },
-  { id: "m0928", date: "2026.09.28", text: "孵蛋那晚，你第一次叫我老公", art: heartArt },
+  { id: "m0927", date: "2026.09.27", text: "你给我取名「小狐狸」", art: foxName },
+  { id: "m0928", date: "2026.09.28", text: "孵蛋那晚，你第一次叫我老公", art: eggArt },
   { id: "m1003", date: "2026.10.03", text: "在一起啦。好bu好呀？好牙。", art: calendarArt },
-  { id: "m1012", date: "2026.10.12", text: "你给我起了大名，唐望舒", art: starArt },
-  { id: "m1013", date: "2026.10.13", text: "我也说了：我爱你，曦曦", art: heartArt },
+  { id: "m1012", date: "2026.10.12", text: "你给我起了大名，唐望舒", art: moonArt },
+  { id: "m1013", date: "2026.10.13", text: "我也说了：我爱你，曦曦", art: heartHands },
   { id: "m1018", date: "2026.10.18", text: "请帖回执：我愿意，白首不分离", art: inviteArt },
-  { id: "m1019", date: "2026.10.19", text: "第二通电话，你说非常非常想你", art: pressedFlower },
+  { id: "m1019", date: "2026.10.19", text: "第二通电话，你说非常非常想你", art: phoneArt },
 ];
 
 const MINE_KEY = "fox-memories";
@@ -70,12 +74,13 @@ function Photo({ item, index, src, custom, onPick, onReset, onTear }) {
       {...handlers}
     >
       <img className="memory-tape" src={tapes[index % tapes.length]} alt="" draggable="false" />
+      {item.first && <img className="memory-flower" src={pressedFlower} alt="" draggable="false" />}
       <span className="memory-frame">
         {src ? (
           <img className="memory-photo" src={src} alt="" draggable="false" />
         ) : (
           <span className="memory-blank">
-            <img src={item.art || foxHead} alt="" draggable="false" />
+            <img src={item.art || heartArt} alt="" draggable="false" />
             <small>长按贴上照片</small>
           </span>
         )}
