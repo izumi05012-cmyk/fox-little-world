@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <!-- the little world has its own colours: don't let a browser's dark
          mode repaint the glass grey and the paper black -->
     <meta name="color-scheme" content="only light" />
@@ -24,6 +24,8 @@
         if (!scene) scene = h >= 6 && h < 18 ? "day" : "night";
         if (scene === "day" && (h < 6 || h >= 18)) scene = "night";
         document.documentElement.dataset.scene = scene;
+        var bar = { day: "#eef0f4", night: "#1c2131", rain: "#2f3a4f", snow: "#e6ebf1" }[scene];
+        if (bar) document.querySelector('meta[name="theme-color"]').setAttribute("content", bar);
       })();
     </script>
     <title>Fox Little World</title>

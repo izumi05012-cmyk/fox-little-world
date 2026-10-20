@@ -171,7 +171,7 @@ button:focus-visible, input:focus-visible {
   min-height: 100vh;
   min-height: 100dvh;
   margin: 0 auto;
-  padding: 26px 20px 132px;
+  padding: calc(26px + env(safe-area-inset-top)) 20px 132px;
   color: var(--ink);
   isolation: isolate;
 }
@@ -325,7 +325,8 @@ button:focus-visible, input:focus-visible {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 12px 12px 0;
+  /* in the home-screen app the page runs up under the camera notch */
+  margin: calc(12px + env(safe-area-inset-top)) 12px 0;
   padding: 8px 8px 8px 4px;
 }
 
@@ -403,7 +404,7 @@ button:focus-visible, input:focus-visible {
   mask-image: linear-gradient(transparent calc(var(--under-top) * .45), #000 calc(var(--under-top) + 14px), #000 calc(100% - var(--under-bottom) - 12px), transparent calc(100% - var(--under-bottom) * .4));
 }
 
-.chat-page { --under-top: 80px; --under-bottom: 74px; }
+.chat-page { --under-top: calc(80px + env(safe-area-inset-top)); --under-bottom: 74px; }
 .chat-header,
 .chat-settings,
 .chat-compose { position: relative; z-index: 2; }
@@ -1083,7 +1084,7 @@ html[data-scene="snow"], html[data-scene="snow"] body { background: #968a98; }
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
-  padding: 26px 20px 132px;
+  padding: calc(26px + env(safe-area-inset-top)) 20px 132px;
   overflow: hidden;
   color: var(--ink);
   /* own stacking context, so the glow sits above body's background */
@@ -1571,7 +1572,7 @@ html[data-turn="back"] { --turn: -1; }
   min-height: 100vh;
   min-height: 100dvh;
   margin: 0 auto;
-  padding: 26px 20px 132px;
+  padding: calc(26px + env(safe-area-inset-top)) 20px 132px;
   color: var(--ink);
   isolation: isolate;
 }
