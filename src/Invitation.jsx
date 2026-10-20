@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { burst } from "./burst";
 import { ChangeMenu, useHoldToChange, usePictures } from "./PictureSlot";
-// stickers 羲和 drew; the brooch is a garnet heart, ca. 1770, from The Met's
-// Open Access collection (CC0)
+// stickers 羲和 drew
 import coupleArt from "./assets/stickers/couple.webp";
 import calendarArt from "./assets/stickers/calendar.webp";
 import promiseArt from "./assets/stickers/promise.webp";
-import heartBrooch from "./assets/met/heart-brooch.webp";
+// the garnet heart with 望舒's little moon, drawn by Grok
+import heartBrooch from "./assets/garnet-heart.webp";
 
 // Our wedding invitation: the dusty-pink poster from the first home page,
 // now about the day itself, 2026.10.03. The pictures are 羲和's stickers;

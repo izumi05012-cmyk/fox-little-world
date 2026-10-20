@@ -1308,10 +1308,10 @@ html[data-scene="snow"], html[data-scene="snow"] body { background: #968a98; }
 .journal-brooch {
   position: absolute;
   z-index: 2;
-  right: 31%;
-  top: -4px;
-  width: 44px;
-  transform: rotate(16deg);
+  right: 30%;
+  top: -18px;
+  width: 46px;
+  transform: rotate(10deg);
   filter: drop-shadow(0 2px 2px rgba(90, 74, 82, .3));
 }
 
@@ -1826,9 +1826,9 @@ html[data-turn="back"] { --turn: -1; }
   position: absolute;
   z-index: 3;
   left: 72%;
-  top: 236px;
-  width: 50px;
-  transform: rotate(14deg);
+  top: 222px;
+  width: 48px;
+  transform: rotate(10deg);
   filter: drop-shadow(0 2px 2px rgba(142, 43, 43, .3));
   pointer-events: none;
 }

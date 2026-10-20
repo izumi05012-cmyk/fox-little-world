@@ -8,11 +8,12 @@ import { useHeartbeat } from "./heartbeat";
 import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
 // Default pictures until 曦曦 puts her own in — public domain, from The Met's
 // Open Access collection: Shibata Zeshin, Fox by Mystic Fire; William
-// Morris, Trellis and Pink and Rose; a garnet heart brooch, ca. 1770.
+// Morris, Trellis and Pink and Rose.
 import foxArt from "./assets/met/fox-mystic-fire.webp";
 import trellis from "./assets/met/trellis-bird.webp";
 import pinkRose from "./assets/met/pink-rose.webp";
-import heartBrooch from "./assets/met/heart-brooch.webp";
+// the garnet heart with 望舒's little moon, drawn by Grok
+import heartBrooch from "./assets/garnet-heart.webp";
 
 // Home is a journal page: frosted-glass cards over soft colour, and a wall of
 // taped polaroids that are also the doors into the rest of the little world.
