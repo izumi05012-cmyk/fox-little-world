@@ -1,0 +1,50 @@
+# Builds the 小窝 Android app and puts it on the "app-latest" release, so the
+# newest .apk is always at:
+#   https://github.com/izumi05012-cmyk/fox-little-world/releases/download/app-latest/xiaowo.apk
+# The app only wraps the website, so this runs when the shell itself changes
+# (app/), or by hand from the Actions tab; site changes need no new build.
+# A pull request touching app/ builds too, as a check, without publishing.
+name: Android app
+
+on:
+  push:
+    branches: [main]
+    paths: ["app/**", ".github/workflows/android-app.yml"]
+  pull_request:
+    paths: ["app/**", ".github/workflows/android-app.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+        working-directory: app
+      - run: bash build-apk.sh
+        working-directory: app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xiaowo-apk
+          path: app/xiaowo.apk
+      - name: Put it on the app-latest release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view app-latest >/dev/null 2>&1 || \
+            gh release create app-latest --title "小窝 APP" --notes "点 xiaowo.apk 下载，装到手机上。页面内容会自己更新，不用每次重装。"
+          gh release upload app-latest app/xiaowo.apk --clobber

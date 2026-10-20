@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { clearSky, loadPref, realWeather, savePref } from "./weather";
+import { clearSky, isDaytime, loadPref, realWeather, savePref } from "./weather";
 
 // roughly the colour at the top of each view, for the phone's status bar
 const barColor = { day: "#eef0f4", night: "#1c2131", rain: "#2f3a4f", snow: "#e6ebf1" };
@@ -29,6 +29,10 @@ export function useScene() {
     document.documentElement.dataset.scene = scene;
     // the phone's top bar takes the colour of the view, not a black strip
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", barColor[scene] || barColor.day);
+    // in the 小窝 app the status bar floats over the view: dark clock and
+    // battery on a bright view, white ones on a dark one
+    const bright = scene === "day" || scene === "snow" || (scene === "rain" && isDaytime());
+    window.Capacitor?.Plugins?.SystemBars?.setStyle?.({ style: bright ? "LIGHT" : "DARK" })?.catch?.(() => {});
     try {
       localStorage.setItem("fox-last-scene", scene);
     } catch {
