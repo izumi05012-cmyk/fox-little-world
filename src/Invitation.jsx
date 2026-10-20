@@ -58,12 +58,21 @@ function Crescent() {
 function Photo({ item, src, custom, onPick, onReset }) {
   const { editing, setEditing, handlers } = useHoldToChange();
   return (
-    // her own photo gets a white photo border; the stickers bring their own
+    // her own photo is cut to the outline of the sticker it replaces, with
+    // a torn paper edge, so the collage stays hand-made
     <figure
-      className={`invite-photo ${item.className} ${custom ? "is-photo" : "is-sticker"} ${editing ? "is-editing" : ""}`}
+      className={`invite-photo ${item.className} ${custom ? "is-cutout" : "is-sticker"} ${editing ? "is-editing" : ""}`}
+      style={custom ? { "--shape": `url("${item.fallback}")` } : undefined}
       {...handlers}
     >
-      <img src={src} alt="" draggable="false" />
+      {custom ? (
+        <>
+          <span className="invite-paper" />
+          <img className="invite-cut-photo" src={src} alt="" draggable="false" />
+        </>
+      ) : (
+        <img src={src} alt="" draggable="false" />
+      )}
       {editing && (
         <ChangeMenu
           custom={custom}

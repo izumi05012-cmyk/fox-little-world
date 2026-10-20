@@ -66,6 +66,7 @@ function today() {
 
 function Photo({ item, index, src, custom, onPick, onReset, onTear }) {
   const { editing, setEditing, handlers } = useHoldToChange((event) => burstFrom(event.currentTarget, "heart"));
+  const [developing, setDeveloping] = useState(Boolean(item.fresh));
   const tilt = item.first ? -2 : ((index * 37) % 9) - 4;
   return (
     <figure
@@ -77,7 +78,7 @@ function Photo({ item, index, src, custom, onPick, onReset, onTear }) {
       {item.first && <img className="memory-flower" src={pressedFlower} alt="" draggable="false" />}
       <span className="memory-frame">
         {src ? (
-          <img className="memory-photo" src={src} alt="" draggable="false" />
+          <img className={`memory-photo ${developing ? "is-developing" : ""}`} src={src} alt="" draggable="false" />
         ) : (
           <span className="memory-blank">
             <img src={item.art || heartArt} alt="" draggable="false" />
@@ -92,7 +93,10 @@ function Photo({ item, index, src, custom, onPick, onReset, onTear }) {
       {editing && (
         <ChangeMenu
           custom={custom}
-          onPick={(file) => onPick(`memory-${item.id}`, file)}
+          onPick={(file) => {
+            setDeveloping(true);
+            onPick(`memory-${item.id}`, file);
+          }}
           onReset={() => onReset(`memory-${item.id}`)}
           onClose={() => setEditing(false)}
         />
@@ -119,6 +123,7 @@ export default function Memories({ onBack, scene }) {
   const { pictures, pick, reset } = usePictures(all.map((m) => `memory-${m.id}`));
   const [text, setText] = useState("");
   const [file, setFile] = useState(null);
+  const [freshId, setFreshId] = useState(null); // the one just stuck on, still developing
   const input = useRef(null);
 
   async function stick(event) {
@@ -129,6 +134,7 @@ export default function Memories({ onBack, scene }) {
     const next = [...mine, { id, date: today(), text: words || "这一天" }];
     setMine(next);
     writeMine(next);
+    setFreshId(file ? id : null);
     setText("");
     setFile(null);
     burst(event.clientX, event.clientY, "heart");
@@ -160,7 +166,7 @@ export default function Memories({ onBack, scene }) {
         {all.map((item, index) => (
           <Photo
             key={item.id}
-            item={item}
+            item={item.id === freshId ? { ...item, fresh: true } : item}
             index={index}
             src={pictures[`memory-${item.id}`]}
             custom={Boolean(pictures[`memory-${item.id}`])}
