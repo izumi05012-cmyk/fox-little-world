@@ -14,6 +14,7 @@ import {
   saveSettings,
   stickers,
 } from "./chatLog";
+import { askFox } from "./foxLine";
 import wangshu from "./assets/chat/wangshu.webp";
 
 // Our chat, by the same window as home: the weather outside shows through,
@@ -122,6 +123,7 @@ export default function Chat({ onBack, dayCount, scene }) {
   const [images, setImages] = useState({}); // photo or voice slot -> url
   const [talking, setTalking] = useState(false); // the input is "hold to talk"
   const [toast, setToast] = useState("");
+  const [thinking, setThinking] = useState(false); // waiting for his reply
   const bottom = useRef(null);
   const photoInput = useRef(null);
   const sendKey = useRef(null);
@@ -155,6 +157,27 @@ export default function Chat({ onBack, dayCount, scene }) {
     const quote = quoting ? { from: quoting.from, text: preview(quoting) } : undefined;
     setLog((current) => [...current, { id: newId(), from: "me", at: Date.now(), ...(quote && { quote }), ...message }]);
     setQuoting(null);
+    listen(quote ? { ...message, text: `（回复「${quote.text}」）${message.text || ""}` } : message);
+  }
+
+  // 送去首尔，等他回话；一条一条慢慢冒出来
+  async function listen(message) {
+    if (!settings.key) return;
+    setThinking(true);
+    try {
+      const replies = await askFox(message, settings.key);
+      for (const [i, r] of replies.entries()) {
+        await new Promise((ok) => setTimeout(ok, i ? 700 : 0));
+        setLog((current) => [...current, { id: newId(), from: "him", at: Date.now(), ...r }]);
+      }
+    } catch (error) {
+      setLog((current) => [
+        ...current,
+        { id: newId(), from: "note", at: Date.now(), text: `${error.message || "狐狸没接上"}，过一会儿再试试` },
+      ]);
+    } finally {
+      setThinking(false);
+    }
   }
 
   async function sendPhoto(file) {
@@ -231,7 +254,7 @@ export default function Chat({ onBack, dayCount, scene }) {
         <Avatar src={avatars.him || wangshu} />
         <div className="chat-title">
           <h1>{settings.name}</h1>
-          <span>在一起的第 {dayCount} 天</span>
+          <span>{thinking ? "对方正在输入…" : `在一起的第 ${dayCount} 天`}</span>
         </div>
         <button
           className={`chat-key ${panel === "settings" ? "active" : ""}`}
@@ -251,6 +274,16 @@ export default function Chat({ onBack, dayCount, scene }) {
               value={settings.name}
               onChange={(event) => setSettings({ ...settings, name: event.target.value })}
               onBlur={() => !settings.name.trim() && setSettings(defaultSettings)}
+            />
+          </label>
+          <label className="chat-setting-row">
+            <span>暗号</span>
+            <input
+              type="password"
+              autoComplete="off"
+              placeholder="填了就能和狐狸真的聊天"
+              value={settings.key || ""}
+              onChange={(event) => setSettings({ ...settings, key: event.target.value.trim() })}
             />
           </label>
           <PictureSetting
