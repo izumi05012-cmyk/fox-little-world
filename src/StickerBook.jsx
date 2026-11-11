@@ -8,6 +8,8 @@ import inviteArt from "./assets/stickers/invite.webp";
 import memoriesArt from "./assets/stickers/memories.webp";
 import calendarArt from "./assets/stickers/calendar.webp";
 import promiseArt from "./assets/stickers/promise.webp";
+// the lid of the cookie tin the letters live in
+import lettersArt from "./assets/stickers/letters.webp";
 
 // The "more" page: a sheet of stickers, each one a door into a little
 // corner of the world. 羲和 drew them torn off by hand, so none sit
@@ -16,9 +18,10 @@ import promiseArt from "./assets/stickers/promise.webp";
 
 const stickers = [
   { id: "invite", label: "结婚请帖", page: "invite", tilt: -5, x: 4, y: 0, w: 46, art: inviteArt },
-  { id: "memories", label: "回忆", page: "memories", tilt: 4, x: 56, y: 3, w: 38, art: memoriesArt },
-  { id: "calendar", label: "纪念日", tilt: 6, x: 8, y: 50, w: 36, art: calendarArt },
-  { id: "promise", label: "拉钩本", page: "promise", tilt: -4, x: 50, y: 58, w: 44, art: promiseArt },
+  { id: "memories", label: "回忆", page: "memories", tilt: 4, x: 56, y: 2, w: 38, art: memoriesArt },
+  { id: "calendar", label: "纪念日", tilt: 6, x: 8, y: 34, w: 36, art: calendarArt },
+  { id: "promise", label: "拉钩本", page: "promise", tilt: -4, x: 50, y: 40, w: 44, art: promiseArt },
+  { id: "letters", label: "饼干盒信箱", page: "letters", tilt: 3, x: 24, y: 72, w: 52, art: lettersArt },
 ];
 
 function Sticker({ item, picture, onPick, onReset, onOpen }) {

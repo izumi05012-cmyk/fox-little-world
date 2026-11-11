@@ -1667,7 +1667,7 @@ html[data-turn] .home-nav {
 .sticker-board {
   position: relative;
   height: 0;
-  padding-bottom: 120%;
+  padding-bottom: 176%;
   margin-top: 10px;
 }
 
@@ -2331,4 +2331,31 @@ html[data-turn] .home-nav {
   transform: rotate(-5deg);
   filter: drop-shadow(0 3px 4px rgba(40, 34, 40, .2));
   pointer-events: none;
+}
+
+/* the cookie tin of letters: a page of its own, filling the screen */
+.letterbox-page {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  background: #ece8df;
+}
+
+.letterbox-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.letterbox-back {
+  position: absolute;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  left: calc(14px + env(safe-area-inset-left, 0px));
+}
+
+@media (prefers-color-scheme: dark) {
+  .letterbox-page {
+    background: #1e1a17;
+  }
 }
