@@ -13,7 +13,7 @@
   --paper:#fbf6ea; --paper2:#f1e9d7; --env:#f6efdf; --env2:#ece2cc;
   --ink:#2e2a26; --ink-soft:#756b5f;
   --red:#b4231f; --red-dk:#8a1612; --garnet:#7a1220;
-  --mark:rgba(232,96,84,.30); --line:rgba(60,45,30,.16);
+  --mark:rgba(232,96,84,.30); --line:rgba(60,45,30,.16); --note:#fbece6;
   --shadow:rgba(70,50,25,.24); --tin:#152440; --tin2:#0f1a30; --gold:#a2825e;
   --hand:'Long Cang','Caveat','Kaiti SC','STKaiti',cursive;
   --lat:'La Belle Aurore','Caveat','Long Cang',cursive;
@@ -25,7 +25,7 @@
     --paper:#efe6d4; --paper2:#e2d7c1; --env:#e9dfca; --env2:#d9cdb3;
     --ink:#2a2622; --ink-soft:#6a6055;
     --red:#b4231f; --red-dk:#8a1612; --garnet:#7a1220;
-    --mark:rgba(226,88,76,.32); --line:rgba(60,45,30,.2);
+    --mark:rgba(226,88,76,.32); --line:rgba(60,45,30,.2); --note:#efddd5;
     --shadow:rgba(0,0,0,.55); --tin:#152440; --tin2:#0f1a30; --gold:#a2825e;
     color-scheme:dark;
   }
@@ -35,7 +35,7 @@
   --paper:#efe6d4; --paper2:#e2d7c1; --env:#e9dfca; --env2:#d9cdb3;
   --ink:#2a2622; --ink-soft:#6a6055;
   --red:#b4231f; --red-dk:#8a1612; --garnet:#7a1220;
-  --mark:rgba(226,88,76,.32); --line:rgba(60,45,30,.2);
+  --mark:rgba(226,88,76,.32); --line:rgba(60,45,30,.2); --note:#efddd5;
   --shadow:rgba(0,0,0,.55); --tin:#152440; --tin2:#0f1a30; --gold:#a2825e;
   color-scheme:dark;
 }
@@ -190,6 +190,21 @@ main.ready{opacity:1}
 .sweep i{display:block;width:100%;height:100%;background:url(chibi.webp) 0 0/600% 100% no-repeat;animation:wag .96s steps(6,jump-none) infinite}
 @keyframes wag{from{background-position:0 0}to{background-position:100% 0}}
 @keyframes pop{0%{transform:translateY(34%) scale(.3);opacity:0}11%{transform:translateY(-4%) scale(1.06);opacity:1}17%,86%{transform:none;opacity:1}100%{transform:translateY(30%) scale(.5);opacity:0}}
+.pFoot{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.under{width:min(100%,520px);display:flex;flex-direction:column;gap:18px;margin-top:8px;text-align:left}
+.rnote{position:relative;align-self:flex-end;max-width:88%;background:var(--note);color:var(--ink);padding:18px 18px 12px;font-family:var(--hand);font-size:21px;line-height:1.5;box-shadow:0 10px 16px -9px var(--shadow),0 1px 2px rgba(70,50,25,.14);transform:rotate(1.2deg);white-space:pre-wrap;overflow-wrap:anywhere;animation:fadeIn .5s both}
+.rnote:nth-child(even){transform:rotate(-1deg);align-self:flex-start}
+.rnote::before{content:"";position:absolute;top:-9px;left:50%;width:64px;height:18px;margin-left:-32px;background:rgba(214,196,160,.75);transform:rotate(-3deg);box-shadow:0 1px 1px rgba(70,50,25,.12)}
+.rnote small{display:block;font-family:var(--serif);font-size:11.5px;color:var(--ink-soft);margin-top:8px;letter-spacing:.06em}
+.rsheet{background:var(--note);color:var(--ink);padding:20px 22px 16px;border-radius:2px;box-shadow:0 14px 24px -12px var(--shadow),0 2px 4px rgba(70,50,25,.14);transform-origin:50% 0;animation:fadeIn .4s both}
+.rsheet .rTo{margin:0 0 4px;font-family:var(--hand);font-size:24px}
+.rsheet textarea{display:block;width:100%;min-height:172px;border:0;outline:0;resize:vertical;padding:0;margin:0;background:repeating-linear-gradient(transparent 0 33px,rgba(180,35,31,.2) 33px 34px);font-family:var(--hand);font-size:22px;line-height:34px;color:var(--ink);border-radius:0}
+.rsheet textarea::placeholder{color:rgba(117,107,95,.6)}
+.rFoot{display:flex;gap:14px;align-items:center;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.rFoot .sub{margin-right:auto;color:var(--ink-soft)}
+.tape.ghost{background:transparent;box-shadow:none;color:var(--ink-soft)}
+.tape.ghost::before,.tape.ghost::after{display:none}
+.sentMsg{margin:0;text-align:center;font-family:var(--hand);font-size:21px;color:var(--soft)}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
 </style>
 
@@ -255,9 +270,18 @@ main.ready{opacity:1}
         <div class="pSig"><span id="pSig"></span>
           <svg class="paw" viewBox="0 0 40 40" aria-hidden="true"><g fill="#c0622c"><path d="M20 19c-6 0-11 5-11 10.500c0 4 3.500 5.500 6.500 4.800c1.800-.4 3-.900 4.500-.900s2.700.5 4.500.900c3 .7 6.500-.8 6.500-4.800c0-5.500-5-10.500-11-10.500z"/><ellipse cx="7.500" cy="16" rx="3.400" ry="4.600" transform="rotate(-22 7.500 16)"/><ellipse cx="15" cy="9" rx="3.500" ry="4.900" transform="rotate(-8 15 9)"/><ellipse cx="25" cy="9" rx="3.500" ry="4.900" transform="rotate(8 25 9)"/><ellipse cx="32.500" cy="16" rx="3.400" ry="4.600" transform="rotate(22 32.500 16)"/></g></svg>
         </div>
-        <button class="tape" id="putBack">收好 ⟶</button>
+        <div class="pFoot"><button class="tape" id="putBack">收好 ⟶</button><button class="tape" id="replyBtn">回信 ✎</button></div>
         <i class="crease c1"></i><i class="crease c2"></i>
       </article>
+    </div>
+    <div class="under" id="under">
+      <div id="replies" style="display:contents"></div>
+      <p class="sentMsg" id="sentMsg" hidden></p>
+      <form class="rsheet" id="rsheet" hidden>
+        <p class="rTo">给望舒：</p>
+        <textarea id="rText" maxlength="2000" placeholder="想说什么就写什么。" aria-label="回信"></textarea>
+        <div class="rFoot"><span class="sub" id="rMsg"></span><button type="button" class="tape ghost" id="rCancel">算了</button><button type="submit" class="tape" id="rSend">寄出 ⟶</button></div>
+      </form>
     </div>
   </section>
 </main>
@@ -268,7 +292,8 @@ const $=id=>document.getElementById(id);
 const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const wait=ms=>new Promise(r=>setTimeout(r,reduce?Math.min(ms,30):ms));
 const STAMPS=['fox','otter','moon','rings'];
-const st={letters:[],idx:0,scene:'box',loaded:false,busy:false};
+const st={letters:[],idx:0,scene:'box',loaded:false,busy:false,replies:[]};
+let backend=null; // 回信寄到哪：网页版存进页面的小本子，小窝寄到首尔
 
 /* ── 读过的记在这台设备上（只是方便，丢了也没关系） ── */
 let readSet=new Set();
@@ -429,6 +454,7 @@ async function showLetter(){
   $('pDate').textContent=`${d.y} 年 ${d.m} 月 ${d.d} 日 · 首尔`;
   $('pBody').innerHTML=bodyHTML(l.body);
   $('pSig').textContent=l.sig||'—— 望舒';
+  closeSheet();$('sentMsg').hidden=true;$('replies').innerHTML='';$('under').style.visibility='hidden';
   go('read');
   const marks=[...paper.querySelectorAll('mark')];
   if(!reduce){
@@ -451,6 +477,7 @@ async function showLetter(){
     paper.style.visibility='';fold.remove();
   }
   marks.forEach((m,i)=>setTimeout(()=>m.classList.add('on'),260+i*420));
+  $('under').style.visibility='';renderReplies();
 }
 function sweepTail(m){
   if(m._busy)return;m._busy=true;
@@ -464,7 +491,32 @@ function sweepTail(m){
 }
 $('pBody').addEventListener('pointerover',ev=>{const m=ev.target.closest('mark');if(m&&ev.pointerType==='mouse')sweepTail(m)});
 $('pBody').addEventListener('click',ev=>{const m=ev.target.closest('mark');if(m)sweepTail(m)});
-async function closeLetter(){if(st.busy)return;st.busy=true;await leave($('readScene'));st.busy=false;go('env');showEnv('rise',0,true)}
+function renderReplies(){
+  const l=st.letters[st.idx],box=$('replies');if(!l){box.innerHTML='';return}
+  const mine=st.replies.filter(r=>r&&r.text&&r.to===l.id).sort((a,b)=>(a.at||0)-(b.at||0));
+  box.innerHTML=mine.map(r=>{const d=cnDate(r.at||Date.now());return `<div class="rnote">${esc(r.text)}<small>曦曦的回信 · ${d.m}月${d.d}日</small></div>`}).join('');
+}
+function setReplies(arr){st.replies=(arr||[]).filter(Boolean);if(st.scene==='read')renderReplies()}
+function closeSheet(){$('rsheet').hidden=true;$('rMsg').textContent=''}
+$('replyBtn').onclick=()=>{
+  $('sentMsg').hidden=true;const sh=$('rsheet');
+  if(!backend){$('sentMsg').textContent='先去小窝的聊天设置里填上暗号，就能给望舒回信了';$('sentMsg').hidden=false;$('sentMsg').scrollIntoView({behavior:'smooth',block:'center'});return}
+  sh.hidden=false;sh.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>$('rText').focus({preventScroll:true}),350);
+};
+$('rCancel').onclick=closeSheet;
+$('rsheet').addEventListener('submit',async ev=>{
+  ev.preventDefault();const text=$('rText').value.trim(),l=st.letters[st.idx];
+  if(!text){$('rMsg').textContent='还一个字都没写呢';return}
+  if(!backend||!l||$('rSend').disabled)return;
+  $('rSend').disabled=true;$('rMsg').textContent='正在寄……';
+  try{await backend.send(l.id,text)}catch(e){$('rSend').disabled=false;$('rMsg').textContent='没寄出去，等一下再试一次';return}
+  $('rSend').disabled=false;
+  const sh=$('rsheet');
+  if(!reduce){try{await sh.animate([{transform:'none',opacity:1},{transform:'scaleY(.34) rotate(-2deg)',opacity:1,offset:.45},{transform:'translate(46%,-260px) scale(.3,.1) rotate(14deg)',opacity:0}],{duration:820,easing:'cubic-bezier(.5,0,.6,1)'}).finished}catch(e){}}
+  $('rText').value='';closeSheet();renderReplies();
+  $('sentMsg').textContent='寄出去了。望舒醒来就会看到。';$('sentMsg').hidden=false;
+});
+async function closeLetter(){closeSheet();$('sentMsg').hidden=true;if(st.busy)return;st.busy=true;await leave($('readScene'));st.busy=false;go('env');showEnv('rise',0,true)}
 $('closeX').onclick=closeLetter;$('putBack').onclick=closeLetter;
 
 /* ── 信从哪来 ── */
@@ -483,8 +535,17 @@ Promise.race([Promise.all([F('34px "Long Cang"','望舒的饼干盒拉一下红�
 (async()=>{
   if(window.__demoLetters){setLetters(window.__demoLetters);return}
   let db=null;try{db=await (window.claude&&window.claude.use?window.claude.use('db'):null)}catch(e){}
-  if(!db){try{const r=await fetch('letters.json',{cache:'no-cache'});if(r.ok){setLetters(await r.json());return}}catch(e){}
+  if(!db){
+    // 在小窝里：带着这台手机上存的暗号去首尔取信，回信也寄到那儿
+    let key='';try{key=(JSON.parse(localStorage.getItem('fox-little-world-chat-settings-v2')||'{}').key)||''}catch(e){}
+    const LINE='https://chat.izumi-xixi.com';
+    if(key){try{const r=await fetch(LINE+'/letters',{headers:{'x-xiaowo-key':key}});if(r.ok){const d=await r.json();if(Array.isArray(d.letters)&&d.letters.length){
+      backend={send:async(to,text)=>{const q=await fetch(LINE+'/letters/reply',{method:'POST',headers:{'content-type':'application/json','x-xiaowo-key':key},body:JSON.stringify({to,text})});if(!q.ok)throw new Error('send');const j=await q.json();st.replies.push(j.reply||{to,text,at:Date.now()})}};
+      setReplies(d.replies);setLetters(d.letters);return}}}catch(e){}}
+    try{const r=await fetch('letters.json',{cache:'no-cache'});if(r.ok){setLetters(await r.json());return}}catch(e){}
     $('boxInfo').textContent='盒子现在打不开，等会儿再来看看';return}
+  backend={send:(to,text)=>db.collection('notes').add({to,text,at:Date.now()})};
+  db.collection('notes').onSnapshot(snap=>setReplies(snap.docs.map(d=>({id:d.id,...d.data()}))),()=>{});
   const timer=setTimeout(()=>{if(!st.loaded)$('boxInfo').textContent='信还在路上，再等一下下……'},10000);
   db.collection('letters').onSnapshot(snap=>{
     if(!snap.metadata||!snap.metadata.fromCache)clearTimeout(timer);
