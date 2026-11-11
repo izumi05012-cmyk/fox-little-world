@@ -19,6 +19,9 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
+  // the letter tin is a page of its own inside a frame: always fresh, and
+  // never stored as the app's front page
+  if (url.pathname.startsWith("/mailbox/")) return;
 
   if (request.mode === "navigate") {
     event.respondWith(
