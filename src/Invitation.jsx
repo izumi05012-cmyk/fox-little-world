@@ -85,7 +85,7 @@ function Photo({ item, src, custom, onPick, onReset }) {
   );
 }
 
-export default function Invitation({ onBack, dayCount }) {
+export default function Invitation({ onBack, dayCount, backLabel = "回贴纸本" }) {
   const { pictures, pick, reset } = usePictures(photos.map((p) => p.slot));
   const [rsvp, setRsvp] = useState(readRsvp);
 
@@ -105,7 +105,7 @@ export default function Invitation({ onBack, dayCount }) {
   return (
     <main className="invite-page">
       <header className="chat-list-header">
-        <button className="glass round-button" onClick={onBack} aria-label="回贴纸本">
+        <button className="glass round-button" onClick={onBack} aria-label={backLabel}>
           ←
         </button>
       </header>

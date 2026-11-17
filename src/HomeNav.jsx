@@ -32,12 +32,13 @@ export default function HomeNav({ active, onOpen }) {
             key={item.id}
             className={isActive ? "active" : ""}
             onClick={canOpen ? () => onOpen(item.id) : undefined}
+            disabled={!isActive && !canOpen}
             aria-current={isActive ? "page" : undefined}
             aria-label={item.label}
           >
             <span className="nav-mark">{isActive ? <PawStamp /> : <i />}</span>
             <span className="nav-label">{item.label}</span>
-            <small>{item.english}</small>
+            <small>{item.id === "diary" ? "筹备中" : item.english}</small>
           </button>
         );
       })}

@@ -28,7 +28,7 @@ function shareFonts(frame) {
   }
 }
 
-export default function Letterbox({ onBack }) {
+export default function Letterbox({ onBack, backLabel = "回贴纸本" }) {
   const frame = useRef(null);
   return (
     <main className="letterbox-page">
@@ -39,7 +39,7 @@ export default function Letterbox({ onBack }) {
         src="/mailbox/index.html"
         onLoad={() => shareFonts(frame.current)}
       />
-      <button className="glass round-button letterbox-back" onClick={onBack} aria-label="回贴纸本">
+      <button className="glass round-button letterbox-back" onClick={onBack} aria-label={backLabel}>
         ←
       </button>
     </main>
