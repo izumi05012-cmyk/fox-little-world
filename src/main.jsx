@@ -65,15 +65,15 @@ const depth = { home: 0, "chat-list": 1, more: 1, chat: 2, invite: 2, promise: 2
 
 function App() {
   const [page, setPage] = useState("home");
-  // memories opens from the home wall or the sticker book; back goes there
-  const [memoriesFrom, setMemoriesFrom] = useState("more");
+  // Detail pages return to the home or sticker-book entrance they came from.
+  const [detailFrom, setDetailFrom] = useState("more");
   const weather = useScene();
   const { scene } = weather;
   const dayCount = daysBetween(TOGETHER_SINCE, new Date()) + 1;
 
   const go = (next) => {
     if (next === page) return;
-    if (next === "memories") setMemoriesFrom(page === "home" ? "home" : "more");
+    if (["memories", "letters", "promise", "invite"].includes(next) && ["home", "more"].includes(page)) setDetailFrom(page);
     turnPage(() => {
       setPage(next);
       window.scrollTo(0, 0);
@@ -96,13 +96,13 @@ function App() {
   } else if (page === "more") {
     shown = <StickerBook onOpen={go} scene={scene} />;
   } else if (page === "promise") {
-    shown = <PromiseBook onBack={() => go("more")} scene={scene} />;
+    shown = <PromiseBook onBack={() => go(detailFrom)} backLabel={detailFrom === "home" ? "返回首页" : "回贴纸本"} scene={scene} />;
   } else if (page === "memories") {
-    shown = <Memories onBack={() => go(memoriesFrom)} scene={scene} />;
+    shown = <Memories onBack={() => go(detailFrom)} scene={scene} />;
   } else if (page === "letters") {
-    shown = <Letterbox onBack={() => go("more")} />;
+    shown = <Letterbox onBack={() => go(detailFrom)} backLabel={detailFrom === "home" ? "返回首页" : "回贴纸本"} />;
   } else if (page === "invite") {
-    shown = <Invitation onBack={() => go("more")} dayCount={dayCount} />;
+    shown = <Invitation onBack={() => go(detailFrom)} backLabel={detailFrom === "home" ? "返回首页" : "回贴纸本"} dayCount={dayCount} />;
   } else {
     shown = <Home onOpen={go} weather={weather} />;
   }

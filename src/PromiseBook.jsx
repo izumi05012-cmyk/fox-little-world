@@ -108,7 +108,7 @@ function Note({ item, index, kept, onStamp, onTear }) {
   );
 }
 
-export default function PromiseBook({ onBack, scene }) {
+export default function PromiseBook({ onBack, scene, backLabel = "回贴纸本" }) {
   const [mine, setMine] = useState(() => read(MINE_KEY, []));
   const [kept, setKept] = useState(() => read(KEPT_KEY, {}));
   const [text, setText] = useState("");
@@ -146,7 +146,7 @@ export default function PromiseBook({ onBack, scene }) {
   return (
     <main className="promise-page" data-dark={scene !== "day" || undefined}>
       <header className="chat-list-header">
-        <button className="glass round-button" onClick={onBack} aria-label="回贴纸本">
+        <button className="glass round-button" onClick={onBack} aria-label={backLabel}>
           ←
         </button>
         <div>

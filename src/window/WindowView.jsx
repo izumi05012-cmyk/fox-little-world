@@ -42,7 +42,7 @@ const FLAT_DEPTH = (() => {
 // what one layer shows: the scene as it comes, or rain and snow (the
 // glass) over her own picture. Clear skies keep the little house's own
 // views: her picture is for the weather to fall on.
-function resolve(scene, custom) {
+export function resolveWindowScene(scene, custom) {
   const base = scene === "rain" ? { ...scenes.rain, ...rainView() } : scenes[scene];
   if (!custom || (scene !== "rain" && scene !== "snow")) return { ...base, depth: base.depth || depthMap };
   return { ...base, picture: custom, depth: FLAT_DEPTH };
@@ -67,10 +67,10 @@ function SceneLayer({ scene, custom, motion, onReady }) {
     if (picture.current?.complete && picture.current.naturalWidth) shown();
   });
 
-  const view = resolve(scene, custom);
+  const view = resolveWindowScene(scene, custom);
 
   useEffect(() => {
-    const { effect, gpuGlass, air, picture: src } = resolve(scene, custom);
+    const { effect, gpuGlass, air, picture: src } = resolveWindowScene(scene, custom);
     const stopGlass = gpuGlass ? gpuGlass(glassHost.current, src) : null;
     const stopEffect = stopGlass
       ? air(canvas.current, picture.current)
@@ -82,7 +82,7 @@ function SceneLayer({ scene, custom, motion, onReady }) {
   }, [scene, custom]);
 
   useEffect(() => {
-    const { picture: src, depth: map } = resolve(scene, custom);
+    const { picture: src, depth: map } = resolveWindowScene(scene, custom);
     const stop = depthPhoto(depth.current, src, map, motion, () => setHas3d(true));
     return stop || undefined;
   }, [scene, custom, motion]);
