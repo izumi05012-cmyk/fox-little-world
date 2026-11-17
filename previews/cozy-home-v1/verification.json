@@ -1,0 +1,21 @@
+{
+  "result": "passed",
+  "checks": [
+    "real date/day count and honest unavailable diary state",
+    "existing chat-list entrance and return",
+    "all3 new home shortcuts return to home",
+    "sticker-book detail return stays on sticker book",
+    "record-today uses existing memory editor and local persistence",
+    "weather presets, mocked auto weather, arrow keys, persisted preference and shared window picture",
+    "space photo upload, IndexedDB reload, reset and Escape focus return",
+    "long press edits instead of navigating; keyboard Enter opens photo entrance",
+    "custom window is shared, persists, and resets",
+    "existing hold heartbeat starts and stops",
+    "320/390 mobile,768 tablet,1440 desktop fit without overlapping note",
+    "scenery-only mode hides and restores home controls",
+    "day and night visual captures with clean device storage"
+  ],
+  "pageErrors": [],
+  "externalMessageWrites": [],
+  "testedAgainst": "production build"
+}

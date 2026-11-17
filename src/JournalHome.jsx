@@ -88,6 +88,7 @@ function Polaroid({ item, src, custom, editing, onEdit, onOpen, onPick, onReset 
 export default function JournalHome({ today, dayCount, next, onOpen, weather }) {
   const [photos, setPhotos] = useState({});
   const [editing, setEditing] = useState(null);
+  const [sceneryOnly, setSceneryOnly] = useState(false);
   const { pref, scene, choose } = weather;
   const view = useWindowPicture();
   const windowPicture = resolveWindowScene(scene, view).picture;
@@ -140,7 +141,7 @@ export default function JournalHome({ today, dayCount, next, onOpen, weather }) 
   const isoDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
   return (
-    <main className="journal cozy-home" data-scene={scene} onClick={() => setEditing(null)}>
+    <main className={`journal cozy-home${sceneryOnly ? " is-scenery" : ""}`} data-scene={scene} onClick={(event) => { if (!event.target.closest(".polaroid")) setEditing(null); }}>
       <Splash scene={scene} picture={view} />
       <header className="cozy-masthead">
         <div className="cozy-brand"><img src={foxHead} alt="" /><span>小窝<small>OUR LITTLE WORLD</small></span></div>
@@ -226,6 +227,7 @@ export default function JournalHome({ today, dayCount, next, onOpen, weather }) 
         </section>
       </div>
       <p className="cozy-signature">Darling <span>小窝一直在这里。</span></p>
+      <button className="cozy-scenery-toggle" aria-pressed={sceneryOnly} onClick={() => { setSceneryOnly(!sceneryOnly); window.scrollTo({ top: 0, behavior: "instant" }); }}>{sceneryOnly ? "回到小窝" : "收起页面，只看风景"}</button>
       <HomeNav active="home" onOpen={onOpen} />
       <div ref={beating} className="heartbeat" aria-hidden="true"><i ref={glow} className="heartbeat-glow" /><span>扑通，扑通……这是望舒的心跳</span></div>
     </main>
