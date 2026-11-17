@@ -2359,3 +2359,11 @@ html[data-turn] .home-nav {
     background: #1e1a17;
   }
 }
+
+/* the pixel cottage keeps its clock in the top-left corner, so its back
+   button sits at the bottom instead */
+.pixel-home-page .letterbox-back {
+  top: auto;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+}
+.pixel-home-page { background: #1e1a17; }

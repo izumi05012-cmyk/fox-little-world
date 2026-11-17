@@ -1,0 +1,53 @@
+{
+  "fox": {
+    "scaleFromAuthored": 0.9696969696969697,
+    "poses": {
+      "carry": [
+        64,
+        83
+      ],
+      "give": [
+        88,
+        79
+      ],
+      "receive": [
+        46,
+        79
+      ]
+    }
+  },
+  "xi": {
+    "scaleFromAuthored": 0.96,
+    "poses": {
+      "carry": [
+        65,
+        82
+      ],
+      "give": [
+        87,
+        77
+      ],
+      "receive": [
+        44,
+        78
+      ]
+    }
+  },
+  "he": {
+    "scaleFromAuthored": 0.9230769230769231,
+    "poses": {
+      "carry": [
+        64,
+        85
+      ],
+      "give": [
+        87,
+        80
+      ],
+      "receive": [
+        47,
+        81
+      ]
+    }
+  }
+}
