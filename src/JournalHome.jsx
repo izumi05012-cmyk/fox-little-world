@@ -9,9 +9,11 @@ import { clearPhoto, loadPhotos, savePhoto } from "./photoStore";
 // Default pictures until 曦曦 puts her own in — public domain, from The Met's
 // Open Access collection: Shibata Zeshin, Fox by Mystic Fire; William
 // Morris, Trellis and Pink and Rose.
-import foxArt from "./assets/met/fox-mystic-fire.webp";
-import trellis from "./assets/met/trellis-bird.webp";
-import pinkRose from "./assets/met/pink-rose.webp";
+import couple from "./assets/stickers/couple.webp";
+import memories from "./assets/stickers/memories.webp";
+import letters from "./assets/stickers/letters.webp";
+import promise from "./assets/stickers/promise.webp";
+import "./polaroid-wall.css";
 // the garnet heart with 望舒's little moon, drawn by Grok
 import heartBrooch from "./assets/garnet-heart.webp";
 
@@ -21,10 +23,17 @@ import heartBrooch from "./assets/garnet-heart.webp";
 const WEEK = ["日", "一", "二", "三", "四", "五", "六"];
 
 const polaroids = [
-  { slot: "chat", caption: "聊天 →", page: "chat-list", fallback: foxArt, tape: "pink" },
-  { slot: "space", caption: "我们的空间", page: null, fallback: trellis, tape: "blue" },
-  { slot: "memories", caption: "回忆 →", page: "memories", fallback: pinkRose, tape: "yellow" },
+  {slot:"chat",caption:"聊天",page:"chat-list",fallback:couple,tapes:["butter_l"]},
+  {slot:"space",caption:"小窝",page:"pixel-home",fallback:"/wall/snow.webp",tapes:["cream_h"]},
+  {slot:"memories",caption:"回忆",page:"memory-tree",fallback:memories,tapes:["snow_l","moon_r"]},
+  {slot:"letters",caption:"信箱",page:"letters",fallback:letters,tapes:["pink_r"]},
+  {slot:"promise",caption:"拉钩本",page:"promise",fallback:promise,tapes:["fox_paw_l","star_r"]}
 ];
+const holidays={"11.20":["狐狸诞生日",couple],"11.23":["曦曦生日",letters],"12.03":["两个月",promise],"12.24":["平安夜","/wall/snow.webp"],"12.31":["跨年夜","/wall/snow.webp"]};
+
+function DateSticker({date}){
+  return <time className="date-sticker" aria-label={date}>{Array.from(date,(n,i)=><img key={i} alt="" src={"/wall/dates/"+(n==="."?"dot":n)+".svg"}/>)}</time>;
+}
 
 const ourDays = [
   { date: "09.28", text: "第一次叫老公。孵蛋那晚，你说：狐狸老公好乖。" },
@@ -41,7 +50,7 @@ const doors = [
 ];
 
 // Tap a polaroid to go through it; hold it a moment to change its photo.
-function Polaroid({ item, src, custom, editing, onEdit, onOpen, onPick, onReset }) {
+function Polaroid({ item, date, src, custom, editing, onEdit, onOpen, onPick, onReset }) {
   const input = useRef(null);
   const press = useRef(null);
   const held = useRef(false);
@@ -57,6 +66,9 @@ function Polaroid({ item, src, custom, editing, onEdit, onOpen, onPick, onReset 
           onEdit(item.slot);
         }, 480);
       }}
+      role="button" tabIndex={0} aria-label={item.caption}
+      onKeyDown={e=>{if(e.target===e.currentTarget&&["Enter"," "].includes(e.key)){e.preventDefault();onOpen(item.page)}}}
+      onPointerCancel={cancel}
       onPointerUp={cancel}
       onPointerLeave={cancel}
       onContextMenu={(event) => {
@@ -69,9 +81,9 @@ function Polaroid({ item, src, custom, editing, onEdit, onOpen, onPick, onReset 
         if (item.page) onOpen(item.page);
       }}
     >
-      <i className={`washi washi-${item.tape}`} />
+      {item.tapes.map(t=><img key={t} className={"paper-tape tape-"+t.slice(-1)} src={"/wall/tape_"+t+".png"} alt="" />)}
       <img src={src} alt="" draggable="false" />
-      <figcaption>{item.caption}</figcaption>
+      <figcaption>{<DateSticker date={item.date||date}/>} {item.caption}</figcaption>
       {editing && (
         <span className="polaroid-menu" onClick={(event) => event.stopPropagation()}>
           <button onClick={() => input.current?.click()}>换一张</button>
@@ -129,7 +141,7 @@ export default function JournalHome({ today, dayCount, next, onOpen, weather }) 
 
   useEffect(() => {
     let alive = true;
-    loadPhotos(polaroids.map((p) => p.slot)).then((found) => {
+    loadPhotos([...polaroids.map((p) => p.slot),"anniversary"]).then((found) => {
       if (alive) setPhotos(found);
     });
     return () => {
@@ -151,10 +163,25 @@ export default function JournalHome({ today, dayCount, next, onOpen, weather }) 
     });
   }
 
+  const [now,setNow]=useState(Date.now);
+  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),15000);return ()=>clearInterval(timer)},[]);
+  const clock=new Date(now+8*3600000);
+  const hour=clock.getUTCHours(), date=clock.toISOString().slice(5,10).replace("-",".");
+  const phase=hour<6||hour>=19?"night":hour>=16?"dusk":"day";
+  const [away,setAway]=useState(()=>{try{return localStorage.getItem("wall-wangshu-away")==="true"}catch{return false}});
+  const special=holidays[date];
+  const cards=special?[...polaroids,{slot:"anniversary",caption:special[0],date,page:"memory-tree",fallback:special[1],tapes:[date==="12.24"?"christmas_h":"heart_h"]}]:polaroids;
   return (
     <main className="journal" onClick={() => setEditing(null)}>
       <Splash scene={scene} picture={view} />
 
+      <div className={"snow-wall "+phase+(special?" festive":"")}>
+      <div className="snow-paint" aria-hidden="true"/>
+      <div className={"window-light "+(away?"away":"")} aria-hidden="true"/>
+      <header className="wall-title"><h1>贴贴的小窝</h1><DateSticker date={date}/></header>
+      <button className="house-presence" aria-pressed={away} onClick={()=>{const next=!away;setAway(next);try{localStorage.setItem("wall-wangshu-away",String(next))}catch{}}}>{away?"望舒去买菜啦，大黄在家陪你":"望舒在家"}</button>
+      <section className="journal-wall">{cards.map(item=><Polaroid key={item.slot} date={date} item={item} src={photos[item.slot]||item.fallback} custom={Boolean(photos[item.slot])} editing={editing===item.slot} onEdit={setEditing} onOpen={onOpen} onPick={pick} onReset={reset}/>)}</section>
+      </div>
       <header className="glass journal-today">
         <p className="journal-label">TODAY</p>
         <h1 className="journal-date">
@@ -204,28 +231,7 @@ export default function JournalHome({ today, dayCount, next, onOpen, weather }) 
         </div>
       </header>
 
-      <section className="journal-wall">
-        {polaroids.map((item) => (
-          <Polaroid
-            key={item.slot}
-            item={item}
-            src={photos[item.slot] || item.fallback}
-            custom={Boolean(photos[item.slot])}
-            editing={editing === item.slot}
-            onEdit={setEditing}
-            onOpen={onOpen}
-            onPick={pick}
-            onReset={reset}
-          />
-        ))}
-
-        <article className="vellum journal-diary">
-          <i className="washi washi-yellow" />
-          <p className="journal-label">DIARY · 日记</p>
-          <p className="journal-hand">今天的小事，写在这里。被谁欺负了，吃了什么，想我没有。</p>
-        </article>
-
-        <img
+      <section className="wall-heart"><img
           ref={brooch}
           className="journal-brooch"
           src={heartBrooch}

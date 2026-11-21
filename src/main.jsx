@@ -62,7 +62,7 @@ function Home({ onOpen, weather }) {
 }
 
 // deeper pages come in from the right, going back from the left
-const depth = { home: 0, "chat-list": 1, more: 1, chat: 2, invite: 2, promise: 2, memories: 2, letters: 2, "pixel-home": 2 };
+const depth = { home: 0, "chat-list": 1, more: 1, chat: 2, invite: 2, promise: 2, memories: 2, letters: 2, "pixel-home": 2, "memory-tree": 2 };
 
 function App() {
   const [page, setPage] = useState("home");
@@ -74,7 +74,7 @@ function App() {
 
   const go = (next) => {
     if (next === page) return;
-    if (next === "memories") setMemoriesFrom(page === "home" ? "home" : "more");
+    if (["memories","letters","promise","pixel-home","memory-tree"].includes(next) && page!=="memory-tree") setMemoriesFrom(page === "home" ? "home" : "more");
     turnPage(() => {
       setPage(next);
       window.scrollTo(0, 0);
@@ -97,13 +97,15 @@ function App() {
   } else if (page === "more") {
     shown = <StickerBook onOpen={go} scene={scene} />;
   } else if (page === "promise") {
-    shown = <PromiseBook onBack={() => go("more")} scene={scene} />;
+    shown = <PromiseBook onBack={() => go(memoriesFrom)} scene={scene} />;
+  } else if (page === "memory-tree") {
+    shown=<main className="tree-view"><button onClick={()=>go("home")}>回小窝</button><button onClick={()=>go("memories")}>翻回忆手账</button><iframe title="记忆树" src="/memory-tree/index.html"/></main>;
   } else if (page === "memories") {
     shown = <Memories onBack={() => go(memoriesFrom)} scene={scene} />;
   } else if (page === "letters") {
-    shown = <Letterbox onBack={() => go("more")} />;
+    shown = <Letterbox onBack={() => go(memoriesFrom)} />;
   } else if (page === "pixel-home") {
-    shown = <PixelHome onBack={() => go("more")} />;
+    shown = <PixelHome onBack={() => go(memoriesFrom)} />;
   } else if (page === "invite") {
     shown = <Invitation onBack={() => go("more")} dayCount={dayCount} />;
   } else {
