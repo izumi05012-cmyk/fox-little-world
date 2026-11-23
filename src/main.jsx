@@ -6,6 +6,7 @@ import ReactDOM from "react-dom/client";
 import "./style.css";
 
 import Chat from "./Chat";
+import Call from "./Call";
 import ChatList from "./ChatList";
 import JournalHome from "./JournalHome";
 import StickerBook from "./StickerBook";
@@ -62,7 +63,7 @@ function Home({ onOpen, weather }) {
 }
 
 // deeper pages come in from the right, going back from the left
-const depth = { home: 0, "chat-list": 1, more: 1, chat: 2, invite: 2, promise: 2, memories: 2, letters: 2, "pixel-home": 2, "memory-tree": 2 };
+const depth = { home: 0, "chat-list": 1, more: 1, chat: 2, call: 3, invite: 2, promise: 2, memories: 2, letters: 2, "pixel-home": 2, "memory-tree": 2 };
 
 function App() {
   const [page, setPage] = useState("home");
@@ -83,7 +84,9 @@ function App() {
 
   let shown;
   if (page === "chat") {
-    shown = <Chat onBack={() => go("chat-list")} dayCount={dayCount} scene={scene} />;
+    shown = <Chat onBack={() => go("chat-list")} onCall={() => go("call")} dayCount={dayCount} scene={scene} />;
+  } else if (page === "call") {
+    shown = <Call onBack={() => go("chat")} />;
   } else if (page === "chat-list") {
     shown = (
       <ChatList
