@@ -1,0 +1,188 @@
+/* =========================================================
+   CALL — 望舒专线, by the same window
+   ========================================================= */
+
+.call-page {
+  --call-ink: #f7f3ee;
+  --call-dim: rgba(247, 243, 238, .7);
+  --call-faint: rgba(247, 243, 238, .42);
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  color: var(--call-ink);
+  font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  isolation: isolate;
+}
+
+.call-page .chat-backdrop { z-index: -2; }
+
+/* a night wash over whatever is outside, so the white words hold */
+.call-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(8, 10, 18, .5) 0%, rgba(8, 10, 18, .16) 40%, rgba(8, 10, 18, .3) 62%, rgba(8, 10, 18, .8) 100%);
+  pointer-events: none;
+}
+
+.call-curtain { position: absolute; inset: 0; touch-action: none; }
+
+/* clear panes, like the chat bubbles: almost nothing but a bright rim */
+.call-glass {
+  background: linear-gradient(165deg, rgba(255, 255, 255, .11), rgba(255, 255, 255, .02));
+  border: 1.5px solid rgba(255, 255, 255, .42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 10px 24px -18px rgba(20, 16, 30, .6);
+  -webkit-backdrop-filter: blur(3px) saturate(1.15);
+  backdrop-filter: blur(3px) saturate(1.15);
+  color: var(--call-ink);
+}
+
+.call-pill {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 30px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px 7px 8px;
+  border-radius: 999px;
+  font-size: 15px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.call-pill b { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 1px rgba(255, 255, 255, .35); }
+.call-pill img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.call-pill em { font-style: normal; color: var(--call-dim); font-variant-numeric: tabular-nums; }
+.call-dot { width: 7px; height: 7px; border-radius: 50%; background: #4cb879; box-shadow: 0 0 8px #4cb879; }
+.is-ringing .call-dot { background: #f4d39b; box-shadow: 0 0 8px #f4d39b; animation: call-blink 1.2s infinite; }
+.is-ended .call-dot { background: var(--call-faint); box-shadow: none; }
+@keyframes call-blink { 50% { opacity: .25; } }
+
+.call-back, .call-log-key {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 32px);
+  z-index: 3;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font: 15px inherit;
+}
+.call-back { left: max(14px, env(safe-area-inset-left, 0px)); }
+.call-log-key { right: max(14px, env(safe-area-inset-right, 0px)); }
+.call-back svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.call-body {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-block: 0 calc(env(safe-area-inset-bottom, 0px) + 26px);
+  padding-left: max(22px, env(safe-area-inset-left, 0px));
+  padding-right: max(22px, env(safe-area-inset-right, 0px));
+  max-width: 520px;
+  margin: 0 auto;
+  pointer-events: none;
+}
+.call-body > * { pointer-events: auto; }
+
+.call-who { text-align: center; margin-bottom: 46px; pointer-events: none; }
+.call-who h1 { font-style: italic; font-weight: 400; font-size: 52px; margin: 0 0 8px; letter-spacing: .14em; text-shadow: 0 2px 18px rgba(0, 0, 0, .5); }
+.call-who p { margin: 0; font-size: 13px; color: var(--call-dim); letter-spacing: .16em; }
+
+/* what we say runs on like subtitles; hers in pink, right under mine */
+.call-lines {
+  margin-bottom: 24px;
+  max-height: 36vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 16px;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 22%);
+  mask-image: linear-gradient(180deg, transparent, #000 22%);
+}
+.call-line { animation: call-in .5s ease both; transition: opacity .6s; }
+.call-line .big { font-style: italic; font-weight: 500; font-size: 30px; line-height: 1.38; letter-spacing: .02em; text-shadow: 0 2px 14px rgba(0, 0, 0, .55); text-wrap: balance; transition: font-size .5s; }
+.call-line .small { margin-top: 10px; font-size: 13px; color: var(--call-dim); letter-spacing: .06em; }
+.call-line.old { opacity: .45; }
+.call-line.old .big { font-size: 20px; }
+.call-line.her .big { color: #ffe3ea; }
+@keyframes call-in { from { opacity: 0; transform: translateY(6px); } }
+
+.call-ring { display: flex; justify-content: space-around; padding: 0 18px; }
+.call-ring button { display: flex; flex-direction: column; align-items: center; gap: 10px; background: none; border: 0; color: var(--call-dim); font: 13px inherit; font-family: inherit; padding: 0; }
+.call-ring button > i {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid rgba(255, 255, 255, .45);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 -10px 20px rgba(0, 0, 0, .12), 0 12px 28px -14px rgba(0, 0, 0, .6);
+}
+.call-ring button:active > i { transform: scale(.93); }
+.call-ring svg { width: 28px; height: 28px; fill: #fff; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .35)); }
+.call-ring .decline > i { background: radial-gradient(circle at 35% 28%, rgba(255, 190, 185, .55), rgba(229, 83, 75, .32) 60%, rgba(229, 83, 75, .18)); }
+.call-ring .accept > i { background: radial-gradient(circle at 35% 28%, rgba(200, 255, 220, .6), rgba(76, 184, 121, .38) 60%, rgba(76, 184, 121, .2)); }
+.call-ring .accept > i::before,
+.call-ring .accept > i::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 1.5px solid rgba(190, 255, 215, .6); animation: call-halo 2s ease-out infinite; }
+.call-ring .accept > i::before { animation-delay: 1s; }
+@keyframes call-halo { from { transform: scale(1); opacity: .9; } to { transform: scale(1.55); opacity: 0; } }
+.call-ring .accept svg { animation: call-wiggle 2s ease-in-out infinite; }
+@keyframes call-wiggle { 0%, 60%, 100% { transform: rotate(0); } 65%, 75%, 85% { transform: rotate(-12deg); } 70%, 80% { transform: rotate(12deg); } }
+
+/* the little me from the letter box, sitting on the buttons */
+.call-page .sit { position: absolute; width: 64px; height: 64px; pointer-events: none; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .35)); animation: call-sit .7s cubic-bezier(.3, .8, .3, 1) both; }
+.call-page .sit i { display: block; width: 100%; height: 100%; background: url("/mailbox/chibi.webp") 0 0 / 600% 100% no-repeat; animation: call-wag .96s steps(6, jump-none) infinite; }
+@keyframes call-wag { from { background-position: 0 0; } to { background-position: 100% 0; } }
+@keyframes call-sit { from { transform: translateY(30%) scale(.4); opacity: 0; } }
+.call-ring .accept .sit { left: 50%; bottom: calc(100% - 6px); margin-left: -32px; }
+.call-type .sit { right: 44px; bottom: calc(100% - 10px); }
+
+.call-status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--call-dim); letter-spacing: .12em; margin-bottom: 12px; }
+.call-status i { display: flex; gap: 3px; align-items: center; height: 12px; }
+.call-status s { width: 3px; height: 4px; border-radius: 2px; background: var(--call-ink); opacity: .8; animation: call-wave 1.1s ease-in-out infinite; }
+.call-status s:nth-child(2) { animation-delay: .15s; }
+.call-status s:nth-child(3) { animation-delay: .3s; }
+.call-status s:nth-child(4) { animation-delay: .45s; }
+@keyframes call-wave { 50% { height: 12px; } }
+.is-muted .call-status s { animation: none; opacity: .3; }
+
+.call-bar { display: flex; align-items: center; gap: 10px; }
+.call-round { flex: none; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; padding: 0; }
+.call-round svg, .call-type button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.call-round:active { transform: scale(.94); }
+.is-muted .call-mic { background: linear-gradient(165deg, rgba(255, 255, 255, .75), rgba(255, 255, 255, .5)); color: #15161c; }
+.call-clock.on { background: linear-gradient(165deg, rgba(255, 214, 224, .3), rgba(255, 214, 224, .08)); }
+
+.call-type { position: relative; flex: 1; min-width: 0; height: 52px; border-radius: 26px; display: flex; align-items: center; padding: 0 6px 0 18px; }
+.call-type input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--call-ink); font: 15px inherit; font-family: inherit; -webkit-user-select: text; user-select: text; }
+.call-type input::placeholder { color: var(--call-faint); }
+.call-type button { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .18); background: linear-gradient(165deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, .06)); color: var(--call-ink); display: grid; place-items: center; padding: 0; }
+.call-type button svg { width: 18px; height: 18px; stroke-width: 2; }
+
+.call-under { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 12px; color: var(--call-faint); letter-spacing: .08em; min-height: 18px; }
+.call-under button { background: none; border: 0; color: #ff8f86; font: 12px inherit; font-family: inherit; letter-spacing: .12em; padding: 4px 0; }
+
+.call-again { align-self: center; padding: 12px 26px; border-radius: 999px; font: 14px inherit; font-family: inherit; letter-spacing: .1em; }
+
+.call-log { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(0, 0, 0, .35); }
+.call-log section { width: min(340px, 86vw); border-radius: 20px; padding: 18px 18px 10px; background: linear-gradient(165deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .04)), rgba(20, 22, 30, .35); -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); }
+.call-log h3 { margin: 0 0 10px; font-weight: 500; font-size: 16px; }
+.call-log ul { margin: 0; padding: 0; }
+.call-log li { list-style: none; display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid rgba(255, 255, 255, .12); font-size: 14px; color: var(--call-dim); }
+.call-log section > button { margin: 10px 0 4px; width: 100%; padding: 10px; border-radius: 10px; border: 0; background: rgba(255, 255, 255, .12); color: var(--call-ink); font: inherit; }

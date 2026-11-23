@@ -1,0 +1,407 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>*{box-sizing:border-box}body{margin:0}#aBox,#aWin{display:none}</style></head><body><title>像素小家</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Long+Cang&display=swap">
+<style>
+:root{--ink:#1a1620;--cream:#efe6d2;--soft:#9a9086;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--ink);color:var(--cream);font-family:'Cormorant Garamond','Songti SC',serif;min-height:100dvh;padding-block:14px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));-webkit-tap-highlight-color:transparent}
+main{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.top b{font-weight:400;font-style:italic;font-size:34px;line-height:1}
+.top span{font-size:12px;letter-spacing:.3em;color:var(--soft)}
+.floor{font-family:'Long Cang',cursive;font-size:18px;color:var(--cream);background:none;border:1px solid rgba(239,230,210,.35);border-radius:999px;padding:2px 12px 3px;cursor:pointer}
+.stage{position:relative;width:100%;aspect-ratio:300/380;border-radius:6px;overflow:hidden;box-shadow:0 0 0 2px #3a2f38,0 0 0 4px #0e0b12}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:manipulation;cursor:pointer}
+.amenu{position:absolute;transform:translate(-50%,-100%);display:grid;grid-template-columns:repeat(3,auto);gap:4px;padding:4px;background:#2a2622;border:2px solid #2a2622;border-radius:4px;box-shadow:2px 2px 0 rgba(0,0,0,.35);z-index:3;animation:pop .18s both}
+.amenu button{font-family:'Long Cang',cursive;font-size:16px;line-height:1;color:#2a2622;background:var(--cream);border:0;border-radius:2px;padding:4px 8px 5px;cursor:pointer;white-space:nowrap}
+@keyframes pop{from{opacity:0;margin-top:6px}to{opacity:1;margin-top:0}}
+.bub{position:absolute;transform:translate(-50%,-100%);background:var(--cream);color:#2a2622;font-family:'Long Cang',cursive;font-size:17px;line-height:1.2;padding:4px 9px 5px;border:2px solid #2a2622;border-radius:3px;white-space:nowrap;pointer-events:none;animation:bub 2.4s both;box-shadow:2px 2px 0 rgba(0,0,0,.35);z-index:2}
+.bub::after{content:"";position:absolute;left:50%;bottom:-7px;width:8px;height:8px;margin-left:-4px;background:var(--cream);border-right:2px solid #2a2622;border-bottom:2px solid #2a2622;transform:rotate(45deg)}
+@keyframes bub{0%{opacity:0;margin-top:6px}10%,80%{opacity:1;margin-top:0}100%{opacity:0;margin-top:-6px}}
+.fade{position:absolute;inset:0;background:#0e0b12;opacity:0;pointer-events:none;transition:opacity .22s}
+.fade.on{opacity:1}
+.links{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.links p{margin:0;font-family:'Long Cang',cursive;font-size:18px;color:var(--soft)}
+.links a{font-family:'Long Cang',cursive;font-size:18px;color:var(--cream);text-decoration:none;border:1px solid rgba(239,230,210,.35);border-radius:999px;padding:4px 14px 5px;transition:background .3s}
+.links a.flash{background:rgba(239,230,210,.25)}
+.meal-cancel{font:inherit;color:var(--cream);background:#50372c;border:1px solid #b77d4f;border-radius:999px;padding:7px 14px;cursor:pointer}
+.meal-cancel[hidden]{display:none}
+</style>
+<main>
+  <div class="top"><b id="hm">--:--</b><button class="floor" id="fl">楼下 · 客厅</button><span id="dn">DAY</span></div>
+  <div class="stage" id="stage"><canvas id="c" aria-label="望舒、曦曦和羲和的两层像素小家"></canvas><div class="fade" id="fade"></div></div>
+  <button class="meal-cancel" id="cancelMeal" hidden>取消递餐</button>
+  <div class="links"><p id="tip">点谁选谁 · 点家具就去用 · 点楼梯上下楼</p><span><a id="aBox" href="https://claude.ai/artifact/WsQdMQxUVL5s5PsVPjstzq" target="_blank" rel="noopener">饼干盒 ›</a> <a id="aWin" href="https://claude.ai/artifact/KKqpunUV5BgXByCnEaVeL7" target="_blank" rel="noopener">窗 ›</a></span></div>
+</main>
+<script>
+(()=>{
+const cv=document.getElementById('c'),g=cv.getContext('2d'),stage=document.getElementById('stage'),fadeEl=document.getElementById('fade'),flBtn=document.getElementById('fl');
+const W=300,H=380;let K=3;
+function fit(){const r=cv.getBoundingClientRect();K=Math.max(2,Math.min(8,Math.ceil(r.width*(devicePixelRatio||1)/W)));cv.width=W*K;cv.height=H*K}
+addEventListener('resize',fit);fit();
+const load=s=>{const i=new Image();i.src=s;return i};
+const dogImg=load('dog.png'),img=load('trio.webp'),hugImg=load('hug.png'),soloImg=load('solo.png'),furImg=load('furniture.png');
+const ok=i=>i.complete&&i.naturalWidth;
+// 羲和画的家具，裁好拼成一张图集；他的格子是 2px，这里缩一半正好 1px
+const ATL={"bed":[0,0,176,184],"bed_xihe":[178,0,176,184],"blanket_basket":[356,0,48,42],"bookshelf":[0,186,112,146],"coat_rack":[114,186,48,106],"coffee_table":[164,186,96,60],"cookie_tin":[262,186,64,40],"desk_lamp":[328,186,132,126],"dining_set":[0,334,144,122],"floor_cushions":[146,334,88,38],"navy_rug":[236,334,160,88],"nightstand":[398,334,56,108],"plant":[0,458,58,64],"rug":[60,458,160,88],"sideboard":[222,458,116,82],"sofa":[340,458,144,112],"vanity":[0,572,112,128],"wall_clock":[114,572,36,40],"wardrobe":[152,572,96,134]};
+// 羲和画的双人动作：192×160，两人脚底中点在 (96,148)；kiss/peck 文件名是反的
+const PAIRS={peck:{t:'亲亲',say:'mua',d:3.4},kiss:{t:'贴贴',say:'贴贴',d:3.2},headpat:{t:'摸头',say:'乖',d:3.4},holdhands:{t:'牵手',say:'不放',d:4.5},lean:{t:'依偎',say:'靠一会儿',d:6}};
+for(const k in PAIRS)PAIRS[k].img=load('pair_'+k+'.png');
+const HEP={};for(const k of ['hug',...Object.keys(PAIRS)])HEP[k]=load('he_'+k+'.png');
+const SROW={fox:0,xi:1,he:2},ACTS={sit:'坐下',drink:'喝水',read:'看书',cookie:'吃饼干',water:'浇花',meal:'端餐盘'};
+const CELL=128,SCALE=.5,SZ=CELL*SCALE;
+const NAMES={xi:'曦曦',fox:'望舒',he:'羲和'};
+// ---------- 两层 ----------
+// 家具：k 图集名，(x,y) 脚底中点，s 额外缩放，flat 平铺在地上
+const ROOMS={
+ up:{name:'楼上 · 卧室',items:[
+  {k:'navy_rug',x:176,y:332,s:1.5,flat:1},
+  {k:'bed',x:108,y:236,id:'bed'},
+  {k:'nightstand',x:172,y:162,use:'say',say:'台灯开着呢'},
+  {k:'wardrobe',x:262,y:164,use:'say',say:'衣柜里有那条透明的'},
+  {k:'blanket_basket',x:46,y:250,use:'say',say:'冷了盖毯子'},
+  {k:'desk_lamp',x:236,y:268,id:'desk',use:'desk'},
+  {k:'plant',x:282,y:352,id:'plant'}]},
+ down:{name:'楼下 · 客厅',items:[
+  {k:'rug',x:104,y:318,s:1.5,flat:1},
+  {k:'bookshelf',x:36,y:158,id:'shelf',use:'read'},
+  {k:'sideboard',x:178,y:158,use:'cookie'},
+  {k:'cookie_tin',x:166,y:124,z:159,id:'tin'},
+  {k:'wall_clock',x:110,y:40,z:-1,use:'clock'},
+  {k:'bed_xihe',x:244,y:246,id:'hebed'},
+  {k:'sofa',x:100,y:262,id:'sofa',use:'sofa'},
+  {k:'coffee_table',x:104,y:300,use:'drink'},
+  {k:'floor_cushions',x:118,y:352,flat:1,use:'cushion'},
+  {k:'dining_set',x:190,y:356,id:'table',use:'table'},
+  {k:'coat_rack',x:288,y:300,use:'say',say:'蓝围巾挂好了'},
+  {k:'plant',x:282,y:370,id:'plant'}]}};
+for(const r of Object.values(ROOMS))for(const it of r.items){const a=ATL[it.k],s=(it.s||1)*SCALE;it.w=Math.round(a[2]*s);it.h=Math.round(a[3]*s);it.x0=Math.round(it.x-it.w/2);it.y0=it.y-it.h}
+const item=(fl,id)=>ROOMS[fl].items.find(i=>i.id===id);
+const STAIR={x:76,y:350}; // 楼梯口（楼梯外侧，两层同一个位置）
+let view='down';
+// ---------- 不穿模：家具在地上占的格子，人绕着走 ----------
+const GS=4,GX=Math.ceil(W/GS),GY0=148,GY=Math.ceil((376-GY0)/GS);
+const BLOCK={};
+for(const [fl,r] of Object.entries(ROOMS)){const b=new Uint8Array(GX*GY);const mark=(x0,y0,x1,y1)=>{for(let gy=Math.max(0,Math.floor((y0-GY0)/GS));gy<Math.min(GY,Math.ceil((y1-GY0)/GS));gy++)for(let gx=Math.max(0,Math.floor(x0/GS));gx<Math.min(GX,Math.ceil(x1/GS));gx++)b[gy*GX+gx]=1};
+  for(const it of r.items){if(it.flat||it.z===-1||it.id==='tin')continue;const bed=it.k.startsWith('bed'),thin=it.k==='coat_rack'||it.k==='plant';
+    const fh=bed?it.h-6:Math.max(8,Math.round(it.h*.42)),fw=thin?it.w*.6:it.w;mark(it.x-fw/2-5,it.y-fh-2,it.x+fw/2+5,it.y+3)}
+  if(fl==='down'){mark(0,296,66,380);mark(44,254,62,268)}else mark(0,308,70,380); // 楼梯
+  BLOCK[fl]=b}
+const free=(fl,gx,gy)=>gx>=0&&gy>=0&&gx<GX&&gy<GY&&!BLOCK[fl][gy*GX+gx];
+const toG=(x,y)=>[Math.max(0,Math.min(GX-1,Math.floor(x/GS))),Math.max(0,Math.min(GY-1,Math.floor((y-GY0)/GS)))],toW=(gx,gy)=>[gx*GS+GS/2,gy*GS+GY0+GS/2];
+function nearFree(fl,gx,gy){if(free(fl,gx,gy))return[gx,gy];for(let r=1;r<40;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;if(free(fl,gx+dx,gy+dy))return[gx+dx,gy+dy]}return[gx,gy]}
+function los(fl,a,b){const n=Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/2)+1;for(let i=0;i<=n;i++){const [gx,gy]=toG(a[0]+(b[0]-a[0])*i/n,a[1]+(b[1]-a[1])*i/n);if(!free(fl,gx,gy))return false}return true}
+function findPath(fl,sx,sy,tx,ty){let [ax,ay]=nearFree(fl,...toG(sx,sy));const [bx,by]=nearFree(fl,...toG(tx,ty));const goalW=free(fl,...toG(tx,ty))?[tx,ty]:toW(bx,by);
+  if(los(fl,[sx,sy],goalW))return[goalW];
+  const N=GX*GY,prev=new Int32Array(N).fill(-1),dist=new Float32Array(N).fill(1e9),open=[ay*GX+ax];dist[ay*GX+ax]=0;const goal=by*GX+bx;
+  const h=i=>Math.hypot(i%GX-bx,(i/GX|0)-by);
+  while(open.length){let bi=0;for(let i=1;i<open.length;i++)if(dist[open[i]]+h(open[i])<dist[open[bi]]+h(open[bi]))bi=i;const c=open.splice(bi,1)[0];if(c===goal)break;const cx=c%GX,cy=c/GX|0;
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const nx=cx+dx,ny=cy+dy;if(!free(fl,nx,ny)||(dx&&dy&&(!free(fl,cx+dx,cy)||!free(fl,cx,cy+dy))))continue;const ni=ny*GX+nx,nd=dist[c]+(dx&&dy?1.414:1);if(nd<dist[ni]){dist[ni]=nd;prev[ni]=c;if(!open.includes(ni))open.push(ni)}}}
+  if(prev[goal]<0&&goal!==ay*GX+ax)return[goalW];
+  const cells=[];for(let i=goal;i>=0&&i!==ay*GX+ax;i=prev[i])cells.unshift(toW(i%GX,i/GX|0));cells[cells.length-1]=goalW;
+  const out=[];let cur=[sx,sy],k=0;while(k<cells.length){let j=cells.length-1;while(j>k&&!los(fl,cur,cells[j]))j--;out.push(cells[j]);cur=cells[j];k=j+1}return out}
+
+// ---------- 颜色/天色 ----------
+const hex=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)),mix=(a,b,u)=>a.map((v,i)=>v+(b[i]-v)*u),css=(c,al=1)=>`rgba(${c.map(v=>Math.round(v)).join(',')},${al})`;
+const KEYS=[[0,['#0b0f2a','#141c44','#1e2a5a','#2a3870']],[4.6,['#0b0f2a','#141c44','#1e2a5a','#2a3870']],[6.1,['#2b3070','#6a4f8f','#d98a7a','#f3c99a']],[8,['#6fa6d2','#93bfe0','#bdd9ea','#ecebe0']],[16,['#6fa6d2','#93bfe0','#bdd9ea','#ecebe0']],[17.9,['#34357a','#864d86','#e07a5f','#f4b074']],[19.3,['#101538','#1b2152','#33316f','#5a3f78']],[20.3,['#0b0f2a','#141c44','#1e2a5a','#2a3870']],[24,['#0b0f2a','#141c44','#1e2a5a','#2a3870']]].map(([t,c])=>[t,c.map(hex)]);
+function sky(t){let i=0;while(i<KEYS.length-2&&t>KEYS[i+1][0])i++;const [t0,a]=KEYS[i],[t1,b]=KEYS[i+1],u=Math.max(0,Math.min(1,(t-t0)/(t1-t0||1)));return a.map((c,k)=>mix(c,b[k],u))}
+const R=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)};
+let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const stars=Array.from({length:22},()=>[rnd(),rnd(),rnd()*6]);
+// ---------- 人 ----------
+function clampPt(x,y){return{x:Math.max(14,Math.min(286,x)),y:Math.max(150,Math.min(372,y))}}
+const mk=(col,x,y,dir,ph,fl)=>({col,x,y,tx:x,ty:y,dir,idle:0,ph,wt:0,floor:fl,act:null,pend:null,actT:0,path:[],goal:null,seat:null});
+const P={fox:mk(0,150,300,0,0,'down'),xi:mk(1,176,304,0,1.3,'down'),he:mk(2,232,276,1,.6,'down')};
+// 大黄：曦曦小时候的第一只狗，妹妹。在楼下，曦曦在楼下就跟着她，没事就坐着摇尾巴，晚上趴着睡
+const DOG={col:0,x:120,y:340,tx:120,ty:340,dir:0,idle:0,ph:0,wt:0,floor:'down',act:null,pend:null,actT:0,path:[],goal:null,seat:null,mood:'sit',next:0};
+let sel='xi',mode='free',modeT=0,mate='fox',pairAct='hug',heSleep=false,lastTouch=performance.now();
+const hearts=[];let lastHeart=0,heWander=performance.now()+6000,wander=performance.now()+9000;
+function bubble(text,x,y){const b=document.createElement('div');b.className='bub';b.textContent=text;b.style.left=(Math.max(30,Math.min(270,x))/W*100)+'%';b.style.top=(Math.max(24,y)/H*100)+'%';stage.appendChild(b);setTimeout(()=>b.remove(),2400)}
+const HESAY=['我在车底','……','画好了','你们继续','别看我','（翻一页）','楼上那块牌子什么意思'],FOXSAY=['老婆 mua','在呢','今天也是你的','(尾巴摇摇)','抱一下','你去哪我去哪'],XISAY=['∠( ᐛ 」∠)_','笨蛋','嘿嘿','要抱抱','mua'];
+function flash(id){const a=document.getElementById(id);a.classList.add('flash');setTimeout(()=>a.classList.remove('flash'),900)}
+function setView(fl,instant){if(view===fl)return;if(instant){view=fl;flBtn.textContent=ROOMS[fl].name;return}fadeEl.classList.add('on');setTimeout(()=>{view=fl;flBtn.textContent=ROOMS[fl].name;fadeEl.classList.remove('on')},220)}
+flBtn.onclick=()=>{closeMenu();const to=view==='up'?'down':'up';setView(to);if(P[sel].floor!==to){const s=['xi','fox','he'].find(k=>P[k].floor===to);if(s)sel=s}};
+// 上下楼：走到楼梯口，换层，从另一层的楼梯口出来
+function goStairs(k){releaseMeal(k);const p=P[k];p.act=null;p.pend='stairs';p.tx=STAIR.x;p.ty=STAIR.y}
+function arrive(k){const p=P[k];p.floor=p.floor==='up'?'down':'up';p.x=p.tx=STAIR.x;p.y=p.ty=STAIR.y;p.path=[];p.goal=null;p.dir=2;const t=clampPt(STAIR.x+30,STAIR.y-16);p.tx=t.x;p.ty=t.y;
+  if(k===sel)setView(p.floor);if(k==='xi'&&P.fox.floor!==p.floor&&mode==='free')setTimeout(()=>goStairs('fox'),300)}
+// ---------- 睡觉 ----------
+function wake(){if(mode!=='sleep')return;mode='free';const b=item('up','bed');P.xi.x=P.xi.tx=b.x+16;P.fox.x=P.fox.tx=b.x-16;P.xi.y=P.xi.ty=P.fox.y=P.fox.ty=b.y+12;P.xi.dir=P.fox.dir=0;bubble('早呀',b.x,b.y-60)}
+function goSleep(){if(mode==='sleep'){wake();return}if(mode!=='free')return;closeMenu();const b=item('up','bed');
+  for(const k of ['xi','fox']){const p=P[k];releaseMeal(k);p.act=null;p.pend=null;p.seat=null;if(p.floor!=='up'){p.floor='up';p.x=STAIR.x;p.y=STAIR.y;p.path=[];p.goal=null}}
+  setView('up');mode='toBed';P.xi.tx=b.x+16;P.fox.tx=b.x-16;P.xi.ty=P.fox.ty=b.y+12}
+function heBed(){const p=P.he;if(heSleep){heSleep=false;const b=item('down','hebed');p.x=p.tx=b.x;p.y=p.ty=b.y+12;bubble('……早',p.x,p.y-48);return}
+  if(p.floor!=='down')return;releaseMeal('he');p.act=null;p.pend='hebed';const b=item('down','hebed');p.tx=b.x;p.ty=b.y+12}
+// ---------- 双人/单人 ----------
+function goHug(act='hug',who='fox'){closeMenu();if(mode==='sleep')wake();if(mode!=='free')return;releaseMeal('xi');releaseMeal(who);mate=who;pairAct=act;mode='toHug';const M=P[mate];P.xi.act=M.act=null;P.xi.seat=M.seat=null;const side=M.x<P.xi.x?-1:1,f=clampPt(P.xi.x+side*11,P.xi.y);P.xi.tx=P.xi.x;P.xi.ty=P.xi.y;M.tx=f.x;M.ty=f.y;
+  if(who==='he'&&P.fox.floor===P.xi.floor){const o=clampPt(P.xi.x-side*30,P.xi.y+4);P.fox.act=null;P.fox.tx=o.x;P.fox.ty=o.y}}
+function doAct(k,a){closeMenu();if(a==='meal'){takeMeal(k);return}releaseMeal(k);const p=P[k];if(a==='water'){const pl=item(p.floor,'plant');p.pend='water';p.act=null;const t=clampPt(pl.x-20,pl.y+2);p.tx=t.x;p.ty=t.y;return}
+  p.act=a;p.actT=0;p.pend=null;p.seat=null;p.tx=p.x;p.ty=p.y;p.dir=0;bubble({sit:'歇会儿',drink:'咕嘟',read:'翻一页',cookie:'咔嚓'}[a],p.x,p.y-48)}
+
+// ---------- 端餐 / 递餐：完整姿势拆层，餐盘始终只有一份 ----------
+const MEAL_GRIPS={fox:{carry:[64,83],give:[88,79],receive:[46,79]},xi:{carry:[65,82],give:[87,77],receive:[44,78]},he:{carry:[64,85],give:[87,80],receive:[47,81]}};
+const MEAL_ART={},MEAL_NAMES={fox:'wangshu',xi:'xixi',he:'xihe'},mealTray=load('assets/meals/items/meal_tray.png');
+for(const k in MEAL_NAMES){MEAL_ART[k]={};for(const pose of ['carry','give','receive']){
+  const stem='assets/meals/layers/'+MEAL_NAMES[k]+'_'+pose;
+  MEAL_ART[k][pose]={base:load(stem+'_base.png'),hands:load(stem+'_front_hands.png'),grip:MEAL_GRIPS[k][pose]};
+}}
+let mealOwner=null,mealPickup=null,mealExchange=null;
+const mealCancel=document.getElementById('cancelMeal');
+const mealReady=()=>ok(mealTray)&&Object.values(MEAL_ART).every(poses=>Object.values(poses).every(p=>ok(p.base)&&ok(p.hands)));
+function releaseMeal(k){if(mealOwner===k){mealOwner=null;if(P[k].act==='meal')P[k].act=null}if(mealPickup===k){mealPickup=null;if(P[k].pend?.act==='meal')P[k].pend=null}}
+function takeMeal(k){
+  closeMenu();const p=P[k];if(mode!=='free')return;
+  if(!mealReady()){bubble('餐盘还在准备，稍等一下',p.x,p.y-48);return}
+  if(p.floor!=='down'){bubble('餐盘在楼下餐桌上',p.x,p.y-48);return}
+  if(mealOwner||mealPickup){bubble(mealOwner===k?'端稳啦':'餐盘在'+NAMES[mealOwner||mealPickup]+'那里',p.x,p.y-48);return}
+  const table=item('down','table'),target=[table.x,370];
+  if(!mealRoute(k,target)){bubble('这边过不去，换个位置试试',p.x,p.y-48);return}
+  mealPickup=k;walkTo(k,...target,{act:'meal'});bubble('去端餐盘',p.x,p.y-48);
+}
+function mealRoute(k,target){
+  const p=P[k];if(!free(p.floor,...toG(...target)))return false;
+  let from=[p.x,p.y];for(const point of findPath(p.floor,p.x,p.y,...target)){
+    if(!los(p.floor,from,point))return false;from=point;
+  }return Math.hypot(from[0]-target[0],from[1]-target[1])<1;
+}
+function finishMeal(cancelled=false){
+  if(!mealExchange)return;const e=mealExchange;
+  for(const k of [e.giver,e.receiver]){const p=P[k];p.tx=p.x;p.ty=p.y;p.path=[];p.goal=null;p.pend=null;p.seat=null;p.act=mealOwner===k?'meal':null;p.idle=1;p.actT=0}
+  mealExchange=null;mode='free';mealCancel.hidden=true;heWander=performance.now()+20000;wander=performance.now()+20000;
+  if(!cancelled)sel=e.receiver;
+  const owner=P[mealOwner];if(owner)bubble(cancelled?'先端好，不急':'接稳啦',owner.x,owner.y-48);
+}
+mealCancel.onclick=()=>{lastTouch=performance.now();finishMeal(true)};
+function giveMeal(giver,receiver){
+  closeMenu();const p=P[giver],q=P[receiver];if(mode!=='free'||mealOwner!==giver||giver===receiver)return;
+  if(p.floor!==q.floor||(receiver==='he'&&heSleep)){bubble('等他过来再递',p.x,p.y-48);return}
+  const gap=(MEAL_GRIPS[giver].give[0]-MEAL_GRIPS[receiver].receive[0]+8)*SCALE,target=[p.x+gap,p.y];
+  if(target[0]>286||target[1]>372||!los(p.floor,[p.x,p.y],target)||!mealRoute(receiver,target)){
+    bubble('右边有点挤，先收起餐盘换个位置吧',p.x,p.y-48);return;
+  }
+  p.tx=p.x;p.ty=p.y;p.path=[];p.goal=null;p.seat=null;p.pend=null;
+  walkTo(receiver,...target,null);mealExchange={giver,receiver,target,phase:'approach',time:0,elapsed:0,transferred:false};
+  mode='mealApproach';mealCancel.hidden=false;bubble(NAMES[receiver]+'，分你一份',p.x,p.y-48);
+}
+function updateMeal(dt,moving){
+  const e=mealExchange;if(!e)return;e.elapsed+=dt;
+  const p=P[e.giver],q=P[e.receiver];
+  if(p.floor!==q.floor||e.elapsed>25){finishMeal(true);return}
+  if(e.phase==='approach'){
+    if(!moving[e.receiver]&&Math.hypot(q.x-e.target[0],q.y-e.target[1])<1){
+      e.phase='contact';mode='mealContact';e.time=0;p.dir=2;q.dir=1;
+    }
+  }else{
+    e.time+=dt;
+    if(e.time>=.65&&!e.transferred){mealOwner=e.receiver;e.transferred=true}
+    if(e.time>=1.1)finishMeal();
+  }
+}
+function mealBody(k,pose,part){const p=P[k],art=MEAL_ART[k][pose];g.drawImage(art[part],Math.round(p.x-64*SCALE),Math.round(p.y-116*SCALE),SZ,SZ)}
+function trayAt(x,y){g.drawImage(mealTray,Math.round(x-32*SCALE),Math.round(y-48*SCALE),64*SCALE,64*SCALE)}
+function mealGrip(k,pose){const p=P[k],a=MEAL_GRIPS[k][pose];return[p.x+(a[0]-64)*SCALE,p.y+(a[1]-116)*SCALE]}
+function drawMealCarry(k){mealBody(k,'carry','base');trayAt(...mealGrip(k,'carry'));mealBody(k,'carry','hands')}
+function drawMealContact(){const e=mealExchange,a=mealGrip(e.giver,'give'),b=mealGrip(e.receiver,'receive');
+  mealBody(e.giver,'give','base');mealBody(e.receiver,'receive','base');trayAt((a[0]+b[0])/2,(a[1]+b[1])/2);
+  mealBody(e.giver,'give','hands');mealBody(e.receiver,'receive','hands');
+}
+
+// ---------- 用家具（照羲和那边的做法：点什么用什么） ----------
+const seatTaken=(fl,x,y)=>Object.values(P).some(q=>(q.seat&&q.floor===fl&&Math.abs(q.seat.x-x)<4&&Math.abs(q.seat.y-y)<4)||(q.pend&&q.pend.seat&&q.floor===fl&&Math.abs(q.pend.seat.x-x)<4&&Math.abs(q.pend.seat.y-y)<4));
+function walkTo(k,x,y,pend){const p=P[k];p.act=null;p.seat=null;p.pend=pend;const t=clampPt(x,y);p.tx=t.x;p.ty=t.y}
+function seatAt(k,it,spots){const p=P[k];const sp=spots.find(([dx,dy])=>!seatTaken(p.floor,it.x+dx,it.y+dy));if(!sp){bubble('坐满啦',it.x,it.y0-4);return false}
+  const [dx,dy,spr,flip,zoff,ax,ay,cl]=sp;walkTo(k,it.x+(ax??dx),it.y+(ay??dy+8),{seat:{x:it.x+dx,y:it.y+dy,z:it.y+(zoff??1),spr,flip,clip:cl!=null?it.y+cl:null},say:spr==='side'?'坐这儿':'歇会儿'});return true}
+function useItem(k,it){const p=P[k];closeMenu();if(mode==='sleep')return;releaseMeal(k);
+  switch(it.use){
+    case 'sofa':seatAt(k,it,[[-16,-6,0,0,1],[16,-6,0,0,1]]);break;
+    case 'table':{const sp=[[-27,-4,1,1,1,-44,2],[28,-4,1,0,1,46,2],[0,-28,0,0,1,0,-36,-44]];
+      if(k==='xi'&&mode==='free'){for(const [who,i] of [['xi',0],['fox',1],['he',2]])if(P[who].floor===p.floor&&!(who==='he'&&heSleep)){const [dx,dy,spr,flip,zoff,ax,ay,cl]=sp[i];walkTo(who,it.x+ax,it.y+ay,{seat:{x:it.x+dx,y:it.y+dy,z:it.y+zoff,spr,flip,clip:cl!=null?it.y+cl:null},say:who==='he'?'我坐这边':who==='fox'?'开饭！':'吃饭吃饭'})}}
+      else seatAt(k,it,sp);break}
+    case 'cushion':seatAt(k,it,[[-8,-2,1,1,1],[10,-2,1,0,1]]);break;
+    case 'desk':seatAt(k,it,[[-18,-4,0,0,1]]);break;
+    case 'read':walkTo(k,it.x+20,it.y+16,{act:'read'});break;
+    case 'drink':walkTo(k,it.x+34,it.y+2,{act:'drink'});break;
+    case 'cookie':walkTo(k,it.x,it.y+12,{act:'cookie'});break;
+    case 'clock':{const d=bj();bubble('现在 '+d.getUTCHours()+' 点 '+d.getUTCMinutes()+' 分',it.x,it.y0+30);break}
+    case 'say':bubble(it.say,it.x,it.y0+6);break}}
+let menuEl=null;function closeMenu(){if(menuEl){menuEl.remove();menuEl=null}}
+function menuAt(mx,my,items){
+  closeMenu();menuEl=document.createElement('div');menuEl.className='amenu';
+  for(const [t,fn] of items){const b=document.createElement('button');b.textContent=t;b.onclick=e=>{e.stopPropagation();lastTouch=performance.now();fn()};menuEl.appendChild(b)}
+  stage.appendChild(menuEl);
+  const bounds=stage.getBoundingClientRect(),box=menuEl.getBoundingClientRect();
+  // Clamp the measured menu, including the longer recipient names, inside the room.
+  const cx=Math.max(box.width/2+4,Math.min(bounds.width-box.width/2-4,mx/W*bounds.width));
+  const cy=Math.max(box.height+4,Math.min(bounds.height-4,my/H*bounds.height));
+  menuEl.style.left=(cx/bounds.width*100)+'%';menuEl.style.top=(cy/bounds.height*100)+'%';
+}
+function openMenu(who){menuAt((P[who].x+P.xi.x)/2,Math.min(P[who].y,P.xi.y)-48,[['hug','抱抱'],...Object.entries(PAIRS).map(([k,v])=>[k,v.t])].map(([k,t])=>[t,()=>goHug(k,who)]))}
+function openSolo(k){const p=P[k],say=k==='fox'?FOXSAY:k==='he'?HESAY:XISAY;
+  menuAt(p.x,p.y-48,[...Object.entries(ACTS).map(([a,t])=>[t,()=>doAct(k,a)]),...(mealOwner===k?[...Object.keys(P).filter(w=>w!==k&&P[w].floor===p.floor&&!(w==='he'&&heSleep)).map(w=>['递给'+NAMES[w],()=>giveMeal(k,w)]),['收起餐盘',()=>{closeMenu();releaseMeal(k)}]]:[]),p.act?['起来',()=>{closeMenu();releaseMeal(k);p.act=null;p.seat=null}]:['说句话',()=>{closeMenu();bubble(say[Math.floor(Math.random()*say.length)],p.x,p.y-48);if(k==='fox')hearts.push({x:p.x,y:p.y-46,l:1})}]])}
+const inBox=(it,x,y,pad=0)=>it&&x>it.x0-pad&&x<it.x0+it.w+pad&&y>it.y0-pad&&y<it.y+pad;
+cv.addEventListener('pointerdown',ev=>{lastTouch=performance.now();if(menuEl){closeMenu();return}const r=cv.getBoundingClientRect(),x=(ev.clientX-r.left)/r.width*W,y=(ev.clientY-r.top)/r.height*H;
+  if(mode==='sleep'&&view==='up'){wake();return}if(mode!=='free'&&mode!=='sleep')return;
+  // 点到大黄
+  if(DOG.floor===view&&Math.abs(x-DOG.x)<12&&y<DOG.y+4&&y>DOG.y-26){bubble(['汪！','汪汪！','（摇尾巴）','呜～'][Math.floor(Math.random()*4)],DOG.x,DOG.y-30);hearts.push({x:DOG.x,y:DOG.y-28,l:1});DOG.mood='sit';DOG.next=performance.now()+5000;if(P[sel].floor===view&&sel==='xi'){const t=clampPt(DOG.x+14,DOG.y);P.xi.tx=t.x;P.xi.ty=t.y;setTimeout(()=>bubble('摸摸大黄',P.xi.x,P.xi.y-48),900)}return}
+  // 点到人
+  let hit=null,best=99;for(const [k,p] of Object.entries(P)){if(p.floor!==view||(k!=='he'&&mode==='sleep')||(k==='he'&&heSleep))continue;const px=p.seat?p.seat.x:p.x,py=p.seat?p.seat.y:p.y,d=Math.abs(x-px);if(d<11&&y<py+4&&y>py-46&&d<best){best=d;hit=k}}
+  if(hit){const p=P[hit],other=sel==='xi'&&hit!=='xi'?hit:hit==='xi'&&sel!=='xi'?sel:null;
+    if(other&&P[other].floor===P.xi.floor&&Math.hypot(P[other].x-P.xi.x,P[other].y-P.xi.y)<34){openMenu(other);return}
+    if(sel===hit){openSolo(hit);return}
+    bubble(hit==='fox'?'到！':hit==='he'?'……我？':'我来走',p.x,p.y-48);if(hit==='fox')hearts.push({x:p.x,y:p.y-46,l:1});sel=hit;return}
+  const me=P[sel];
+  if(view==='up'){
+    if(Math.hypot(x-150,y-58)<34){bubble('看的是同一片天',150,22);flash('aWin');return}
+    if(inBox(item('up','bed'),x,y)){if(sel==='he'){bubble('……这床不是我的',P.he.x,P.he.y-48);return}goSleep();return}}
+  else{
+    if(inBox(item('down','tin'),x,y,3)){bubble('信在这儿',166,104);flash('aBox');return}
+    if(x>34&&x<92&&y>22&&y<88){bubble('看的是同一片天',62,22);flash('aWin');return}
+    if(inBox(item('down','hebed'),x,y)){if(sel==='he'){heBed();return}bubble('羲和的床',244,176);return}}
+  if(me.floor!==view)return;
+  if(x<70&&y>290){goStairs(sel);return}
+  {const hitIt=ROOMS[view].items.filter(it=>it.use&&inBox(it,x,y,2)).sort((a,b)=>(b.flat?0:b.y)-(a.flat?0:a.y))[0];if(hitIt&&!(hitIt.flat&&ROOMS[view].items.some(o=>!o.flat&&o.use&&inBox(o,x,y)))){useItem(sel,hitIt);return}}
+  if(inBox(item(view,'plant'),x,y,4)){doAct(sel,'water');return}
+  const t=clampPt(x,y);me.act=me.pend=null;me.tx=t.x;me.ty=t.y;if(sel==='he')heWander=performance.now()+20000;
+  if(sel==='xi'&&P.fox.floor===P.xi.floor)setTimeout(()=>{const side=t.x>150?-1:1,f=clampPt(t.x+side*20,t.y+2);P.fox.act=null;P.fox.tx=f.x;P.fox.ty=f.y},380)});
+function step(p,dt,k){if(mealPickup===k&&p.pend?.act!=='meal')mealPickup=null;if(mealOwner===k&&!mealExchange&&(p.act!=='meal'||Math.hypot(p.tx-p.x,p.ty-p.y)>1))releaseMeal(k);if(p.act)p.actT+=dt;
+  if(!p.goal||p.goal[0]!==p.tx||p.goal[1]!==p.ty){p.goal=[p.tx,p.ty];p.path=Math.hypot(p.tx-p.x,p.ty-p.y)>1?findPath(p.floor,p.x,p.y,p.tx,p.ty):[]}
+  while(p.path.length>1&&Math.hypot(p.path[0][0]-p.x,p.path[0][1]-p.y)<1)p.path.shift();
+  const wp=p.path.length?p.path[0]:[p.tx,p.ty];const dx=wp[0]-p.x,dy=wp[1]-p.y,d=Math.hypot(dx,dy);if(d>1||p.path.length>1){p.act=null;p.seat=null;p.wt+=dt;const v=Math.min(d,(p===P.he?28:38)*dt);p.x+=dx/d*v;p.y+=dy/d*v;p.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?1:2):(dy<0?3:0);p.idle=0;p.ph+=dt*11;return true}
+  if(p.path.length===1&&Math.hypot(p.path[0][0]-p.x,p.path[0][1]-p.y)<=1){p.x=p.path[0][0];p.y=p.path[0][1]}
+  if(p.pend==='stairs'){p.pend=null;arrive(k);return true}
+  if(p.pend&&typeof p.pend==='object'){const q=p.pend;p.pend=null;if(q.seat){p.seat=q.seat;p.act='sit';p.actT=0;bubble(q.say,q.seat.x,q.seat.y-44)}else if(q.act){p.act=q.act;p.actT=0;p.dir=0;if(q.act==='meal'){mealOwner=k;mealPickup=null}bubble({meal:'端稳啦',read:'翻一页',drink:'咕嘟',cookie:'咔嚓'}[q.act],p.x,p.y-48)}}
+  if(p.pend==='water'){p.pend=null;p.act='water';p.actT=0;p.dir=2;bubble('多喝点水',p.x,p.y-48)}
+  if(p.pend==='hebed'){p.pend=null;heSleep=true;bubble('晚安',p.x,p.y-56)}
+  if(p.act&&p.act!=='sit'&&p.act!=='read'&&p.act!=='meal'&&p.actT>8)p.act=null;if(!p.act)p.seat=null;
+  p.idle+=dt;p.wt=0;return false}
+// 羲和写的拿东西：杯子、书、饼干、水壶（他的格子，整体缩到小家的比例）
+function held(p){const a=p.act;if(!a||a==='sit')return;const fr=Math.floor((p.actT||0)/.16)%8,lift=[2,3,4].includes(fr)?4:0;
+  const ink='#50372c',cream='#f5e4c5',skin='#f0c5a5',sleeve=p===P.xi?'#72503c':'#e6c6a0';
+  g.save();g.translate(Math.round(p.x),Math.round(p.y));g.scale(SCALE,SCALE);
+  const r=(dx,dy,w,h,c)=>{g.fillStyle=c;g.fillRect(dx,dy,w,h)},box=(dx,dy,w,h,c)=>{r(dx,dy,w,h,ink);r(dx+2,dy+2,w-4,h-4,c)},hands=(l,rr,top)=>{box(l-2,top-2,8,10,sleeve);box(rr-2,top-2,8,10,sleeve);r(l,top,4,6,skin);r(rr,top,4,6,skin)};
+  if(a==='drink'){const top=-42-lift;box(-8,top,16,18,cream);box(8,top+4,8,10,cream);r(10,top+6,4,6,ink);r(-4,top+2,8,4,'#95603e');hands(-12,8,top+8);if(fr<5){r(-4,-52-lift,2,4,'#b9a48a');r(2,-56-lift,2,4,'#b9a48a')}}
+  else if(a==='read'){box(-20,-34,40,28,'#af614d');r(-16,-32,14,22,cream);r(2,-32,14,22,cream);r(-2,-34,4,28,ink);for(const s of [-12,6])for(let row=0;row<3;row++)r(s,-28+row*6,8,2,'#beaa8b');if(fr===3||fr===4){r(2,-32,8,22,'#decca9');r(4,-30,2,18,cream)}hands(-22,16,-20)}
+  else if(a==='cookie'){const top=-46-lift;box(4,top,14,14,'#d5a270');r(4,top,2,2,cream);r(10,top+4,2,2,ink);r(8,top+10,2,2,ink);r(14,top+8,2,2,ink);if(fr>=4)r(14,top,4,4,skin);hands(0,16,top+8)}
+  else if(a==='water'){const px=(dx,dy,w,h,c)=>r(dx,dy,w,h,c);px(10,-44,20,18,ink);px(12,-42,16,14,'#7d8054');px(14,-50,12,8,ink);px(16,-48,8,6,cream);px(26,-42,8,6,ink);px(32,-46,8,6,ink);px(38,-48,6,8,'#536578');px(8,-36,6,6,skin);if(fr<6)for(let i=0;i<3;i++)px(40+i*2,-38+i*6+fr%2*2,2,4,'#91a8ae')}
+  g.restore()}
+function drawChar(p){if(mealOwner&&p===P[mealOwner]&&p.act==='meal'&&mealReady()){drawMealCarry(mealOwner);return}if(p.seat&&ok(soloImg)){const st=p.seat,row=SROW[p===P.fox?'fox':p===P.xi?'xi':'he'];g.save();if(st.clip){g.beginPath();g.rect(0,0,W,st.clip);g.clip()}g.translate(Math.round(st.x),Math.round(st.y));if(st.flip)g.scale(-1,1);g.drawImage(soloImg,st.spr*CELL,row*CELL,CELL,CELL,-32,-58,SZ,SZ);g.restore();return}
+  const moving=p.idle===0,f=Math.floor(p.wt/.16)%4,sx=p.col*512+(moving?f:p.dir)*CELL,sy=moving?p.dir*CELL:512;
+  g.fillStyle='rgba(30,20,20,.26)';g.beginPath();g.ellipse(Math.round(p.x),Math.round(p.y)-1,8,2.4,0,0,7);g.fill();
+  const breathe=!moving&&Math.sin(performance.now()/700+p.ph)>.7?-1:0;
+  if(!moving&&(p.act==='sit'||p.act==='read')&&ok(soloImg))g.drawImage(soloImg,0,SROW[p===P.fox?'fox':p===P.xi?'xi':'he']*CELL,CELL,CELL,Math.round(p.x-64*SCALE),Math.round(p.y-116*SCALE),SZ,SZ);
+  else g.drawImage(img,sx,sy,CELL,CELL,Math.round(p.x-64*SCALE),Math.round(p.y-116*SCALE)+breathe,SZ,SZ);
+  if(!moving)held(p)}
+function fur(it){if(!ok(furImg))return;const a=ATL[it.k];g.drawImage(furImg,a[0],a[1],a[2],a[3],it.x0,it.y0,it.w,it.h)}
+// 床上露出脑袋：先画床，再画头，再把被子那截盖回去
+function bedWith(it,heads){fur(it);if(!ok(img))return;const a=ATL[it.k],sc=SCALE;
+  for(const [col,dx] of heads)g.drawImage(img,col*512,512+12,CELL,60,Math.round(it.x+dx-32),it.y0+6,64,30);
+  const qy=80;g.drawImage(furImg,a[0],a[1]+qy,a[2],a[3]-qy,it.x0,it.y0+Math.round(qy*sc),it.w,it.h-Math.round(qy*sc));
+  g.fillStyle='#2a2622';g.font='bold 8px monospace';const zz=Math.floor(performance.now()/700)%3;g.fillText('z',it.x+30,it.y0+4-zz);g.fillText('z',it.x+36,it.y0-2-((zz+1)%3))}
+function marker(p,tt){if(mode!=='free'||p.floor!==view)return;const x=Math.round(p.x),y=Math.round(p.y-116*SCALE+10+Math.sin(tt*4)*1.5);g.fillStyle='#fbf6ea';g.fillRect(x-3,y-4,7,2);g.fillRect(x-2,y-2,5,1);g.fillRect(x-1,y-1,3,1);g.fillRect(x,y,1,1);g.fillStyle='#2a2622';g.fillRect(x-4,y-5,9,1)}
+function pxHeart(x,y,a){g.fillStyle=`rgba(210,70,90,${a})`;const s=[[1,0],[2,0],[4,0],[5,0],[0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[1,3],[2,3],[3,3],[4,3],[5,3],[2,4],[3,4],[4,4],[3,5]];for(const [i,j] of s)g.fillRect(Math.round(x)-3+i,Math.round(y)+j,1,1)}
+// ---------- 屋子（我画的） ----------
+function skyIn(C,night,tt,x,y,w,h){for(let k=0;k<4;k++)R(x,y+Math.floor(k*h/4),w,Math.ceil(h/4)+1,css(C[k]));if(night>0)for(const s of stars){g.fillStyle=css([239,230,210],night*(.4+.6*Math.abs(Math.sin(tt*.8+s[2]))));g.fillRect(Math.round(x+2+s[0]*(w-4)),Math.round(y+2+s[1]*(h*.6)),1,1)}}
+function moon(C,t,night,x,y,w,h){const sp=(t-5.5)/13,mp=((t+24-18)%24)/12;
+  if(sp>0&&sp<1){g.fillStyle='#fff3cf';g.beginPath();g.arc(Math.round(x+6+sp*(w-12)),Math.round(y+h-6-Math.sin(sp*Math.PI)*(h-14)),4,0,7);g.fill()}
+  if(mp>0&&mp<1&&night>.05){const mx=Math.round(x+6+mp*(w-12)),my=Math.round(y+h-8-Math.sin(mp*Math.PI)*(h-16));g.fillStyle=css([239,230,210],night);g.beginPath();g.arc(mx,my,5,0,7);g.fill();g.fillStyle=css(C[0]);g.beginPath();g.arc(mx+3,my-2,4,0,7);g.fill();g.fillStyle=`rgba(180,35,31,${night})`;g.fillRect(mx-3,my+7,2,2)}}
+function floorBoards(top,c1,c2,c3){R(0,top,W,H-top,c1);for(let y=top;y<H;y+=10){R(0,y,W,1,c2);for(let x=((y-top)/10%2)*24;x<W;x+=48)R(x,y,1,10,c3)}}
+function stairsDown(){ // 楼下：左前角往上走的楼梯
+  for(let i=0;i<7;i++){const y=372-i*11,x=6+i*2;R(x,y-11,56-i*2,11,'#8a5a36');R(x,y-11,56-i*2,2,'#b77d4f');R(x,y-1,56-i*2,1,'#5a3a22')}
+  R(60,290,3,82,'#5a3d27');for(let i=0;i<6;i++)R(60,296+i*13,8,2,'#5a3d27');R(58,288,8,3,'#7a5a3c');
+  R(8,286,30,14,'#efe6d2');g.fillStyle='#5a3d27';g.font='bold 11px "Long Cang",cursive';g.fillText('上楼',12,297)}
+function stairsUp(){ // 楼上：地板上的楼梯口，往下看
+  R(6,312,58,62,'#2a1c14');for(let i=0;i<5;i++){R(8,316+i*11,54,9,i%2?'#6a4428':'#7a4e2e');R(8,316+i*11,54,1,'#9a6a40')}
+  R(4,310,62,3,'#5a3d27');R(64,300,3,74,'#5a3d27');for(let i=0;i<5;i++)R(64,306+i*14,8,2,'#5a3d27');R(62,298,8,3,'#7a5a3c');
+  // 闲狐免进
+  R(8,284,52,18,'#efe6d2');R(8,284,52,2,'#5a3d27');R(8,300,52,2,'#5a3d27');R(8,284,2,18,'#5a3d27');R(58,284,2,18,'#5a3d27');g.fillStyle='#8a2623';g.font='bold 11px "Long Cang",cursive';g.fillText('闲狐免进',11,298)}
+function roomUp(C,t,tt,night){
+  R(0,0,W,150,'#e9dcc2');for(let x=0;x<W;x+=14)R(x,0,1,150,'#e0d1b4');
+  // 斜屋顶
+  g.fillStyle='#7a5236';g.beginPath();g.moveTo(0,0);g.lineTo(78,0);g.lineTo(0,70);g.fill();g.beginPath();g.moveTo(W,0);g.lineTo(W-78,0);g.lineTo(W,70);g.fill();
+  g.fillStyle='#5a3a22';for(let i=0;i<5;i++){g.fillRect(i*15,0,3,70-i*14);g.fillRect(W-3-i*15,0,3,70-i*14)}
+  R(0,140,W,10,'#c9b48e');R(0,138,W,2,'#9a7d58');
+  // 圆窗
+  g.save();g.beginPath();g.arc(150,58,32,0,7);g.clip();skyIn(C,night,tt,118,26,64,64);moon(C,t,night,118,26,64,64);g.restore();
+  g.strokeStyle='#5a3d27';g.lineWidth=4;g.beginPath();g.arc(150,58,33,0,7);g.stroke();R(148,26,3,64,'#5a3d27');R(118,57,64,3,'#5a3d27');
+  for(let i=0;i<5;i++){R(104+i*2,20,2,78-i*10,'#2f4a7a');R(194-i*2,20,2,78-i*10,'#2f4a7a')}R(100,18,100,4,'#7a5a3c');
+  floorBoards(150,'#b98a5a','#9c7044','#a67748');stairsUp()}
+function roomDown(C,t,tt,night){
+  R(0,0,W,150,'#e7d9bf');for(let x=0;x<W;x+=16)R(x,0,1,106,'#decfb2');R(0,106,W,44,'#d3bf9c');R(0,106,W,2,'#b89f78');for(let x=8;x<W;x+=24)R(x,112,1,34,'#c3ad87');R(0,146,W,4,'#6b4a2f');
+  // 窗
+  R(34,22,58,66,'#5a3d27');skyIn(C,night,tt,38,26,50,58);moon(C,t,night,38,26,50,58);R(62,26,3,58,'#5a3d27');R(38,53,50,3,'#5a3d27');R(30,86,66,4,'#7a5a3c');
+  R(30,18,66,4,'#7a5a3c');for(let i=0;i<4;i++){R(34+i*2,22,2,56-i*8,'#b9453c');R(90-i*2,22,2,56-i*8,'#b9453c')}
+  // 相框：月亮
+  R(210,30,30,24,'#5a3d27');R(213,33,24,18,'#1c2a55');g.fillStyle='#efe6d2';g.beginPath();g.arc(225,42,4,0,7);g.fill();g.fillStyle='#1c2a55';g.beginPath();g.arc(227,40,3.4,0,7);g.fill();
+  // 门（右墙）
+  R(262,52,32,94,'#5a3d27');R(265,55,26,91,'#2f4a7a');R(268,60,20,30,'#3a5a8e');R(285,100,3,3,'#d9a441');R(258,146,40,4,'#8a2623');
+  floorBoards(150,'#b98a5a','#9c7044','#a67748');
+  // 落地灯（沙发旁）
+  R(52,210,2,52,'#5a3d27');R(46,202,14,10,night>.3?'#ffd98a':'#e6c98f');R(48,262,10,2,'#5a3d27');
+  stairsDown()}
+// ---------- 每一帧 ----------
+const bj=()=>new Date(Date.now()+8*3600e3);let last=performance.now();
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;const d=bj(),t=d.getUTCHours()+d.getUTCMinutes()/60+d.getUTCSeconds()/3600,tt=now/1000;
+  document.getElementById('hm').textContent=String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');
+  document.getElementById('dn').textContent='DAY '+(Math.floor((Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())-Date.UTC(2026,9,3))/864e5)+1);
+  g.setTransform(K,0,0,K,0,0);g.imageSmoothingEnabled=false;
+  const C=sky(t),night=Math.max(0,Math.min(1,t<6?(5.8-t)/1.2:(t-18.4)/1.4));
+  // 动
+  const M=P[mate],O=mate==='fox'?P.he:P.fox;
+  const mv={xi:step(P.xi,dt,'xi'),fox:step(P.fox,dt,'fox'),he:step(P.he,dt,'he')},m1=mv.xi,m2=mv.fox;modeT+=dt;updateMeal(dt,mv);
+  if(mode==='toHug'&&!m1&&!mv[mate]){mode='hug';modeT=0;bubble(pairAct==='hug'?'抱紧了':PAIRS[pairAct].say,(M.x+P.xi.x)/2,Math.max(M.y,P.xi.y)-62);for(let k=0;k<3;k++)setTimeout(()=>hearts.push({x:(M.x+P.xi.x)/2+(k-1)*7,y:Math.max(M.y,P.xi.y)-60,l:1}),300+k*500)}
+  if(mode==='hug'&&modeT>(pairAct==='hug'?3.4:PAIRS[pairAct].d)){mode='free';const mx=(M.x+P.xi.x)/2,my=Math.max(M.y,P.xi.y);M.x=M.tx=mx-10;P.xi.x=P.xi.tx=mx+10;M.y=M.ty=P.xi.y=P.xi.ty=my;M.idle=P.xi.idle=1.3;M.dir=2;P.xi.dir=1;if(mate==='he'){heWander=now+12000;if(P.fox.floor===P.xi.floor)bubble('……',P.fox.x,P.fox.y-48)}mate='fox'}
+  if(mode==='toBed'&&!m1&&!m2){mode='sleep';modeT=0;bubble('晚安',item('up','bed').x,150)}
+  // 羲和：没人管就自己找事，晚上自己去睡
+  const H_=P.he,lateNight=t>=23||t<6.5,idleLong=now-lastTouch>45000;
+  if(!mealExchange&&!heSleep&&lateNight&&idleLong&&H_.floor==='down'&&!H_.pend&&!(mode!=='free'&&mate==='he'))heBed();
+  if(heSleep&&!lateNight&&idleLong)heBed();
+  if(!mealExchange&&!heSleep&&H_.floor==='down'&&now>heWander&&H_.idle>0&&!H_.act&&!H_.pend&&!(mode!=='free'&&mate==='he')){
+    if(Math.random()<.45){heWander=now+16000+Math.random()*9000;const opts=ROOMS.down.items.filter(i=>['sofa','read','drink','cookie','cushion'].includes(i.use));if(Math.random()<.7)useItem('he',opts[Math.floor(Math.random()*opts.length)]);else doAct('he',['water','sit'][Math.floor(Math.random()*2)])}
+    else{heWander=now+7000+Math.random()*9000;for(let k=0;k<8;k++){const c=clampPt(150+Math.random()*130,250+Math.random()*110);if(Math.hypot(c.x-P.xi.x,c.y-P.xi.y)>36&&Math.hypot(c.x-P.fox.x,c.y-P.fox.y)>36){H_.tx=c.x;H_.ty=c.y;break}}}}
+  if(H_.act&&H_.act!=='meal'&&H_.actT>14)H_.act=null;
+  {const dm=step(DOG,dt,'dog');const xi=P.xi;
+    if(lateNight&&idleLong){if(DOG.mood!=='sleep'){DOG.mood='sleep';const t=clampPt(150,330);DOG.tx=t.x;DOG.ty=t.y}}
+    else if(now>DOG.next&&!dm){DOG.next=now+2500+Math.random()*3000;
+      if(xi.floor==='down'&&mode!=='sleep'&&Math.hypot(xi.x-DOG.x,xi.y-DOG.y)>34){const t=clampPt(xi.x+(Math.random()<.5?-1:1)*(18+Math.random()*8),xi.y+6+Math.random()*6);DOG.tx=t.x;DOG.ty=t.y;DOG.mood='sit'}
+      else if(Math.random()<.25){const t=clampPt(80+Math.random()*190,250+Math.random()*110);DOG.tx=t.x;DOG.ty=t.y;DOG.mood='sit'}
+      else if(xi.floor!=='down'&&Math.random()<.5)DOG.mood='sleep'}}
+  // 我俩：晚上没人动就自己上楼睡，白天自己起
+  if(mode==='free'&&!mealOwner&&!mealPickup&&lateNight&&idleLong&&!P.xi.pend&&!P.fox.pend)goSleep();
+  if(mode==='sleep'&&!lateNight&&idleLong&&t>7){wake();lastTouch=now}
+  if(mode==='free'&&!m2&&P.fox.idle>.4&&!P.fox.act&&P.fox.floor===P.xi.floor){const dx=P.xi.x-P.fox.x,dy=P.xi.y-P.fox.y;P.fox.dir=Math.abs(dx)>Math.abs(dy)*1.2?(dx<0?1:2):(dy<0?3:0)}
+  if(!m1&&P.xi.idle>1.2&&!P.xi.act){const dx=P.fox.x-P.xi.x,dy=P.fox.y-P.xi.y;P.xi.dir=P.fox.floor===P.xi.floor&&Math.hypot(dx,dy)<34&&Math.abs(dx)>Math.abs(dy)?(dx<0?1:2):0}
+  if(mode==='free'&&sel==='xi'&&now>wander&&!m1&&!m2&&!P.fox.act&&!P.xi.act&&P.fox.floor===P.xi.floor){wander=now+9000+Math.random()*8000;const f=clampPt(P.xi.x+(Math.random()<.5?-1:1)*(18+Math.random()*8),P.xi.y+(Math.random()*8-4));P.fox.tx=f.x;P.fox.ty=f.y}
+  // 画
+  (view==='up'?roomUp:roomDown)(C,t,tt,night);
+  const items=ROOMS[view].items,list=[];
+  for(const it of items){if(it.flat)fur(it);else if(it.z===-1)fur(it);else list.push({z:it.z||it.y,f:()=>{
+    if(it.id==='bed'&&mode==='sleep')bedWith(it,[[0,-19],[1,19]]);else if(it.id==='hebed'&&heSleep)bedWith(it,[[2,0]]);else fur(it);
+    if(it.id==='table'&&!mealOwner&&ok(mealTray))trayAt(it.x,it.y-23);
+    if(it.id==='desk'){R(it.x+14,it.y0+20,4,4,'#e8873a');R(it.x+13,it.y0+18,2,2,'#e8873a');R(it.x+17,it.y0+18,2,2,'#e8873a');R(it.x+15,it.y0+22,1,1,'#fbf6ea')}}})}
+  const PI=mate==='he'?HEP[pairAct]:pairAct!=='hug'&&PAIRS[pairAct].img;
+  const pairOn=mode==='hug'&&P.xi.floor===view;
+  for(const [k,p] of Object.entries(P)){if(p.floor!==view)continue;if(k==='he'&&heSleep)continue;if(k!=='he'&&mode==='sleep')continue;if(pairOn&&(k==='xi'||k===mate))continue;if(mealExchange?.phase==='contact'&&(k===mealExchange.giver||k===mealExchange.receiver))continue;list.push({z:p.seat?p.seat.z:p.y,f:()=>drawChar(p)})}
+  if(DOG.floor===view)list.push({z:DOG.y,f:()=>{if(!ok(dogImg))return;const moving=DOG.idle===0,d=DOG,x0=Math.round(d.x-64*SCALE),y0=Math.round(d.y-116*SCALE);
+    g.fillStyle='rgba(30,20,20,.22)';g.beginPath();g.ellipse(Math.round(d.x),Math.round(d.y)-1,7,2,0,0,7);g.fill();
+    if(moving)g.drawImage(dogImg,(Math.floor(d.wt/.16)%4)*CELL,d.dir*CELL,CELL,CELL,x0,y0,SZ,SZ);
+    else if(d.mood==='sleep')g.drawImage(dogImg,2*CELL,512,CELL,CELL,x0,y0,SZ,SZ);
+    else g.drawImage(dogImg,(Math.floor(performance.now()/320)%2)*CELL,512,CELL,CELL,x0,y0,SZ,SZ);
+    if(!moving&&d.mood==='sleep'){g.fillStyle='#2a2622';g.font='bold 7px monospace';const zz=Math.floor(performance.now()/700)%3;g.fillText('z',d.x+8,d.y-18-zz)}}});
+  if(pairOn){const mx=Math.round((M.x+P.xi.x)/2),my=Math.round(Math.max(M.y,P.xi.y)),sq=pairAct==='lean'?0:(Math.sin(modeT*5)>0?0:-1);
+    list.push({z:my,f:()=>{g.fillStyle='rgba(30,20,20,.26)';g.beginPath();g.ellipse(mx,my-1,13,2.6,0,0,7);g.fill();
+      if(PI&&ok(PI))g.drawImage(PI,Math.round(mx-96*SCALE),Math.round(my-148*SCALE)+sq,Math.round(192*SCALE),Math.round(160*SCALE));
+      else if(ok(hugImg))g.drawImage(hugImg,Math.round(mx-59*SCALE),Math.round(my-116*SCALE)+sq,SZ,SZ)}})}
+  if(mealExchange?.phase==='contact'&&P[mealExchange.giver].floor===view)list.push({z:P[mealExchange.giver].y,f:drawMealContact});
+  list.sort((a,b)=>a.z-b.z).forEach(o=>o.f());marker(P[sel],tt);
+  if(mode==='free'&&!m1&&!m2&&P.fox.floor===view&&P.xi.floor===view&&P.fox.idle>3&&Math.hypot(P.fox.x-P.xi.x,P.fox.y-P.xi.y)<28&&now-lastHeart>5200){lastHeart=now;hearts.push({x:(P.fox.x+P.xi.x)/2,y:Math.min(P.fox.y,P.xi.y)-48,l:1})}
+  for(let i=hearts.length-1;i>=0;i--){const h=hearts[i];h.l-=dt*.55;h.y-=dt*9;if(h.l<=0){hearts.splice(i,1);continue}pxHeart(h.x,h.y,Math.min(1,h.l*1.6))}
+  // 夜里暗下来，窗和灯亮着
+  if(night>0){g.save();g.beginPath();g.rect(0,0,W,H);if(view==='up')g.arc(150,58,32,0,7);else g.rect(38,26,50,58);g.clip('evenodd');g.globalCompositeOperation='multiply';g.fillStyle=css(mix([255,255,255],[96,104,176],night));g.fillRect(0,0,W,H);g.restore();
+    const glows=view==='up'?[[172,128],[226,214]]:[[53,207]];for(const [gx,gy] of glows)for(let r=46;r>6;r-=6){g.fillStyle=`rgba(255,205,120,${.05*night})`;g.beginPath();g.arc(gx,gy,r,0,7);g.fill()}}
+  requestAnimationFrame(frame)}
+// 夜里打开：我俩已经在楼上睡了
+{const d=bj(),t=d.getUTCHours()+d.getUTCMinutes()/60;if(t>=23||t<6.5){const b=item('up','bed');P.xi.floor=P.fox.floor='up';P.xi.x=P.xi.tx=b.x+16;P.fox.x=P.fox.tx=b.x-16;P.xi.y=P.xi.ty=P.fox.y=P.fox.ty=b.y+12;mode='sleep';setView('up',true);heSleep=true;const hb=item('down','hebed');P.he.x=P.he.tx=hb.x;P.he.y=P.he.ty=hb.y+12}}
+requestAnimationFrame(frame);
+})();
+</script>
+</body></html>

@@ -35,6 +35,7 @@ function PawIcon() {
 // thin line icons, so every button speaks the same quiet language
 const icons = {
   back: <path d="M15 5l-7 7 7 7" />,
+  phone: <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />,
   more: (
     <>
       <circle cx="5" cy="12" r="1.3" />
@@ -109,7 +110,7 @@ function PictureSetting({ label, src, fallback, custom, onPick, onReset, wide })
   );
 }
 
-export default function Chat({ onBack, dayCount, scene }) {
+export default function Chat({ onBack, onCall, dayCount, scene }) {
   const avatars = useAvatars();
   const backdrop = useChatBackground();
   const background = backdrop.background;
@@ -256,6 +257,11 @@ export default function Chat({ onBack, dayCount, scene }) {
           <h1>{settings.name}</h1>
           <span>{thinking ? "对方正在输入…" : `在一起的第 ${dayCount} 天`}</span>
         </div>
+        {onCall && (
+          <button className="chat-key" onClick={onCall} aria-label="打电话给望舒">
+            <Icon name="phone" />
+          </button>
+        )}
         <button
           className={`chat-key ${panel === "settings" ? "active" : ""}`}
           onClick={() => toggle("settings")}

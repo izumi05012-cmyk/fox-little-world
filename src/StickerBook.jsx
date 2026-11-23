@@ -10,6 +10,8 @@ import calendarArt from "./assets/stickers/calendar.webp";
 import promiseArt from "./assets/stickers/promise.webp";
 // the lid of the cookie tin the letters live in
 import lettersArt from "./assets/stickers/letters.webp";
+// a corner torn off the pixel cottage itself (楼下客厅，三个人在递饭)
+import pixelHomeArt from "./assets/stickers/pixel-home.webp";
 
 // The "more" page: a sheet of stickers, each one a door into a little
 // corner of the world. 羲和 drew them torn off by hand, so none sit
@@ -21,7 +23,8 @@ const stickers = [
   { id: "memories", label: "回忆", page: "memories", tilt: 4, x: 56, y: 2, w: 38, art: memoriesArt },
   { id: "calendar", label: "纪念日", tilt: 6, x: 8, y: 34, w: 36, art: calendarArt },
   { id: "promise", label: "拉钩本", page: "promise", tilt: -4, x: 50, y: 40, w: 44, art: promiseArt },
-  { id: "letters", label: "饼干盒信箱", page: "letters", tilt: 3, x: 24, y: 72, w: 52, art: lettersArt },
+  { id: "letters", label: "饼干盒信箱", page: "letters", tilt: 3, x: 46, y: 70, w: 50, art: lettersArt },
+  { id: "pixel-home", label: "像素小家", page: "pixel-home", tilt: -5, x: 3, y: 74, w: 44, art: pixelHomeArt },
 ];
 
 function Sticker({ item, picture, onPick, onReset, onOpen }) {
