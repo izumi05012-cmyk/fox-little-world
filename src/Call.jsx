@@ -65,8 +65,9 @@ function startCurtain(canvas, pill) {
     H = canvas.height = innerHeight * D;
     canvas.style.width = innerWidth + "px";
     canvas.style.height = innerHeight + "px";
-    const top = pill.getBoundingClientRect().top - 14;
-    rod = { y: Math.max(8, top) * D, x0: 10 * D, x1: W - 10 * D };
+    // just under the phone's status bar: the pill sits 30px below it
+    const top = pill.getBoundingClientRect().top - 30 + 6;
+    rod = { y: Math.max(16, top) * D, x0: 10 * D, x1: W - 10 * D };
     threads = [];
     const n = Math.max(22, Math.round(innerWidth / 11));
     const mid = Math.floor(n / 2);
