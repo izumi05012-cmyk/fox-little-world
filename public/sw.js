@@ -21,7 +21,7 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
   // the letter tin is a page of its own inside a frame: always fresh, and
   // never stored as the app's front page
-  if (url.pathname.startsWith("/mailbox/") || url.pathname.startsWith("/pixel-home/")) return;
+  if (url.pathname.startsWith("/mailbox/") || url.pathname.startsWith("/pixel-home/") || url.pathname.startsWith("/ar/")) return;
 
   if (request.mode === "navigate") {
     event.respondWith(
