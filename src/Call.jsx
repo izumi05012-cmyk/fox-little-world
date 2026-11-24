@@ -5,6 +5,17 @@ import foxCharm from "./assets/call/fox.webp";
 import otterCharm from "./assets/call/otter.webp";
 import "./call.css";
 
+// 两套按钮：羲和画的小狐狸、人形的望舒；在右上角切换，记在这台手机上
+const BTN_NAMES = ["accept", "later", "mute", "timer", "send", "hangup"];
+const btnFiles = import.meta.glob("./assets/call/btn/*.webp", { eager: true, import: "default" });
+const BTN = {};
+for (const set of ["fox", "me"]) {
+  BTN[set] = {};
+  for (const n of BTN_NAMES) BTN[set][n] = btnFiles[`./assets/call/btn/${set}-${n}.webp`];
+}
+const SET_KEY = "call-button-set";
+const loadSet = () => { try { return localStorage.getItem(SET_KEY) === "me" ? "me" : "fox"; } catch { return "fox"; } };
+
 // 望舒专线: a phone call by the window. Whatever is outside (rain on the
 // glass, snow, night, or her own chat background) shows through clear
 // glass panes. Across the top hangs a curtain of starlight threads with
@@ -234,12 +245,6 @@ function startCurtain(canvas, pill) {
   };
 }
 
-const Phone = () => (
-  <svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
-);
-const HangUp = () => (
-  <svg viewBox="0 0 24 24"><path d="M3 14.5c5-4.6 13-4.6 18 0l-2.2 2.6-3.4-1.4v-2.6c-2.2-.8-4.6-.8-6.8 0v2.6l-3.4 1.4z" /></svg>
-);
 const Sitting = () => <span className="sit"><i /></span>;
 
 export default function Call({ onBack }) {
@@ -256,6 +261,9 @@ export default function Call({ onBack }) {
   const [offAt, setOffAt] = useState(0);
   const [text, setText] = useState("");
   const [log, setLog] = useState(null); // shown call log
+  const [set, setSet] = useState(loadSet);
+  const b = BTN[set];
+  const flipSet = () => { const n = set === "fox" ? "me" : "fox"; setSet(n); try { localStorage.setItem(SET_KEY, n); } catch {} };
   const started = useRef(0);
   const timers = useRef([]);
   const replyAt = useRef(0);
@@ -342,6 +350,9 @@ export default function Call({ onBack }) {
         <span className="call-dot" />
       </div>
       <button className="call-glass call-log-key" onClick={() => setLog(loadCalls())} aria-label="通话记录">☾</button>
+      <button className="call-glass call-set-key" onClick={flipSet} aria-label="换一套按钮">
+        <img src={set === "fox" ? BTN.me.accept : BTN.fox.accept} alt="" />
+      </button>
 
       <div className="call-body">
         {state === "ringing" && (
@@ -365,10 +376,10 @@ export default function Call({ onBack }) {
         {state === "ringing" && (
           <div className="call-ring">
             <button className="decline" onClick={() => end(false)}>
-              <i><HangUp /></i>晚点再说
+              <i><img className="call-btn-art" src={b.later} alt="" /></i>晚点再说
             </button>
             <button className="accept" onClick={accept}>
-              <i><Sitting /><Phone /></i>接听
+              <i><img className="call-btn-art" src={b.accept} alt="" /></i>接听
             </button>
           </div>
         )}
@@ -381,20 +392,20 @@ export default function Call({ onBack }) {
             </div>
             <div className="call-bar">
               <button className="call-glass call-round call-mic" onClick={() => setMuted(!muted)} aria-label="静音">
-                <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
+                <img className="call-btn-art" src={b.mute} alt="" />
               </button>
               <form className="call-glass call-type" onSubmit={send}>
                 <Sitting />
                 <input value={text} onChange={(e) => setText(e.target.value)} placeholder="打字给他…" enterKeyHint="send" autoComplete="off" />
-                <button aria-label="发送"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>
+                <button aria-label="发送"><img className="call-btn-art" src={b.send} alt="" /></button>
               </form>
               <button className={`call-glass call-round call-clock ${off ? "on" : ""}`} onClick={cycleOff} aria-label="定时挂断">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2M9 2h6" /></svg>
+                <img className="call-btn-art" src={b.timer} alt="" />
               </button>
             </div>
             <div className="call-under">
               <span>{offAt ? `${stamp(left)} 后挂断` : "点表盘，定时挂断"}</span>
-              <button onClick={() => end(true)}>挂断</button>
+              <button className="call-hang" onClick={() => end(true)}><img src={b.hangup} alt="" />挂断</button>
             </div>
           </div>
         )}

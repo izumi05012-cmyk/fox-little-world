@@ -186,3 +186,15 @@
 .call-log ul { margin: 0; padding: 0; }
 .call-log li { list-style: none; display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid rgba(255, 255, 255, .12); font-size: 14px; color: var(--call-dim); }
 .call-log section > button { margin: 10px 0 4px; width: 100%; padding: 10px; border-radius: 10px; border: 0; background: rgba(255, 255, 255, .12); color: var(--call-ink); font: inherit; }
+
+/* 按钮上的画：小狐狸或人形望舒，比玻璃球大一点，探出来 */
+.call-btn-art { display: block; pointer-events: none; filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .35)); }
+.call-ring button > i .call-btn-art { width: 96px; height: 96px; object-fit: contain; position: relative; top: -6px; }
+.call-ring .accept svg, .call-ring .decline svg { display: none; }
+.call-round .call-btn-art { width: 62px; height: 62px; object-fit: contain; margin-top: -8px; }
+.call-type button { width: 46px; height: 46px; overflow: visible; }
+.call-type button .call-btn-art { width: 54px; height: 54px; object-fit: contain; margin-top: -6px; }
+.call-hang { display: inline-flex; align-items: center; gap: 4px; }
+.call-hang img { width: 34px; height: 34px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35)); }
+.call-set-key { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 32px); right: calc(max(14px, env(safe-area-inset-right, 0px)) + 42px); z-index: 3; width: 34px; height: 34px; border-radius: 50%; padding: 0; overflow: hidden; display: grid; place-items: center; }
+.call-set-key img { width: 40px; height: 40px; object-fit: contain; }
