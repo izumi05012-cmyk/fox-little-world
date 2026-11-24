@@ -25,8 +25,8 @@ const stickers = [
   { id: "memories", label: "回忆", page: "memories", tilt: 4, x: 56, y: 1.7, w: 38, art: memoriesArt },
   { id: "calendar", label: "纪念日", tilt: 6, x: 8, y: 28.2, w: 36, art: calendarArt },
   { id: "promise", label: "拉钩本", page: "promise", tilt: -4, x: 50, y: 33.2, w: 44, art: promiseArt },
-  { id: "letters", label: "饼干盒信箱", page: "letters", tilt: 3, x: 48, y: 61, w: 50, art: lettersArt },
-  { id: "pixel-home", label: "像素小家", page: "pixel-home", tilt: -5, x: 8, y: 53, w: 44, art: pixelHomeArt },
+  { id: "letters", label: "饼干盒信箱", page: "letters", tilt: 3, x: 46, y: 58.1, w: 50, art: lettersArt },
+  { id: "pixel-home", label: "像素小家", page: "pixel-home", tilt: -5, x: 3, y: 61.4, w: 44, art: pixelHomeArt },
   { id: "ar-letter", label: "空中的信", href: "/ar/", tilt: 4, x: 28, y: 81, w: 44, art: arLetterArt },
 ];
 
