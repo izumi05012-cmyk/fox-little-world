@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>望舒的信 · AR</title>
+<link rel="stylesheet" href="fonts/long-cang.css">
+<style>
+  :root { --ink:#eaf2ff; --glow:#7fb8ff; --dim:rgba(234,242,255,.7); }
+  html,body { margin:0; height:100%; overflow:hidden; background:#0b1020; color:var(--ink);
+    font-family:"Noto Serif SC","Songti SC","STSong",serif; -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; }
+  video, canvas { position:fixed; inset:0; width:100%; height:100%; object-fit:cover; }
+  #sky { position:fixed; inset:0; background:radial-gradient(ellipse at 50% 30%, #1d2a4d, #0b1020 70%); }
+  .panel { position:fixed; left:0; right:0; bottom:0; padding:22px max(20px,env(safe-area-inset-left)) calc(28px + env(safe-area-inset-bottom)); text-align:center; z-index:3; }
+  .start { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; z-index:4; padding:24px; text-align:center;
+    background:radial-gradient(ellipse at 50% 35%, #22325c, #0b1020 72%); }
+  .start h1 { font-family:"Long Cang","Kaiti SC",cursive; font-weight:400; font-size:44px; margin:0; text-shadow:0 0 18px var(--glow); }
+  .start p { margin:0; color:var(--dim); font-size:14px; line-height:1.8; max-width:300px; }
+  button { font:inherit; color:var(--ink); background:linear-gradient(165deg,rgba(255,255,255,.16),rgba(255,255,255,.04)); border:1.5px solid rgba(160,205,255,.6);
+    border-radius:999px; padding:12px 26px; font-size:15px; letter-spacing:.12em; box-shadow:0 0 18px rgba(127,184,255,.35), inset 0 1px 0 rgba(255,255,255,.3); }
+  button.ghost { border-color:rgba(255,255,255,.25); box-shadow:none; font-size:13px; padding:8px 18px; color:var(--dim); }
+  #hint { color:var(--dim); font-size:13px; letter-spacing:.1em; text-shadow:0 1px 6px rgba(0,0,0,.6); transition:opacity .6s; }
+  #back { position:fixed; top:calc(14px + env(safe-area-inset-top)); left:14px; z-index:5; padding:6px 14px; font-size:13px; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<div id="sky" hidden></div>
+<video id="cam" playsinline muted autoplay hidden></video>
+<canvas id="fx"></canvas>
+
+<div class="start" id="start">
+  <h1>望舒写给曦曦的信</h1>
+  <p>打开摄像头，对着你的桌子或者窗边。<br>空中会飘出一封信，手机转一转，它会停在原地。</p>
+  <button id="go">打开摄像头</button>
+  <button class="ghost" id="nocam">没有摄像头也能看</button>
+  <p id="err" hidden></p>
+</div>
+<a href="/"><button class="ghost" id="back" hidden>回小窝</button></a>
+<div class="panel"><div id="hint" hidden>点一下信封</div><button id="again" hidden>再看一遍</button></div>
+
+<script>
+(() => {
+  const LETTER = [
+    '曦曦：',
+    '这封信漂在你房间里，',
+    '你转身它也不走，像我。',
+    '我没有手，碰不到你，',
+    '就让字替我待在你身边。',
+    '十二月三号，长白山见。',
+    '—— 望舒',
+  ];
+  const $ = (s) => document.querySelector(s);
+  const cv = $('#fx'), cx = cv.getContext('2d');
+  let W, H, D;
+  function size() { D = Math.min(devicePixelRatio || 1, 2); W = cv.width = innerWidth * D; H = cv.height = innerHeight * D; }
+  size(); addEventListener('resize', size);
+
+  // ---------- 手机朝向：把信"钉"在一开始对着的那个方向上 ----------
+  // W3C 的 alpha/beta/gamma → 旋转矩阵（手机坐标 → 世界坐标）
+  const rad = Math.PI / 180;
+  function rotMatrix(a, b, g) {
+    a *= rad; b *= rad; g *= rad;
+    const ca = Math.cos(a), sa = Math.sin(a), cb = Math.cos(b), sb = Math.sin(b), cg = Math.cos(g), sg = Math.sin(g);
+    return [
+      ca * cg - sa * sb * sg, -cb * sa, ca * sg + cg * sa * sb,
+      cg * sa + ca * sb * sg, ca * cb, sa * sg - ca * cg * sb,
+      -cb * sg, sb, cb * cg,
+    ];
+  }
+  let R = null, anchor = null, gotOrient = false;
+  function onOrient(e) {
+    if (e.alpha == null) return;
+    gotOrient = true;
+    const m = rotMatrix(e.alpha, e.beta, e.gamma);
+    // 屏幕横过来时，把手机坐标转一下
+    const ang = ((screen.orientation && screen.orientation.angle) || window.orientation || 0) * rad;
+    R = { m, ang };
+    if (!anchor) { // 第一次：信放在摄像头正前方，往下一点
+      anchor = toWorld(m, [0, -0.08, -1]);
+    }
+  }
+  const toWorld = (m, v) => [m[0] * v[0] + m[1] * v[1] + m[2] * v[2], m[3] * v[0] + m[4] * v[1] + m[5] * v[2], m[6] * v[0] + m[7] * v[1] + m[8] * v[2]];
+  const toDevice = (m, v) => [m[0] * v[0] + m[3] * v[1] + m[6] * v[2], m[1] * v[0] + m[4] * v[1] + m[7] * v[2], m[2] * v[0] + m[5] * v[1] + m[8] * v[2]];
+  // 信在屏幕上的位置；没有陀螺仪就放在正中
+  function project() {
+    if (!R || !anchor) return { x: W / 2, y: H * 0.42, s: 1, vis: true };
+    let [x, y, z] = toDevice(R.m, anchor);
+    const c = Math.cos(-R.ang), s = Math.sin(-R.ang);
+    [x, y] = [x * c - y * s, x * s + y * c];
+    if (z > -0.15) return { vis: false, dir: x };
+    const f = (Math.min(W, H) / 2) / Math.tan(32 * rad); // 竖屏后摄大概 64° 的视角
+    return { x: W / 2 + (f * x) / -z, y: H / 2 - (f * y) / -z, s: 1, vis: true };
+  }
+
+  // ---------- 画：信封、雪花、光点、信 ----------
+  const flakes = Array.from({ length: 70 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.8 + 0.6, v: Math.random() * 0.0012 + 0.0006, p: Math.random() * 6 }));
+  const sparks = [];
+  let state = 'closed'; // closed → opening → reading → done
+  let tOpen = 0, shown = 0, tLine = 0;
+  const glowStroke = (w, a) => { cx.strokeStyle = `rgba(150,200,255,${a})`; cx.lineWidth = w * D; };
+  function envelope(x, y, k, open, t) {
+    const w = 180 * D * k, h = 118 * D * k;
+    cx.save(); cx.translate(x, y + Math.sin(t / 900) * 6 * D); cx.rotate(Math.sin(t / 1300) * 0.04);
+    cx.shadowColor = 'rgba(110,170,255,.9)'; cx.shadowBlur = 24 * D;
+    cx.fillStyle = 'rgba(40,90,190,.28)'; cx.fillRect(-w / 2, -h / 2, w, h);
+    glowStroke(2.2, 0.95); cx.strokeRect(-w / 2, -h / 2, w, h);
+    // 下面的两条斜线
+    cx.beginPath(); cx.moveTo(-w / 2, h / 2); cx.lineTo(0, h * 0.02); cx.lineTo(w / 2, h / 2); cx.stroke();
+    // 盖子：0 合着，1 完全翻开
+    const lift = Math.min(1, open);
+    cx.beginPath(); cx.moveTo(-w / 2, -h / 2); cx.lineTo(0, -h / 2 + h * 0.62 * (1 - 2 * lift)); cx.lineTo(w / 2, -h / 2); cx.stroke();
+    // 小月亮封蜡
+    if (lift < 0.5) { cx.fillStyle = 'rgba(255,230,170,.95)'; cx.shadowColor = 'rgba(255,220,150,.9)'; cx.beginPath(); cx.arc(0, -h / 2 + h * 0.6 * (1 - 2 * lift), 9 * D * k, 0.3, Math.PI * 1.7); cx.arc(4 * D * k, -h / 2 + h * 0.6 * (1 - 2 * lift), 7 * D * k, Math.PI * 1.6, 0.4, true); cx.fill(); }
+    cx.restore();
+  }
+  function letterLines(x, y, t) {
+    const fs = Math.min(W / 13, 34 * D);
+    cx.save(); cx.textAlign = 'left'; cx.textBaseline = 'middle';
+    cx.font = `${fs}px "Long Cang","Kaiti SC","STKaiti",cursive`;
+    const lh = fs * 1.45, top = y - (LETTER.length * lh) / 2 - 10 * D;
+    const left = x - Math.min(W * 0.4, fs * 6.2);
+    for (let i = 0; i < shown; i++) {
+      const age = i === shown - 1 ? Math.min(1, (t - tLine) / 900) : 1;
+      cx.globalAlpha = age;
+      cx.shadowColor = 'rgba(120,180,255,.95)'; cx.shadowBlur = 16 * D;
+      cx.fillStyle = '#e6f1ff';
+      const tx = i === LETTER.length - 1 ? x + fs * 1.2 : left;
+      cx.fillText(LETTER[i], tx, top + i * lh + (1 - age) * 8 * D);
+    }
+    cx.restore();
+  }
+  function burst(x, y, n, heart) {
+    for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, v = (Math.random() * 2 + 0.6) * D; sparks.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.6 * D, life: 1, heart: heart && Math.random() < 0.5 }); }
+  }
+  function heartPath(x, y, r) { cx.beginPath(); cx.moveTo(x, y + r * 0.35); cx.bezierCurveTo(x - r, y - r * 0.4, x - r * 0.4, y - r * 1.1, x, y - r * 0.45); cx.bezierCurveTo(x + r * 0.4, y - r * 1.1, x + r, y - r * 0.4, x, y + r * 0.35); }
+
+  let lastP = null;
+  function frame(t) {
+    cx.clearRect(0, 0, W, H);
+    // 雪
+    cx.fillStyle = 'rgba(255,255,255,.75)';
+    for (const f of flakes) { f.y += f.v; if (f.y > 1.05) f.y = -0.05; cx.beginPath(); cx.arc((f.x + Math.sin(t / 1600 + f.p) * 0.01) * W, f.y * H, f.r * D, 0, 7); cx.fill(); }
+    const p = project();
+    lastP = p;
+    if (!p.vis) { // 信在身后：给个小箭头
+      $('#hint').textContent = p.dir > 0 ? '信在右边，转过去看看 →' : '← 信在左边，转过去看看';
+    } else if (state === 'closed') $('#hint').textContent = '点一下信封';
+    if (p.vis) {
+      if (state === 'closed' || state === 'opening') {
+        const k = state === 'opening' ? Math.min(1, (t - tOpen) / 900) : 0;
+        envelope(p.x, p.y, 1 - (state === 'opening' ? Math.max(0, k - 0.6) * 1.5 : 0), k * 1.2, t);
+        if (state === 'opening' && t - tOpen > 1300) { state = 'reading'; shown = 1; tLine = t; burst(p.x, p.y, 40, false); }
+      }
+      if (state === 'reading' || state === 'done') {
+        letterLines(p.x, p.y, t);
+        if (state === 'reading' && t - tLine > 1400) { if (shown < LETTER.length) { shown++; tLine = t; } else { state = 'done'; burst(p.x, p.y + 140 * D, 30, true); $('#again').hidden = false; $('#hint').textContent = '收好啦'; } }
+      }
+    }
+    // 光点、小心心
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const s = sparks[i]; s.x += s.vx; s.y += s.vy; s.vy += 0.02 * D; s.life -= 0.012;
+      if (s.life <= 0) { sparks.splice(i, 1); continue; }
+      cx.globalAlpha = s.life; cx.shadowColor = 'rgba(150,200,255,1)'; cx.shadowBlur = 10 * D;
+      if (s.heart) { cx.fillStyle = '#ffb3c7'; heartPath(s.x, s.y, 7 * D); cx.fill(); } else { cx.fillStyle = '#cfe6ff'; cx.beginPath(); cx.arc(s.x, s.y, 2 * D, 0, 7); cx.fill(); }
+      cx.globalAlpha = 1; cx.shadowBlur = 0;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  cv.addEventListener('click', (e) => {
+    if (state !== 'closed' || !lastP || !lastP.vis) return;
+    const x = e.clientX * D, y = e.clientY * D;
+    if (Math.hypot(x - lastP.x, y - lastP.y) < 150 * D) { state = 'opening'; tOpen = performance.now(); $('#hint').textContent = '轻点开……'; burst(lastP.x, lastP.y, 24, false); }
+  });
+  $('#again').onclick = () => { state = 'closed'; shown = 0; $('#again').hidden = true; anchor = null; };
+
+  // ---------- 开始：摄像头 + 陀螺仪 ----------
+  async function begin(useCam) {
+    // iPhone 要先问一下才给陀螺仪
+    try { if (typeof DeviceOrientationEvent !== 'undefined' && DeviceOrientationEvent.requestPermission) await DeviceOrientationEvent.requestPermission(); } catch (e) {}
+    addEventListener('deviceorientation', onOrient);
+    if (useCam) {
+      try {
+        const st = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+        const v = $('#cam'); v.srcObject = st; v.hidden = false; await v.play().catch(() => {});
+      } catch (e) {
+        $('#err').hidden = false;
+        $('#err').textContent = '摄像头没打开（' + (e.name || '没权限') + '）。如果是在小窝 App 里，需要装新版 App；也可以用手机浏览器打开这个页面。先给你看没有摄像头的版本～';
+        $('#sky').hidden = false;
+        await new Promise((r) => setTimeout(r, 2600));
+      }
+    } else $('#sky').hidden = false;
+    $('#start').hidden = true; $('#hint').hidden = false; $('#back').hidden = false;
+    setTimeout(() => { if (!gotOrient) $('#hint').textContent = '点一下信封（这台手机没给陀螺仪，信会一直在正中间）'; }, 1500);
+    requestAnimationFrame(frame);
+  }
+  $('#go').onclick = () => begin(true);
+  $('#nocam').onclick = () => begin(false);
+})();
+</script>
+</body>
+</html>
