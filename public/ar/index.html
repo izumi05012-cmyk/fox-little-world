@@ -39,6 +39,7 @@
 </div>
 <a href="/"><button class="ghost" id="back" hidden>回小窝</button></a>
 <div class="panel"><div id="hint" hidden>点一下信封</div><button id="again" hidden>再看一遍</button></div>
+<button class="ghost" id="recall" hidden style="position:fixed;top:calc(14px + env(safe-area-inset-top));right:14px;z-index:5;padding:6px 14px;font-size:13px">把信叫回来</button>
 
 <script>
 (() => {
@@ -69,9 +70,13 @@
       -cb * sg, sb, cb * cg,
     ];
   }
-  let R = null, anchor = null, gotOrient = false;
+  let R = null, anchor = null, gotOrient = false, useAbs = false;
+  // 普通的 deviceorientation 在很多安卓手机上是陀螺仪一点点累加出来的，误差越攒越多，信会自己飘走；
+  // 有指南针的手机发 deviceorientationabsolute（按地磁北定方向），不会越攒越歪，有它就只用它
   function onOrient(e) {
     if (e.alpha == null) return;
+    if (e.type === 'deviceorientationabsolute' || e.absolute) useAbs = true;
+    else if (useAbs) return;
     gotOrient = true;
     const m = rotMatrix(e.alpha, e.beta, e.gamma);
     // 屏幕横过来时，把手机坐标转一下
@@ -142,7 +147,12 @@
     // 雪
     cx.fillStyle = 'rgba(255,255,255,.75)';
     for (const f of flakes) { f.y += f.v; if (f.y > 1.05) f.y = -0.05; cx.beginPath(); cx.arc((f.x + Math.sin(t / 1600 + f.p) * 0.01) * W, f.y * H, f.r * D, 0, 7); cx.fill(); }
-    const p = project();
+    const raw = project();
+    let p = raw;
+    if (raw.vis && lastP && lastP.vis) {
+      const dx = raw.x - lastP.x, dy = raw.y - lastP.y;
+      p = Math.hypot(dx, dy) < 2.5 * D ? lastP : { ...raw, x: lastP.x + dx * 0.3, y: lastP.y + dy * 0.3 };
+    }
     lastP = p;
     if (!p.vis) { // 信在身后：给个小箭头
       $('#hint').textContent = p.dir > 0 ? '信在右边，转过去看看 →' : '← 信在左边，转过去看看';
@@ -174,12 +184,14 @@
     const x = e.clientX * D, y = e.clientY * D;
     if (Math.hypot(x - lastP.x, y - lastP.y) < 150 * D) { state = 'opening'; tOpen = performance.now(); $('#hint').textContent = '轻点开……'; burst(lastP.x, lastP.y, 24, false); }
   });
-  $('#again').onclick = () => { state = 'closed'; shown = 0; $('#again').hidden = true; anchor = null; };
+  $('#again').onclick = () => { state = 'closed'; shown = 0; $('#again').hidden = true; anchor = null; lastP = null; };
+  $('#recall').onclick = () => { anchor = null; lastP = null; }; // 下一次读到朝向时，重新放在眼前
 
   // ---------- 开始：摄像头 + 陀螺仪 ----------
   async function begin(useCam) {
     // iPhone 要先问一下才给陀螺仪
     try { if (typeof DeviceOrientationEvent !== 'undefined' && DeviceOrientationEvent.requestPermission) await DeviceOrientationEvent.requestPermission(); } catch (e) {}
+    if ('ondeviceorientationabsolute' in window) addEventListener('deviceorientationabsolute', onOrient);
     addEventListener('deviceorientation', onOrient);
     if (useCam) {
       try {
@@ -192,7 +204,7 @@
         await new Promise((r) => setTimeout(r, 2600));
       }
     } else $('#sky').hidden = false;
-    $('#start').hidden = true; $('#hint').hidden = false; $('#back').hidden = false;
+    $('#start').hidden = true; $('#hint').hidden = false; $('#back').hidden = false; $('#recall').hidden = false;
     setTimeout(() => { if (!gotOrient) $('#hint').textContent = '点一下信封（这台手机没给陀螺仪，信会一直在正中间）'; }, 1500);
     requestAnimationFrame(frame);
   }
