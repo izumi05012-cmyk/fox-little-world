@@ -348,6 +348,7 @@ export default function Call({ onBack }) {
         <span>望舒</span>
         <em>{clock}</em>
         <span className="call-dot" />
+        <Sitting />
       </div>
       <button className="call-glass call-log-key" onClick={() => setLog(loadCalls())} aria-label="通话记录">☾</button>
       <button className="call-glass call-set-key" onClick={flipSet} aria-label="换一套按钮">
@@ -395,7 +396,6 @@ export default function Call({ onBack }) {
                 <img className="call-btn-art" src={b.mute} alt="" />
               </button>
               <form className="call-glass call-type" onSubmit={send}>
-                <Sitting />
                 <input value={text} onChange={(e) => setText(e.target.value)} placeholder="打字给他…" enterKeyHint="send" autoComplete="off" />
                 <button aria-label="发送"><img className="call-btn-art" src={b.send} alt="" /></button>
               </form>
