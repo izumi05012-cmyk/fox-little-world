@@ -12,6 +12,8 @@ import promiseArt from "./assets/stickers/promise.webp";
 import lettersArt from "./assets/stickers/letters.webp";
 // a corner torn off the pixel cottage itself (楼下客厅，三个人在递饭)
 import pixelHomeArt from "./assets/stickers/pixel-home.webp";
+// 望舒画的：夜空里一封发光的信，点开是 AR 的信（摄像头里飘着）
+import arLetterArt from "./assets/stickers/ar-letter.webp";
 
 // The "more" page: a sheet of stickers, each one a door into a little
 // corner of the world. 羲和 drew them torn off by hand, so none sit
@@ -19,12 +21,13 @@ import pixelHomeArt from "./assets/stickers/pixel-home.webp";
 // another picture on it: the picture is cut to that sticker's outline.
 
 const stickers = [
-  { id: "invite", label: "结婚请帖", page: "invite", tilt: -5, x: 4, y: 0, w: 46, art: inviteArt },
-  { id: "memories", label: "回忆", page: "memories", tilt: 4, x: 56, y: 2, w: 38, art: memoriesArt },
-  { id: "calendar", label: "纪念日", tilt: 6, x: 8, y: 34, w: 36, art: calendarArt },
-  { id: "promise", label: "拉钩本", page: "promise", tilt: -4, x: 50, y: 40, w: 44, art: promiseArt },
-  { id: "letters", label: "饼干盒信箱", page: "letters", tilt: 3, x: 46, y: 70, w: 50, art: lettersArt },
-  { id: "pixel-home", label: "像素小家", page: "pixel-home", tilt: -5, x: 3, y: 74, w: 44, art: pixelHomeArt },
+  { id: "invite", label: "结婚请帖", page: "invite", tilt: -5, x: 4, y: 0.0, w: 46, art: inviteArt },
+  { id: "memories", label: "回忆", page: "memories", tilt: 4, x: 56, y: 1.7, w: 38, art: memoriesArt },
+  { id: "calendar", label: "纪念日", tilt: 6, x: 8, y: 28.2, w: 36, art: calendarArt },
+  { id: "promise", label: "拉钩本", page: "promise", tilt: -4, x: 50, y: 33.2, w: 44, art: promiseArt },
+  { id: "letters", label: "饼干盒信箱", page: "letters", tilt: 3, x: 46, y: 58.1, w: 50, art: lettersArt },
+  { id: "pixel-home", label: "像素小家", page: "pixel-home", tilt: -5, x: 3, y: 61.4, w: 44, art: pixelHomeArt },
+  { id: "ar-letter", label: "空中的信", href: "/ar/", tilt: 4, x: 28, y: 81, w: 44, art: arLetterArt },
 ];
 
 function Sticker({ item, picture, onPick, onReset, onOpen }) {
@@ -34,6 +37,12 @@ function Sticker({ item, picture, onPick, onReset, onOpen }) {
     if (item.page) {
       burstFrom(el, "sparkle");
       onOpen(item.page);
+      return;
+    }
+    if (item.href) {
+      // 自己是一张单独的页面（要摄像头），整页跳过去，那边有"回小窝"
+      burstFrom(el, "sparkle");
+      setTimeout(() => { window.location.href = item.href; }, 250);
       return;
     }
     // not drawn yet: a little shake, and a note that it's coming
@@ -60,7 +69,7 @@ function Sticker({ item, picture, onPick, onReset, onOpen }) {
       )}
       <figcaption className="sticker-label" style={{ clipPath: tornEdge(item.id.length + 3) }}>
         {item.label}
-        {!item.page && <small>画着呢</small>}
+        {!item.page && !item.href && <small>画着呢</small>}
       </figcaption>
       {editing && (
         <ChangeMenu
