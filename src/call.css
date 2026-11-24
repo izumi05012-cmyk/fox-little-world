@@ -198,3 +198,16 @@
 .call-hang img { width: 34px; height: 34px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35)); }
 .call-set-key { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 32px); right: calc(max(14px, env(safe-area-inset-right, 0px)) + 42px); z-index: 3; width: 34px; height: 34px; border-radius: 50%; padding: 0; overflow: hidden; display: grid; place-items: center; }
 .call-set-key img { width: 40px; height: 40px; object-fit: contain; }
+
+/* 曦曦说：按钮后面的玻璃球都不要，直接是贴纸 */
+.call-ring button > i { background: none !important; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; width: 96px; height: 96px; }
+.call-ring .accept > i::before, .call-ring .accept > i::after { display: none; }
+.call-ring .accept .call-btn-art { animation: call-bob 1.6s ease-in-out infinite; }
+@keyframes call-bob { 50% { transform: translateY(-5px) rotate(-3deg); } }
+.call-ring button > i .call-btn-art { top: 0; }
+.call-round { background: none !important; border: 0 !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; width: 58px; height: 58px; }
+.call-round .call-btn-art { width: 64px; height: 64px; margin-top: 0; transition: transform .2s, filter .2s, opacity .2s; }
+.is-muted .call-mic { background: none !important; }
+.is-muted .call-mic .call-btn-art { transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(255, 214, 224, .9)); }
+.call-clock.on .call-btn-art { filter: drop-shadow(0 0 8px rgba(255, 226, 170, .95)); }
+.call-type button { background: none !important; border: 0 !important; }
