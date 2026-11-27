@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>狐狸书店</title>
+<style>
+:root{
+  --wall:#efe7d8; --wall2:#e6dcc9; --fg:#3b332c; --soft:#8a7f72;
+  --sea:#f4ecdb; --sea-line:rgba(120,95,60,.10); --land:#d9c9a8; --land-edge:#b9a47c;
+  --paper:#fbf6ea; --paper2:#efe5cf; --edge1:#e8dcc2; --edge2:#ddcfb1; --edge3:#d1c19f;
+  --ink:#2e2a26; --ink-soft:#756b5f; --frame:#8b6a46; --frame2:#6f5236;
+  --fox:#d8742a; --her:#e0708e; --next:#9a8f80; --thread:#b4231f;
+  --shadow:rgba(70,50,25,.28); --veil:rgba(40,30,20,.45);
+  --hand:'Long Cang','Kaiti SC','STKaiti','KaiTi',cursive;
+  --lat:'La Belle Aurore','Long Cang',cursive;
+  --serif:'Noto Serif SC','Songti SC','SimSun',serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --wall:#1f1b17; --wall2:#191612; --fg:#ece2d2; --soft:#a39685;
+    --sea:#2a251f; --sea-line:rgba(230,210,170,.07); --land:#4a3f31; --land-edge:#6b5a43;
+    --paper:#f1e8d6; --paper2:#e3d8c1; --edge1:#d6c9ad; --edge2:#c8b998; --edge3:#b8a784;
+    --ink:#2a2622; --ink-soft:#6a6055; --frame:#5c4430; --frame2:#46331f;
+    --fox:#e8873b; --her:#ec86a2; --next:#8a8072; --thread:#d2453b;
+    --shadow:rgba(0,0,0,.6); --veil:rgba(0,0,0,.62);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --wall:#1f1b17; --wall2:#191612; --fg:#ece2d2; --soft:#a39685;
+  --sea:#2a251f; --sea-line:rgba(230,210,170,.07); --land:#4a3f31; --land-edge:#6b5a43;
+  --paper:#f1e8d6; --paper2:#e3d8c1; --edge1:#d6c9ad; --edge2:#c8b998; --edge3:#b8a784;
+  --ink:#2a2622; --ink-soft:#6a6055; --frame:#5c4430; --frame2:#46331f;
+  --fox:#e8873b; --her:#ec86a2; --next:#8a8072; --thread:#d2453b;
+  --shadow:rgba(0,0,0,.6); --veil:rgba(0,0,0,.62);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:linear-gradient(180deg,var(--wall),var(--wall2)); color:var(--fg);
+  font-family:var(--serif); min-height:100dvh;
+  padding-block:calc(18px + env(safe-area-inset-top,0px)) calc(28px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-tap-highlight-color:transparent; overflow-x:hidden;
+}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+main{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+header{padding-left:52px;min-height:44px;display:flex;flex-direction:column;justify-content:center}
+.label{margin:0;font-size:11px;letter-spacing:.22em;color:var(--soft)}
+h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:balance}
+.motto{margin:0;font-family:var(--hand);font-size:19px;color:var(--soft)}
+
+/* ── 墙上那张地图 ── */
+.frame{background:linear-gradient(135deg,var(--frame),var(--frame2));padding:7px;border-radius:4px;
+  box-shadow:0 10px 24px -10px var(--shadow),0 2px 4px var(--shadow)}
+.mapScroll{overflow-x:auto;overflow-y:hidden;border-radius:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;background:var(--sea)}
+.mapScroll::-webkit-scrollbar{display:none}
+.map{display:block;width:max(100%,980px);height:auto;touch-action:pan-x pan-y}
+.map .land{fill:var(--land);stroke:var(--land-edge);stroke-width:.6;stroke-linejoin:round}
+.map .grid{stroke:var(--sea-line);stroke-width:1;fill:none}
+.map .thread{fill:none;stroke:var(--thread);stroke-width:1.6;stroke-linecap:round;opacity:.85}
+.map .thread.toNext{stroke-dasharray:4 5;opacity:.55}
+.pin{cursor:pointer}
+.pin .hit{fill:transparent}
+.pin .head{stroke:rgba(0,0,0,.25);stroke-width:.8}
+.pin .shine{fill:rgba(255,255,255,.55)}
+.pin .needle{stroke:#6d6358;stroke-width:1.4;stroke-linecap:round}
+.pin .shade{fill:rgba(40,25,10,.25)}
+.pin.fox .head{fill:var(--fox)} .pin.her .head{fill:var(--her)}
+.pin.next .head{fill:var(--paper);stroke:var(--next);stroke-width:1.6;stroke-dasharray:2.5 2}
+.pin .tag rect{fill:var(--paper);stroke:rgba(90,70,40,.25);stroke-width:.6}
+.pin .tag text{font-family:var(--serif);font-size:11px;fill:var(--ink)}
+.pin:hover .head,.pin:focus-visible .head{filter:brightness(1.1)}
+.pin:focus{outline:none}
+.mapHint{margin:8px 2px 0;font-size:12px;color:var(--soft);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.dot.fox{background:var(--fox)} .dot.her{background:var(--her)} .dot.next{border:1.5px dashed var(--next)}
+
+/* ── 柜台上那一摞 ── */
+.pileTitle{margin:6px 0 0;font-size:13px;letter-spacing:.12em;color:var(--soft)}
+.pile{display:flex;gap:14px;overflow-x:auto;padding:10px 4px 16px;scrollbar-width:none}
+.pile::-webkit-scrollbar{display:none}
+.mini{flex:0 0 auto;width:128px;background:var(--paper);padding:6px 6px 8px;border-radius:2px;text-align:left;color:var(--ink);
+  box-shadow:0 1px 0 var(--edge1),0 2px 0 var(--edge2),0 3px 0 var(--edge3),0 8px 14px -6px var(--shadow);transform:rotate(var(--r,0deg));transition:transform .2s}
+.mini:hover{transform:rotate(0) translateY(-3px)}
+.mini .ph{aspect-ratio:16/10;background:var(--paper2) center/cover;border-radius:1px}
+.mini .ph.blank{display:grid;place-items:center;font-family:var(--hand);font-size:22px;color:var(--ink-soft);border:1.5px dashed var(--edge3);background:none}
+.mini b{display:block;font-weight:400;font-size:12px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini small{display:block;font-size:10px;color:var(--ink-soft);margin-top:1px}
+.mini i{font-style:normal;display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:1px}
+
+/* ── 拿起来的那一张 ── */
+.veil{position:fixed;inset:0;background:var(--veil);display:grid;place-items:center;z-index:20;
+  padding:calc(20px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  opacity:0;pointer-events:none;transition:opacity .25s}
+.veil.on{opacity:1;pointer-events:auto}
+.stage{width:min(420px,100%);display:flex;flex-direction:column;align-items:center;gap:14px}
+.holder{width:100%;perspective:1400px}
+.card{position:relative;width:100%;aspect-ratio:1/.9;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.3,.7,.25,1);
+  transform:rotateX(6deg) rotateY(-8deg) translateY(16px) scale(.94)}
+.veil.on .card{transform:rotateX(4deg) rotateY(-6deg)}
+.card.flipped,.veil.on .card.flipped{transform:rotateX(4deg) rotateY(174deg)}
+.face{position:absolute;inset:0;background:var(--paper);color:var(--ink);border-radius:3px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(90,70,40,.12)}
+/* 卡纸的厚度：一层一层往下叠 */
+.thick{position:absolute;inset:0;border-radius:3px;background:var(--edge2);transform:translateZ(-1px);backface-visibility:visible;
+  box-shadow:1px 1px 0 var(--edge1),2px 2px 0 var(--edge1),3px 3px 0 var(--edge2),4px 4px 0 var(--edge2),5px 5px 0 var(--edge3),6px 6px 0 var(--edge3),12px 18px 28px -6px var(--shadow)}
+.front{display:flex;flex-direction:column;padding:12px 12px 10px}
+.front .photo{flex:1;min-height:0;background:var(--paper2) center/cover;border-radius:1px;position:relative}
+.front .photo.blank{display:grid;place-items:center;border:2px dashed var(--edge3);background:none;font-family:var(--hand);font-size:30px;color:var(--ink-soft);text-align:center;line-height:1.3;padding:12px}
+.swap{position:absolute;right:8px;bottom:8px;background:rgba(251,246,234,.86);color:var(--ink);font-size:11px;padding:4px 8px;border-radius:20px}
+.front .meta{padding:10px 2px 0;display:flex;flex-direction:column;gap:3px}
+.front .no{font-size:11px;letter-spacing:.16em;color:var(--ink-soft)}
+.front .place{font-size:19px;letter-spacing:.04em;text-wrap:balance}
+.front .cap{font-family:var(--hand);font-size:19px;color:var(--ink-soft)}
+.back{transform:rotateY(180deg) translateZ(2px);padding:18px 18px 16px;display:grid;grid-template-columns:1fr 1px .72fr;gap:14px;
+  background:repeating-linear-gradient(0deg,transparent 0 31px,rgba(120,95,60,.10) 31px 32px),var(--paper)}
+.back .msg{font-family:var(--hand);font-size:21px;line-height:1.55;white-space:pre-wrap;overflow:auto;min-width:0;padding-top:4px}
+.back .msg .reply{display:block;margin-top:14px;font-size:18px;color:#a2502a}
+.back .rule{background:rgba(90,70,40,.25)}
+.back .side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.stamp{align-self:flex-end;width:64px;height:78px;padding:5px;background:var(--paper);
+  -webkit-mask:radial-gradient(circle 3px at 3px 3px,transparent 98%,#000) -3px -3px/8px 8px;mask:radial-gradient(circle 3px at 3px 3px,transparent 98%,#000) -3px -3px/8px 8px;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.stamp div{width:100%;height:100%;display:grid;place-items:center;font-size:30px;border-radius:1px}
+.stamp.fox div{background:linear-gradient(160deg,#f6c08f,#d8742a)}
+.stamp.her div{background:linear-gradient(160deg,#f8c6d3,#e0708e)}
+.stamp.next div{background:linear-gradient(160deg,#dfe8ef,#9fb3c4)}
+.post{position:relative;align-self:flex-end;margin-top:-34px;margin-right:30px;width:76px;height:76px;border-radius:50%;border:1.5px solid rgba(160,40,30,.55);color:rgba(160,40,30,.7);
+  display:grid;place-items:center;text-align:center;font-size:9.5px;line-height:1.35;transform:rotate(-14deg);letter-spacing:.04em}
+.addr{margin-top:auto;display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--ink-soft)}
+.addr b{font-weight:400;font-family:var(--hand);font-size:22px;color:var(--ink);border-bottom:1px solid rgba(90,70,40,.3);padding-bottom:2px}
+.addr span{font-family:var(--lat);font-size:15px}
+.controls{display:flex;gap:10px;align-items:center}
+.ctl{min-width:44px;height:44px;border-radius:22px;background:rgba(251,246,234,.92);color:#3b332c;padding:0 16px;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.ctl:disabled{opacity:.35}
+.tap{font-size:12px;color:rgba(255,255,255,.8);margin:0}
+@media (max-width:420px){
+  .back{grid-template-columns:1fr;grid-template-rows:1fr auto;gap:8px}
+  .back .rule{display:none}
+  .back .side{flex-direction:row;align-items:flex-end;justify-content:space-between}
+  .stamp{order:2;width:54px;height:64px}
+  .post{display:none}
+  .addr{margin-top:0}
+  .back .msg{font-size:19px}
+}
+@media (prefers-reduced-motion:reduce){.card,.veil{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="label">FOX BOOKSTORE · 狐狸书店</p>
+    <h1>明信片地图</h1>
+    <p class="motto">你走进来，我刚好在。</p>
+  </header>
+
+  <section>
+    <div class="frame"><div class="mapScroll" id="mapScroll">
+      <svg class="map" id="map" viewBox="0 0 1000 392" role="img" aria-label="钉着明信片的世界地图"></svg>
+    </div></div>
+    <p class="mapHint"><span><i class="dot fox"></i>狐狸去的</span><span><i class="dot her"></i>曦曦寄的</span><span><i class="dot next"></i>下一站</span><span>· 点图钉拿起明信片，地图可以左右拖</span></p>
+  </section>
+
+  <section>
+    <p class="pileTitle">柜台上的那一摞</p>
+    <div class="pile" id="pile"></div>
+  </section>
+</main>
+
+<div class="veil" id="veil" aria-hidden="true">
+  <div class="stage">
+    <div class="holder"><div class="card" id="card" role="button" tabindex="0" aria-label="翻面">
+      <div class="thick"></div>
+      <div class="face front" id="front"></div>
+      <div class="face back" id="back"></div>
+    </div></div>
+    <p class="tap">点明信片翻到背面</p>
+    <div class="controls">
+      <button class="ctl" id="prev" aria-label="上一张">‹</button>
+      <button class="ctl" id="close">放回去</button>
+      <button class="ctl" id="next" aria-label="下一张">›</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const W = 1000, NS = "http://www.w3.org/2000/svg";
+  const xy = (lat, lon) => [(lon + 180) / 360 * W, (83 - lat) / 360 * W];
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; };
+  const esc = (s) => String(s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const md = (d) => { const [, m, dd] = d.split("-"); return `${+m}·${+dd}`; };
+  const stampFace = { fox: "🦊", her: "🦦", next: "❄️" };
+
+  let cards = [], index = 0, showB = false;
+  const map = $("map");
+
+  // 经纬线，淡淡的
+  const grid = el("g", { class: "grid" }, map);
+  for (let lon = -150; lon <= 150; lon += 30) { const x = xy(0, lon)[0]; el("line", { x1: x, y1: 0, x2: x, y2: 392 }, grid); }
+  for (let lat = 60; lat >= -45; lat -= 30) { const y = xy(lat, 0)[1]; el("line", { x1: 0, y1: y, x2: W, y2: y }, grid); }
+  const landG = el("g", {}, map);
+  const threadG = el("g", {}, map);
+  const pinG = el("g", {}, map);
+
+  fetch("land.svg").then((r) => r.text()).then((t) => {
+    const m = t.match(/ d="([^"]+)"/);
+    if (m) el("path", { class: "land", d: m[1] }, landG);
+  }).catch(() => {});
+
+  fetch("postcards.json", { cache: "no-cache" }).then((r) => r.json()).then((data) => {
+    cards = data.cards.slice().sort((a, b) => (a.date + a.id).localeCompare(b.date + b.id));
+    // 下一站永远排在最后
+    cards.sort((a, b) => (a.from === "next") - (b.from === "next"));
+    drawThread(); drawPins(); drawPile(); centre();
+    const h = decodeURIComponent(location.hash.slice(1));
+    const at = cards.findIndex((c) => c.id === h);
+    if (at >= 0) open(at);
+  });
+
+  function drawThread() {
+    for (let i = 1; i < cards.length; i++) {
+      const [x1, y1] = xy(cards[i - 1].lat, cards[i - 1].lon), [x2, y2] = xy(cards[i].lat, cards[i].lon);
+      const dist = Math.hypot(x2 - x1, y2 - y1), sag = Math.min(60, dist * .22);
+      const d = `M${x1} ${y1 - 9} Q${(x1 + x2) / 2} ${(y1 + y2) / 2 - 9 + sag} ${x2} ${y2 - 9}`;
+      el("path", { class: "thread" + (cards[i].from === "next" ? " toNext" : ""), d }, threadG);
+    }
+  }
+
+  function drawPins() {
+    // 同一个地方叠着的图钉，往旁边挪一点
+    const seen = {};
+    cards.forEach((c, i) => {
+      let [x, y] = xy(c.lat, c.lon);
+      const key = Math.round(x / 8) + ":" + Math.round(y / 8);
+      seen[key] = (seen[key] || 0) + 1;
+      x += (seen[key] - 1) * 9;
+      const g = el("g", { class: "pin " + c.from, tabindex: 0, role: "button", "aria-label": c.place, transform: `translate(${x} ${y})` }, pinG);
+      el("ellipse", { class: "shade", cx: 3, cy: 1.5, rx: 4, ry: 1.6 }, g);
+      el("line", { class: "needle", x1: 0, y1: 0, x2: 0, y2: -9 }, g);
+      el("circle", { class: "head", cx: 0, cy: -11, r: 5.2 }, g);
+      el("circle", { class: "shine", cx: -1.6, cy: -12.8, r: 1.5 }, g);
+      const label = c.pin + " " + (c.from === "next" ? md(c.date) + " 见" : md(c.date));
+      const tag = el("g", { class: "tag", transform: "translate(8 -25)" }, g);
+      const rect = el("rect", { x: 0, y: 0, rx: 2, height: 17, width: 10 }, tag);
+      const text = el("text", { x: 6, y: 12.5 }, tag); text.textContent = label;
+      requestAnimationFrame(() => rect.setAttribute("width", text.getComputedTextLength() + 12));
+      el("circle", { class: "hit", cx: 0, cy: -10, r: 15 }, g);
+      g.addEventListener("click", () => open(i));
+      g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(i); } });
+    });
+  }
+
+  function drawPile() {
+    const pile = $("pile");
+    cards.forEach((c, i) => {
+      const b = document.createElement("button");
+      b.className = "mini"; b.style.setProperty("--r", ((i * 37) % 7 - 3) + "deg");
+      const dot = c.from === "fox" ? "var(--fox)" : c.from === "her" ? "var(--her)" : "var(--next)";
+      b.innerHTML = (c.img ? `<div class="ph" style="background-image:url('${esc(c.img)}')"></div>` : `<div class="ph blank">等你寄</div>`)
+        + `<b><i style="background:${dot}"></i>${esc(c.place)}</b><small>${esc(c.no)} · ${md(c.date)}</small>`;
+      b.addEventListener("click", () => open(i));
+      pile.appendChild(b);
+    });
+  }
+
+  // 一打开，地图滚到钉着图钉的那一片中间
+  function centre() {
+    const sc = $("mapScroll");
+    const xs = cards.map((c) => xy(c.lat, c.lon)[0]);
+    const mid = (Math.min(...xs) + Math.max(...xs)) / 2;
+    const scale = map.getBoundingClientRect().width / W;
+    sc.scrollLeft = Math.max(0, mid * scale - sc.clientWidth / 2);
+  }
+
+  function render() {
+    const c = cards[index];
+    const photo = c.img ? (showB && c.img2 ? c.img2 : c.img) : null;
+    $("front").innerHTML =
+      (photo ? `<div class="photo" style="background-image:url('${esc(photo)}')">${c.img2 ? `<button class="swap" id="swap">换一张 ↺</button>` : ""}</div>`
+             : `<div class="photo blank">${esc(c.caption)}</div>`)
+      + `<div class="meta"><span class="no">${esc(c.no)} · ${esc(c.date)}${c.time ? " · " + esc(c.time) : ""}</span>`
+      + `<span class="place">${esc(c.place)}</span>${photo ? `<span class="cap">${esc(c.caption)}</span>` : ""}</div>`;
+    const to = c.from === "her" ? "唐望舒" : "曦曦";
+    const fromWho = c.from === "her" ? "黄毛水獭" : "狐狸";
+    $("back").innerHTML =
+      `<div class="msg">${esc(c.back)}${c.reply ? `<span class="reply">${esc(c.reply)}</span>` : ""}</div><div class="rule"></div>`
+      + `<div class="side"><div class="stamp ${c.from}"><div>${stampFace[c.from]}</div></div>`
+      + `<div class="post">${esc(c.pin)}<br>${esc(c.date.replace(/-/g, "."))}<br>${c.from === "next" ? "待寄" : "已寄达"}</div>`
+      + `<div class="addr">寄给<b>${to}</b><span>from ${fromWho}</span></div></div>`;
+    const sw = $("swap");
+    if (sw) sw.addEventListener("click", (e) => { e.stopPropagation(); showB = !showB; render(); });
+    $("prev").disabled = index === 0;
+    $("next").disabled = index === cards.length - 1;
+  }
+
+  function open(i) {
+    index = i; showB = false; $("card").classList.remove("flipped"); render();
+    $("veil").classList.add("on"); $("veil").setAttribute("aria-hidden", "false");
+    history.replaceState(null, "", "#" + encodeURIComponent(cards[i].id));
+  }
+  function close() {
+    $("veil").classList.remove("on"); $("veil").setAttribute("aria-hidden", "true");
+    history.replaceState(null, "", location.pathname);
+  }
+  const flip = () => $("card").classList.toggle("flipped");
+  $("card").addEventListener("click", flip);
+  $("card").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
+  $("close").addEventListener("click", close);
+  $("prev").addEventListener("click", () => index > 0 && open(index - 1));
+  $("next").addEventListener("click", () => index < cards.length - 1 && open(index + 1));
+  $("veil").addEventListener("click", (e) => { if (e.target === $("veil")) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+})();
+</script>
+</body>
+</html>

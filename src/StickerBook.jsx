@@ -14,6 +14,8 @@ import lettersArt from "./assets/stickers/letters.webp";
 import pixelHomeArt from "./assets/stickers/pixel-home.webp";
 // 望舒画的：夜空里一封发光的信，点开是 AR 的信（摄像头里飘着）
 import arLetterArt from "./assets/stickers/ar-letter.webp";
+// 望舒拼的：一张曦曦寄的晚霞、一张狐狸去的马尔代夫，钉在一起，点开是狐狸书店
+import bookstoreArt from "./assets/stickers/bookstore.webp";
 
 // The "more" page: a sheet of stickers, each one a door into a little
 // corner of the world. 羲和 drew them torn off by hand, so none sit
@@ -27,7 +29,8 @@ const stickers = [
   { id: "promise", label: "拉钩本", page: "promise", tilt: -4, x: 50, y: 33.2, w: 44, art: promiseArt },
   { id: "letters", label: "饼干盒信箱", page: "letters", tilt: 3, x: 46, y: 58.1, w: 50, art: lettersArt },
   { id: "pixel-home", label: "像素小家", page: "pixel-home", tilt: -5, x: 3, y: 61.4, w: 44, art: pixelHomeArt },
-  { id: "ar-letter", label: "空中的信", href: "/ar/", tilt: 4, x: 28, y: 81, w: 44, art: arLetterArt },
+  { id: "ar-letter", label: "空中的信", href: "/ar/", tilt: 4, x: 4, y: 81, w: 42, art: arLetterArt },
+  { id: "bookstore", label: "狐狸书店", page: "bookstore", tilt: -3, x: 50, y: 82.5, w: 46, art: bookstoreArt },
 ];
 
 function Sticker({ item, picture, onPick, onReset, onOpen }) {
