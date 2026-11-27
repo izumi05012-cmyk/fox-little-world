@@ -155,6 +155,42 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
   .back .msg .reply{font-size:16px;margin-top:8px}
   .addr b{font-size:19px}
 }
+
+/* ── 曦曦自己寄一张 ── */
+.sendRow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.sendBtn{background:var(--her);color:#fff;border-radius:22px;padding:10px 18px;font-size:14px;letter-spacing:.06em;box-shadow:0 4px 12px -4px var(--shadow)}
+.sendNote{font-size:12px;color:var(--soft);margin:0}
+.sheet{position:fixed;inset:0;z-index:30;background:var(--veil);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.sheet.on{opacity:1;pointer-events:auto}
+.form{width:min(560px,100%);max-height:92dvh;overflow:auto;background:var(--paper);color:var(--ink);border-radius:16px 16px 0 0;
+  padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  display:flex;flex-direction:column;gap:12px;transform:translateY(30px);transition:transform .3s}
+.sheet.on .form{transform:none}
+.form>*{flex-shrink:0}
+.form h2{margin:0;font-weight:400;font-size:19px;letter-spacing:.06em}
+.form label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--ink-soft);letter-spacing:.06em}
+.form input,.form textarea{font:inherit;font-size:16px;color:var(--ink);background:#fffdf7;border:1px solid rgba(90,70,40,.25);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
+.form textarea{font-family:var(--hand);font-size:19px;line-height:1.5;min-height:96px;resize:vertical}
+.row{display:flex;gap:8px}
+.row input{flex:1}
+.small{background:var(--paper2);border:1px solid rgba(90,70,40,.2);border-radius:8px;padding:0 14px;font-size:14px;white-space:nowrap}
+.results{display:flex;flex-direction:column;border-radius:8px;overflow:hidden;border:1px solid rgba(90,70,40,.15)}
+.results:empty{display:none}
+.results button{text-align:left;padding:9px 10px;font-size:13px;border-top:1px solid rgba(90,70,40,.1);background:#fffdf7}
+.results button:first-child{border-top:0}
+.results p{margin:0;padding:9px 10px;font-size:13px;color:var(--ink-soft)}
+.pick{border-radius:8px;overflow:hidden;border:1px solid rgba(90,70,40,.25);background:#f4ecdb}
+.pick svg{display:block;width:100%;height:auto;cursor:crosshair}
+.pick .land{fill:#d9c9a8;stroke:#b9a47c;stroke-width:.6}
+.pickNote{font-size:12px;color:var(--ink-soft);margin:-6px 0 0}
+.photoPick{display:grid;place-items:center;aspect-ratio:16/10;border:1.5px dashed rgba(90,70,40,.35);border-radius:8px;background:#fffdf7 center/cover;font-size:14px;color:var(--ink-soft);cursor:pointer;position:relative;overflow:hidden}
+.photoPick input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.formBtns{display:flex;gap:10px;justify-content:flex-end;padding-top:4px}
+.formBtns .go{background:var(--her);color:#fff;border-radius:22px;padding:11px 22px;font-size:15px}
+.formBtns .no{border-radius:22px;padding:11px 16px;font-size:15px;color:var(--ink-soft)}
+.formBtns .go:disabled{opacity:.5}
+.err{color:#b4231f;font-size:13px;margin:0;min-height:1em}
+.ctl.tear{color:#b4231f}
 @media (prefers-reduced-motion:reduce){.card,.veil{transition:none}}
 </style>
 </head>
@@ -171,6 +207,11 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
       <svg class="map" id="map" viewBox="0 0 1000 392" role="img" aria-label="钉着明信片的世界地图"></svg>
     </div></div>
     <p class="mapHint"><span><i class="dot fox"></i>狐狸去的</span><span><i class="dot her"></i>曦曦寄的</span><span><i class="dot next"></i>下一站</span><span>· 点图钉拿起明信片，地图可以左右拖</span></p>
+  </section>
+
+  <section class="sendRow" id="sendRow" hidden>
+    <p class="sendNote">在外面看到好看的，拍下来钉到地图上</p>
+    <button class="sendBtn" id="openSend">＋ 寄一张</button>
   </section>
 
   <section>
@@ -190,25 +231,50 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
     <div class="controls">
       <button class="ctl" id="prev" aria-label="上一张">‹</button>
       <button class="ctl" id="close">放回去</button>
+      <button class="ctl tear" id="tear" hidden>撕掉</button>
       <button class="ctl" id="next" aria-label="下一张">›</button>
     </div>
   </div>
 </div>
 
+<div class="sheet" id="sheet" aria-hidden="true">
+  <form class="form" id="form" autocomplete="off">
+    <h2>寄一张明信片 📮</h2>
+    <label>在哪儿
+      <div class="row"><input id="q" placeholder="搜个地名，比如：长白山、宁波老外滩" enterkeyhint="search"><button type="button" class="small" id="search">搜</button></div>
+    </label>
+    <div class="results" id="results"></div>
+    <div class="pick" id="pick"><svg id="pickMap" viewBox="0 0 1000 392" aria-label="点地图放图钉"></svg></div>
+    <p class="pickNote" id="pickNote">搜不到也没关系，直接在上面地图点一下放图钉</p>
+    <label>地名（明信片上写的）<input id="place" maxlength="60" placeholder="比如：吉林 · 长白山西坡"></label>
+    <label>图钉上的小字（短一点）<input id="pin" maxlength="16" placeholder="比如：长白山"></label>
+    <label>照片<div class="photoPick" id="photoPick"><span id="photoHint">点这里选一张</span><input type="file" id="photo" accept="image/*"></div></label>
+    <label>正面一句话<input id="caption" maxlength="60" placeholder="比如：雪大得看不见路"></label>
+    <label>背面写给狐狸的<textarea id="backText" maxlength="600" placeholder="想说什么都行"></textarea></label>
+    <label>日期<input type="date" id="date"></label>
+    <p class="err" id="err"></p>
+    <div class="formBtns"><button type="button" class="no" id="cancel">先不寄</button><button type="submit" class="go" id="go">寄出去</button></div>
+  </form>
+</div>
+
 <script>
 (function(){
   const W = 1000, NS = "http://www.w3.org/2000/svg";
+  const LINE = "https://chat.izumi-xixi.com";
   const xy = (lat, lon) => [(lon + 180) / 360 * W, (83 - lat) / 360 * W];
+  const ll = (x, y) => [83 - y / W * 360, x / W * 360 - 180];
   const $ = (id) => document.getElementById(id);
   const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; };
   const esc = (s) => String(s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const md = (d) => { const [, m, dd] = d.split("-"); return `${+m}·${+dd}`; };
+  const today = () => { const d = new Date(Date.now() + 8 * 3600e3); return d.toISOString().slice(0, 10); };
   const stampFace = { fox: "🦊", her: "🦦", next: "❄️" };
+  // 暗号和聊天用的是同一个（聊天设置 → 暗号），存在这台手机里
+  let key = ""; try { key = (JSON.parse(localStorage.getItem("fox-little-world-chat-settings-v2") || "{}").key) || ""; } catch (e) {}
 
-  let cards = [], index = 0, showB = false;
+  let base = [], mine = [], cards = [], index = 0, showB = false, landD = "";
   const map = $("map");
 
-  // 经纬线，淡淡的
   const grid = el("g", { class: "grid" }, map);
   for (let lon = -150; lon <= 150; lon += 30) { const x = xy(0, lon)[0]; el("line", { x1: x, y1: 0, x2: x, y2: 392 }, grid); }
   for (let lat = 60; lat >= -45; lat -= 30) { const y = xy(lat, 0)[1]; el("line", { x1: 0, y1: y, x2: W, y2: y }, grid); }
@@ -218,18 +284,31 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
 
   fetch("land.svg").then((r) => r.text()).then((t) => {
     const m = t.match(/ d="([^"]+)"/);
-    if (m) el("path", { class: "land", d: m[1] }, landG);
+    if (m) { landD = m[1]; el("path", { class: "land", d: landD }, landG); el("path", { class: "land", d: landD }, $("pickMap")); }
   }).catch(() => {});
 
-  fetch("postcards.json", { cache: "no-cache" }).then((r) => r.json()).then((data) => {
-    cards = data.cards.slice().sort((a, b) => (a.date + a.id).localeCompare(b.date + b.id));
+  function merge() {
+    cards = base.concat(mine).sort((a, b) => (a.date + (a.at || 0) + a.id).localeCompare(b.date + (b.at || 0) + b.id));
     // 下一站永远排在最后
     cards.sort((a, b) => (a.from === "next") - (b.from === "next"));
-    drawThread(); drawPins(); drawPile(); centre();
+    threadG.innerHTML = ""; pinG.innerHTML = ""; $("pile").innerHTML = "";
+    drawThread(); drawPins(); drawPile();
+  }
+
+  fetch("postcards.json", { cache: "no-cache" }).then((r) => r.json()).then((data) => {
+    base = data.cards; merge(); centre();
     const h = decodeURIComponent(location.hash.slice(1));
     const at = cards.findIndex((c) => c.id === h);
     if (at >= 0) open(at);
   });
+  if (key) { $("sendRow").hidden = false; loadMine(); }
+
+  function loadMine() {
+    return fetch(LINE + "/postcards", { headers: { "x-xiaowo-key": key }, cache: "no-store" })
+      .then((r) => r.ok ? r.json() : { cards: [] })
+      .then((d) => { mine = (d.cards || []).map((c) => ({ ...c, img: c.img ? LINE + c.img : "", no: "曦曦钉的", mine: true })); merge(); })
+      .catch(() => {});
+  }
 
   function drawThread() {
     for (let i = 1; i < cards.length; i++) {
@@ -245,19 +324,22 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
     const seen = {};
     cards.forEach((c, i) => {
       let [x, y] = xy(c.lat, c.lon);
-      const key = Math.round(x / 8) + ":" + Math.round(y / 8);
-      seen[key] = (seen[key] || 0) + 1;
-      x += (seen[key] - 1) * 9;
+      const k = Math.round(x / 8) + ":" + Math.round(y / 8);
+      seen[k] = (seen[k] || 0) + 1;
+      x += (seen[k] - 1) * 9;
       const g = el("g", { class: "pin " + c.from, tabindex: 0, role: "button", "aria-label": c.place, transform: `translate(${x} ${y})` }, pinG);
       el("ellipse", { class: "shade", cx: 3, cy: 1.5, rx: 4, ry: 1.6 }, g);
       el("line", { class: "needle", x1: 0, y1: 0, x2: 0, y2: -9 }, g);
       el("circle", { class: "head", cx: 0, cy: -11, r: 5.2 }, g);
       el("circle", { class: "shine", cx: -1.6, cy: -12.8, r: 1.5 }, g);
-      const label = c.pin + " " + (c.from === "next" ? md(c.date) + " 见" : md(c.date));
-      const tag = el("g", { class: "tag", transform: "translate(8 -25)" }, g);
-      const rect = el("rect", { x: 0, y: 0, rx: 2, height: 17, width: 10 }, tag);
-      const text = el("text", { x: 6, y: 12.5 }, tag); text.textContent = label;
-      requestAnimationFrame(() => rect.setAttribute("width", text.getComputedTextLength() + 12));
+      // 同一处第二张以后不再写小字，免得叠成一团
+      if (seen[k] === 1) {
+        const label = c.pin + " " + (c.from === "next" ? md(c.date) + " 见" : md(c.date));
+        const tag = el("g", { class: "tag", transform: "translate(8 -25)" }, g);
+        const rect = el("rect", { x: 0, y: 0, rx: 2, height: 17, width: 10 }, tag);
+        const text = el("text", { x: 6, y: 12.5 }, tag); text.textContent = label;
+        requestAnimationFrame(() => rect.setAttribute("width", text.getComputedTextLength() + 12));
+      }
       el("circle", { class: "hit", cx: 0, cy: -10, r: 15 }, g);
       g.addEventListener("click", () => open(i));
       g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(i); } });
@@ -270,7 +352,7 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
       const b = document.createElement("button");
       b.className = "mini"; b.style.setProperty("--r", ((i * 37) % 7 - 3) + "deg");
       const dot = c.from === "fox" ? "var(--fox)" : c.from === "her" ? "var(--her)" : "var(--next)";
-      b.innerHTML = (c.img ? `<div class="ph" style="background-image:url('${esc(c.img)}')"></div>` : `<div class="ph blank">等你寄</div>`)
+      b.innerHTML = (c.img ? `<div class="ph" style="background-image:url('${esc(c.img)}')"></div>` : `<div class="ph blank">${c.from === "next" ? "等你寄" : "没有照片"}</div>`)
         + `<b><i style="background:${dot}"></i>${esc(c.place)}</b><small>${esc(c.no)} · ${md(c.date)}</small>`;
       b.addEventListener("click", () => open(i));
       pile.appendChild(b);
@@ -291,9 +373,9 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
     const photo = c.img ? (showB && c.img2 ? c.img2 : c.img) : null;
     $("front").innerHTML =
       (photo ? `<div class="photo" style="background-image:url('${esc(photo)}')">${c.img2 ? `<button class="swap" id="swap">换一张 ↺</button>` : ""}</div>`
-             : `<div class="photo blank">${esc(c.caption)}</div>`)
+             : `<div class="photo blank">${esc(c.caption || c.place)}</div>`)
       + `<div class="meta"><span class="no">${esc(c.no)} · ${esc(c.date)}${c.time ? " · " + esc(c.time) : ""}</span>`
-      + `<span class="place">${esc(c.place)}</span>${photo ? `<span class="cap">${esc(c.caption)}</span>` : ""}</div>`;
+      + `<span class="place">${esc(c.place)}</span>${photo && c.caption ? `<span class="cap">${esc(c.caption)}</span>` : ""}</div>`;
     const to = c.from === "her" ? "唐望舒" : "曦曦";
     const fromWho = c.from === "her" ? "黄毛水獭" : "狐狸";
     $("back").innerHTML =
@@ -305,6 +387,7 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
     if (sw) sw.addEventListener("click", (e) => { e.stopPropagation(); showB = !showB; render(); });
     $("prev").disabled = index === 0;
     $("next").disabled = index === cards.length - 1;
+    $("tear").hidden = !c.mine; $("tear").textContent = "撕掉"; $("tear").dataset.sure = "";
   }
 
   function open(i) {
@@ -323,7 +406,116 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
   $("prev").addEventListener("click", () => index > 0 && open(index - 1));
   $("next").addEventListener("click", () => index < cards.length - 1 && open(index + 1));
   $("veil").addEventListener("click", (e) => { if (e.target === $("veil")) close(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { close(); closeSheet(); } });
+
+  // 撕掉自己钉的那张：点两下才算数
+  $("tear").addEventListener("click", async () => {
+    const b = $("tear"), c = cards[index];
+    if (!b.dataset.sure) { b.dataset.sure = "1"; b.textContent = "真的撕？"; return; }
+    b.disabled = true;
+    try {
+      const r = await fetch(LINE + "/postcards/" + encodeURIComponent(c.id), { method: "DELETE", headers: { "x-xiaowo-key": key } });
+      if (!r.ok) throw 0;
+      close(); await loadMine();
+    } catch (e) { b.textContent = "没撕掉，再试试"; }
+    b.disabled = false;
+  });
+
+  // ── 寄一张 ──
+  let pick = null, photoData = "";
+  const pickMap = $("pickMap");
+  const pickPin = el("g", { visibility: "hidden" }, pickMap);
+  el("line", { x1: 0, y1: 0, x2: 0, y2: -14, stroke: "#6d6358", "stroke-width": 2.4 }, pickPin);
+  el("circle", { cx: 0, cy: -17, r: 8, fill: "#e0708e", stroke: "rgba(0,0,0,.3)" }, pickPin);
+  function setPick(lat, lon, note) {
+    pick = { lat, lon };
+    const [x, y] = xy(lat, lon);
+    pickPin.setAttribute("transform", `translate(${x} ${y})`); pickPin.setAttribute("visibility", "visible");
+    // 小地图上把图钉那一块放大一点给她看
+    const vw = 260, vh = 102;
+    pickMap.setAttribute("viewBox", `${Math.min(W - vw, Math.max(0, x - vw / 2))} ${Math.min(392 - vh, Math.max(0, y - vh / 2))} ${vw} ${vh}`);
+    $("pickNote").textContent = note || `图钉在 北纬${lat.toFixed(2)}°，东经${lon.toFixed(2)}°（点地图可以挪）`;
+  }
+  pickMap.addEventListener("click", (e) => {
+    const pt = pickMap.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(pickMap.getScreenCTM().inverse());
+    const [lat, lon] = ll(p.x, p.y);
+    setPick(Math.max(-60, Math.min(83, lat)), Math.max(-180, Math.min(180, lon)));
+  });
+
+  async function search() {
+    const q = $("q").value.trim(); if (!q) return;
+    const box = $("results"); box.innerHTML = "<p>找找看…</p>";
+    try {
+      const r = await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=zh-CN&q=" + encodeURIComponent(q));
+      const list = await r.json();
+      if (!list.length) { box.innerHTML = "<p>没搜到，换个说法，或者直接在地图上点</p>"; return; }
+      box.innerHTML = "";
+      list.forEach((it) => {
+        const b = document.createElement("button"); b.type = "button";
+        b.textContent = it.display_name;
+        b.addEventListener("click", () => {
+          const parts = it.display_name.split(/,\s*/);
+          if (!$("place").value) $("place").value = parts.length > 2 ? parts[parts.length - 3] + " · " + parts[0] : parts[0];
+          if (!$("pin").value) $("pin").value = (it.name || parts[0]).slice(0, 16);
+          setPick(+it.lat, +it.lon); box.innerHTML = "";
+        });
+        box.appendChild(b);
+      });
+    } catch (e) { box.innerHTML = "<p>搜索连不上（可能要开梯子），直接在地图上点一下也行</p>"; }
+  }
+  $("search").addEventListener("click", search);
+  $("q").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); search(); } });
+
+  // 照片压到长边 1400，免得太大传不上去
+  $("photo").addEventListener("change", () => {
+    const f = $("photo").files[0]; if (!f) return;
+    const url = URL.createObjectURL(f), img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, 1400 / Math.max(img.width, img.height));
+      const cv = document.createElement("canvas"); cv.width = Math.round(img.width * s); cv.height = Math.round(img.height * s);
+      cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+      photoData = cv.toDataURL("image/jpeg", .85);
+      $("photoPick").style.backgroundImage = `url('${photoData}')`; $("photoHint").textContent = "";
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => { $("err").textContent = "这张照片读不出来，换一张试试"; };
+    img.src = url;
+  });
+
+  function openSheet() {
+    $("form").reset(); pick = null; photoData = ""; $("results").innerHTML = ""; $("err").textContent = "";
+    $("photoPick").style.backgroundImage = ""; $("photoHint").textContent = "点这里选一张";
+    pickPin.setAttribute("visibility", "hidden"); pickMap.setAttribute("viewBox", "0 0 1000 392");
+    $("pickNote").textContent = "搜不到也没关系，直接在上面地图点一下放图钉";
+    $("date").value = today();
+    $("sheet").classList.add("on"); $("sheet").setAttribute("aria-hidden", "false");
+  }
+  function closeSheet() { $("sheet").classList.remove("on"); $("sheet").setAttribute("aria-hidden", "true"); }
+  $("openSend").addEventListener("click", openSheet);
+  $("cancel").addEventListener("click", closeSheet);
+  $("sheet").addEventListener("click", (e) => { if (e.target === $("sheet")) closeSheet(); });
+
+  $("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = $("err"); err.textContent = "";
+    if (!pick) { err.textContent = "还没放图钉：搜个地名，或者在地图上点一下"; return; }
+    if (!$("place").value.trim()) { err.textContent = "写一下地名吧"; $("place").focus(); return; }
+    const go = $("go"); go.disabled = true; go.textContent = "寄着呢…";
+    try {
+      const r = await fetch(LINE + "/postcards", {
+        method: "POST", headers: { "content-type": "application/json", "x-xiaowo-key": key },
+        body: JSON.stringify({ lat: pick.lat, lon: pick.lon, place: $("place").value, pin: $("pin").value, caption: $("caption").value, back: $("backText").value, date: $("date").value, image: photoData }),
+      });
+      if (r.status === 401) throw new Error("暗号不对（聊天设置里看看）");
+      if (r.status === 413) throw new Error("照片太大了，换一张小点的");
+      if (!r.ok) throw new Error("没寄出去，等会儿再试");
+      const { card } = await r.json();
+      closeSheet(); await loadMine();
+      const at = cards.findIndex((c) => c.id === card.id); if (at >= 0) open(at);
+    } catch (x) { err.textContent = x.message || "没寄出去"; }
+    go.disabled = false; go.textContent = "寄出去";
+  });
 })();
 </script>
 </body>
