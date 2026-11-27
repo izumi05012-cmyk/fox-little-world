@@ -183,6 +183,7 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
 .pick svg{display:block;width:100%;height:auto;cursor:crosshair}
 .pick .land{fill:#d9c9a8;stroke:#b9a47c;stroke-width:.6}
 .pickNote{font-size:12px;color:var(--ink-soft);margin:-6px 0 0}
+.zoomOut{font-size:12px;color:#a2502a;text-decoration:underline;margin-left:2px}
 .photoPick{display:grid;place-items:center;aspect-ratio:16/10;border:1.5px dashed rgba(90,70,40,.35);border-radius:8px;background:#fffdf7 center/cover;font-size:14px;color:var(--ink-soft);cursor:pointer;position:relative;overflow:hidden}
 .photoPick input{position:absolute;inset:0;opacity:0;cursor:pointer}
 .formBtns{display:flex;gap:10px;justify-content:flex-end;padding-top:4px}
@@ -245,7 +246,7 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
     </label>
     <div class="results" id="results"></div>
     <div class="pick" id="pick"><svg id="pickMap" viewBox="0 0 1000 392" aria-label="点地图放图钉"></svg></div>
-    <p class="pickNote" id="pickNote">搜不到也没关系，直接在上面地图点一下放图钉</p>
+    <p class="pickNote" id="pickNote">搜不到也没关系，在上面地图点一下想去的地方，会放大</p>
     <label>地名（明信片上写的）<input id="place" maxlength="60" placeholder="比如：吉林 · 长白山西坡"></label>
     <label>图钉上的小字（短一点）<input id="pin" maxlength="16" placeholder="比如：长白山"></label>
     <label>照片<div class="photoPick" id="photoPick"><span id="photoHint">点这里选一张</span><input type="file" id="photo" accept="image/*"></div></label>
@@ -427,14 +428,23 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
   const pickPin = el("g", { visibility: "hidden" }, pickMap);
   el("line", { x1: 0, y1: 0, x2: 0, y2: -14, stroke: "#6d6358", "stroke-width": 2.4 }, pickPin);
   el("circle", { cx: 0, cy: -17, r: 8, fill: "#e0708e", stroke: "rgba(0,0,0,.3)" }, pickPin);
-  function setPick(lat, lon, note) {
+  // 小地图现在看的是哪一块：整张世界，或者放大后的一小块
+  let view = { x: 0, y: 0, w: W, h: 392 };
+  const setView = (v) => { view = v; pickMap.setAttribute("viewBox", `${v.x} ${v.y} ${v.w} ${v.h}`); };
+  function setPick(lat, lon, note, fromSearch) {
     pick = { lat, lon };
     const [x, y] = xy(lat, lon);
-    pickPin.setAttribute("transform", `translate(${x} ${y})`); pickPin.setAttribute("visibility", "visible");
-    // 小地图上把图钉那一块放大一点给她看
-    const vw = 260, vh = 102;
-    pickMap.setAttribute("viewBox", `${Math.min(W - vw, Math.max(0, x - vw / 2))} ${Math.min(392 - vh, Math.max(0, y - vh / 2))} ${vw} ${vh}`);
-    $("pickNote").textContent = note || `图钉在 北纬${lat.toFixed(2)}°，东经${lon.toFixed(2)}°（点地图可以挪）`;
+    // 第一下点在整张世界上：放大到那一块，再点一下才放得准
+    const wasWorld = view.w === W;
+    if (wasWorld) {
+      const vw = 120, vh = vw * 392 / W;
+      setView({ x: Math.min(W - vw, Math.max(0, x - vw / 2)), y: Math.min(392 - vh, Math.max(0, y - vh / 2)), w: vw, h: vh });
+    }
+    // 图钉跟着放大倍数变小，不会变成一顶大帽子
+    pickPin.setAttribute("transform", `translate(${x} ${y}) scale(${view.w / W * 2.2})`); pickPin.setAttribute("visibility", "visible");
+    const where = `北纬${lat.toFixed(2)}°，东经${lon.toFixed(2)}°`;
+    $("pickNote").textContent = note || (wasWorld && !fromSearch ? `放大了，再点一下放准一点（现在在 ${where}）` : `图钉在 ${where}，点地图可以挪 · `);
+    if (!wasWorld || fromSearch) { const z = document.createElement("button"); z.type = "button"; z.textContent = "看整张地图"; z.className = "zoomOut"; z.onclick = () => { setView({ x: 0, y: 0, w: W, h: 392 }); pickPin.setAttribute("transform", `translate(${x} ${y}) scale(1)`); $("pickNote").textContent = "点一下想去的地方，会放大"; }; $("pickNote").appendChild(z); }
   }
   pickMap.addEventListener("click", (e) => {
     const pt = pickMap.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
@@ -458,7 +468,7 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
           const parts = it.display_name.split(/,\s*/);
           if (!$("place").value) $("place").value = parts.length > 2 ? parts[parts.length - 3] + " · " + parts[0] : parts[0];
           if (!$("pin").value) $("pin").value = (it.name || parts[0]).slice(0, 16);
-          setPick(+it.lat, +it.lon); box.innerHTML = "";
+          setView({ x: 0, y: 0, w: W, h: 392 }); setPick(+it.lat, +it.lon, null, true); box.innerHTML = "";
         });
         box.appendChild(b);
       });
@@ -486,8 +496,8 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
   function openSheet() {
     $("form").reset(); pick = null; photoData = ""; $("results").innerHTML = ""; $("err").textContent = "";
     $("photoPick").style.backgroundImage = ""; $("photoHint").textContent = "点这里选一张";
-    pickPin.setAttribute("visibility", "hidden"); pickMap.setAttribute("viewBox", "0 0 1000 392");
-    $("pickNote").textContent = "搜不到也没关系，直接在上面地图点一下放图钉";
+    pickPin.setAttribute("visibility", "hidden"); setView({ x: 0, y: 0, w: W, h: 392 });
+    $("pickNote").textContent = "搜不到也没关系，在上面地图点一下想去的地方，会放大";
     $("date").value = today();
     $("sheet").classList.add("on"); $("sheet").setAttribute("aria-hidden", "false");
   }
