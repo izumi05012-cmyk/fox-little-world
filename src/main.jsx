@@ -15,6 +15,7 @@ import PromiseBook from "./PromiseBook";
 import Memories from "./Memories";
 import Letterbox from "./Letterbox";
 import PixelHome from "./PixelHome";
+import Bookstore from "./Bookstore";
 import "@fontsource/noto-serif-sc/300.css";
 import "@fontsource/noto-serif-sc/400.css";
 import "@fontsource/long-cang/400.css";
@@ -63,7 +64,7 @@ function Home({ onOpen, weather }) {
 }
 
 // deeper pages come in from the right, going back from the left
-const depth = { home: 0, "chat-list": 1, more: 1, chat: 2, call: 3, invite: 2, promise: 2, memories: 2, letters: 2, "pixel-home": 2 };
+const depth = { home: 0, "chat-list": 1, more: 1, chat: 2, call: 3, invite: 2, promise: 2, memories: 2, letters: 2, "pixel-home": 2, bookstore: 2 };
 
 function App() {
   const [page, setPage] = useState("home");
@@ -105,6 +106,8 @@ function App() {
     shown = <Memories onBack={() => go(memoriesFrom)} scene={scene} />;
   } else if (page === "letters") {
     shown = <Letterbox onBack={() => go("more")} />;
+  } else if (page === "bookstore") {
+    shown = <Bookstore onBack={() => go("more")} />;
   } else if (page === "pixel-home") {
     shown = <PixelHome onBack={() => go("more")} />;
   } else if (page === "invite") {
