@@ -57,9 +57,14 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
 /* ── 墙上那张地图 ── */
 .frame{background:linear-gradient(135deg,var(--frame),var(--frame2));padding:7px;border-radius:4px;
   box-shadow:0 10px 24px -10px var(--shadow),0 2px 4px var(--shadow)}
-.mapScroll{overflow-x:auto;overflow-y:hidden;border-radius:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;background:var(--sea)}
-.mapScroll::-webkit-scrollbar{display:none}
-.map{display:block;width:max(100%,980px);height:auto;touch-action:pan-x pan-y}
+.mapBox{position:relative;aspect-ratio:1/1.05;max-height:72dvh;width:100%;overflow:hidden;border-radius:2px;background:var(--sea)}
+@media (min-width:600px){.mapBox{aspect-ratio:16/10}}
+.map{display:block;width:100%;height:100%;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.map.grabbing{cursor:grabbing}
+.map .land,.map .grid line,.map .thread{vector-effect:non-scaling-stroke}
+.zoom{position:absolute;right:8px;bottom:8px;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:36px;height:36px;border-radius:50%;background:rgba(251,246,234,.92);color:#3b332c;font-size:18px;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.zoom button.all{font-size:11px}
 .map .land{fill:var(--land);stroke:var(--land-edge);stroke-width:.6;stroke-linejoin:round}
 .map .grid{stroke:var(--sea-line);stroke-width:1;fill:none}
 .map .thread{fill:none;stroke:var(--thread);stroke-width:1.6;stroke-linecap:round;opacity:.85}
@@ -72,6 +77,7 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
 .pin .shade{fill:rgba(40,25,10,.25)}
 .pin.fox .head{fill:var(--fox)} .pin.her .head{fill:var(--her)}
 .pin.next .head{fill:var(--paper);stroke:var(--next);stroke-width:1.6;stroke-dasharray:2.5 2}
+.pin .tag{pointer-events:none}
 .pin .tag rect{fill:var(--paper);stroke:rgba(90,70,40,.25);stroke-width:.6}
 .pin .tag text{font-family:var(--serif);font-size:11px;fill:var(--ink)}
 .pin:hover .head,.pin:focus-visible .head{filter:brightness(1.1)}
@@ -100,10 +106,13 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
 .veil.on{opacity:1;pointer-events:auto}
 .stage{width:min(420px,100%);display:flex;flex-direction:column;align-items:center;gap:14px}
 .holder{width:100%;perspective:1400px}
-.card{position:relative;width:100%;aspect-ratio:1/.9;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.3,.7,.25,1);
-  transform:rotateX(6deg) rotateY(-8deg) translateY(16px) scale(.94)}
-.veil.on .card{transform:rotateX(4deg) rotateY(-6deg)}
-.card.flipped,.veil.on .card.flipped{transform:rotateX(4deg) rotateY(174deg)}
+.card{--rx:0deg;--ry:0deg;position:relative;width:100%;aspect-ratio:1/.9;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.3,.7,.25,1);
+  transform:rotateX(calc(6deg + var(--rx))) rotateY(calc(-8deg + var(--ry))) translateY(16px) scale(.94);touch-action:none;cursor:grab}
+.veil.on .card{transform:rotateX(calc(4deg + var(--rx))) rotateY(calc(-6deg + var(--ry)))}
+.card.flipped,.veil.on .card.flipped{transform:rotateX(calc(4deg + var(--rx))) rotateY(calc(174deg + var(--ry)))}
+/* 手指按着晃的时候跟手；松开弹回去，带一点点回弹 */
+.card.held{transition:transform .06s linear;cursor:grabbing}
+.card.spring{transition:transform .7s cubic-bezier(.3,1.5,.5,1)}
 .face{position:absolute;inset:0;background:var(--paper);color:var(--ink);border-radius:3px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;
   box-shadow:inset 0 0 0 1px rgba(90,70,40,.12)}
 /* 卡纸的厚度：一层一层往下叠 */
@@ -204,10 +213,11 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
   </header>
 
   <section>
-    <div class="frame"><div class="mapScroll" id="mapScroll">
-      <svg class="map" id="map" viewBox="0 0 1000 392" role="img" aria-label="钉着明信片的世界地图"></svg>
+    <div class="frame"><div class="mapBox" id="mapBox">
+      <svg class="map" id="map" viewBox="0 0 1000 392" preserveAspectRatio="xMidYMid slice" role="img" aria-label="钉着明信片的世界地图"></svg>
+      <div class="zoom"><button type="button" id="zin" aria-label="放大">＋</button><button type="button" id="zout" aria-label="缩小">－</button><button type="button" class="all" id="zall" aria-label="看全部图钉">全部</button></div>
     </div></div>
-    <p class="mapHint"><span><i class="dot fox"></i>狐狸去的</span><span><i class="dot her"></i>曦曦寄的</span><span><i class="dot next"></i>下一站</span><span>· 点图钉拿起明信片，地图可以左右拖</span></p>
+    <p class="mapHint"><span><i class="dot fox"></i>狐狸去的</span><span><i class="dot her"></i>曦曦寄的</span><span><i class="dot next"></i>下一站</span><span>· 两指缩放、拖着看，点图钉拿起明信片</span></p>
   </section>
 
   <section class="sendRow" id="sendRow" hidden>
@@ -228,7 +238,7 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
       <div class="face front" id="front"></div>
       <div class="face back" id="back"></div>
     </div></div>
-    <p class="tap">点明信片翻到背面</p>
+    <p class="tap">点一下翻面 · 按住晃一晃</p>
     <div class="controls">
       <button class="ctl" id="prev" aria-label="上一张">‹</button>
       <button class="ctl" id="close">放回去</button>
@@ -285,7 +295,7 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
 
   fetch("land.svg").then((r) => r.text()).then((t) => {
     const m = t.match(/ d="([^"]+)"/);
-    if (m) { landD = m[1]; el("path", { class: "land", d: landD }, landG); el("path", { class: "land", d: landD }, $("pickMap")); }
+    if (m) { landD = m[1]; el("path", { class: "land", d: landD }, landG); $("pickMap").insertBefore(el("path", { class: "land", d: landD }), $("pickMap").firstChild); }
   }).catch(() => {});
 
   function merge() {
@@ -293,7 +303,7 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
     // 下一站永远排在最后
     cards.sort((a, b) => (a.from === "next") - (b.from === "next"));
     threadG.innerHTML = ""; pinG.innerHTML = ""; $("pile").innerHTML = "";
-    drawThread(); drawPins(); drawPile();
+    drawPins(); drawPile();
   }
 
   fetch("postcards.json", { cache: "no-cache" }).then((r) => r.json()).then((data) => {
@@ -311,24 +321,29 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
       .catch(() => {});
   }
 
+  // 红线从一颗钉头牵到下一颗；地图缩放时钉子大小不变，所以线头跟着重算
+  let pins = [];
   function drawThread() {
-    for (let i = 1; i < cards.length; i++) {
-      const [x1, y1] = xy(cards[i - 1].lat, cards[i - 1].lon), [x2, y2] = xy(cards[i].lat, cards[i].lon);
+    threadG.innerHTML = "";
+    const k = scaleK();
+    for (let i = 1; i < pins.length; i++) {
+      const a = pins[i - 1], b = pins[i];
+      const x1 = a.x + a.off * k, y1 = a.y - 10 * k, x2 = b.x + b.off * k, y2 = b.y - 10 * k;
       const dist = Math.hypot(x2 - x1, y2 - y1), sag = Math.min(60, dist * .22);
-      const d = `M${x1} ${y1 - 9} Q${(x1 + x2) / 2} ${(y1 + y2) / 2 - 9 + sag} ${x2} ${y2 - 9}`;
-      el("path", { class: "thread" + (cards[i].from === "next" ? " toNext" : ""), d }, threadG);
+      el("path", { class: "thread" + (cards[i].from === "next" ? " toNext" : ""), d: `M${x1} ${y1} Q${(x1 + x2) / 2} ${(y1 + y2) / 2 + sag} ${x2} ${y2}` }, threadG);
     }
   }
 
   function drawPins() {
     // 同一个地方叠着的图钉，往旁边挪一点
     const seen = {};
+    pins = [];
     cards.forEach((c, i) => {
-      let [x, y] = xy(c.lat, c.lon);
-      const k = Math.round(x / 8) + ":" + Math.round(y / 8);
+      const [x, y] = xy(c.lat, c.lon);
+      const k = Math.round(x * 2) + ":" + Math.round(y * 2);
       seen[k] = (seen[k] || 0) + 1;
-      x += (seen[k] - 1) * 9;
-      const g = el("g", { class: "pin " + c.from, tabindex: 0, role: "button", "aria-label": c.place, transform: `translate(${x} ${y})` }, pinG);
+      const g = el("g", { class: "pin " + c.from, tabindex: 0, role: "button", "aria-label": c.place }, pinG);
+      pins.push({ g, x, y, off: (seen[k] - 1) * 14 });
       el("ellipse", { class: "shade", cx: 3, cy: 1.5, rx: 4, ry: 1.6 }, g);
       el("line", { class: "needle", x1: 0, y1: 0, x2: 0, y2: -9 }, g);
       el("circle", { class: "head", cx: 0, cy: -11, r: 5.2 }, g);
@@ -341,10 +356,12 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
         const text = el("text", { x: 6, y: 12.5 }, tag); text.textContent = label;
         requestAnimationFrame(() => rect.setAttribute("width", text.getComputedTextLength() + 12));
       }
-      el("circle", { class: "hit", cx: 0, cy: -10, r: 15 }, g);
+      // 同一处好几颗钉时热区收小一点，免得点到旁边那颗
+      el("circle", { class: "hit", cx: 0, cy: -9, r: seen[k] > 1 || cards.some((o, j) => j !== i && Math.abs(xy(o.lat, o.lon)[0] - x) < 1 && Math.abs(xy(o.lat, o.lon)[1] - y) < 1) ? 7.5 : 14 }, g);
       g.addEventListener("click", () => open(i));
       g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(i); } });
     });
+    placePins();
   }
 
   function drawPile() {
@@ -360,14 +377,81 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
     });
   }
 
-  // 一打开，地图滚到钉着图钉的那一片中间
-  function centre() {
-    const sc = $("mapScroll");
-    const xs = cards.map((c) => xy(c.lat, c.lon)[0]);
-    const mid = (Math.min(...xs) + Math.max(...xs)) / 2;
-    const scale = map.getBoundingClientRect().width / W;
-    sc.scrollLeft = Math.max(0, mid * scale - sc.clientWidth / 2);
+  // ── 地图：两指缩放、拖着走（viewBox 就是镜头）──
+  const box = $("mapBox");
+  let vb = { x: 0, y: 0, w: W };
+  const aspect = () => box.clientWidth / Math.max(1, box.clientHeight);
+  const scaleK = () => vb.w / Math.max(1, box.clientWidth);   // 一个屏幕像素是多少地图单位
+  function clampView() {
+    const A = aspect(), maxW = Math.min(W, 392 * A);
+    vb.w = Math.max(24, Math.min(maxW, vb.w));
+    const h = vb.w / A;
+    vb.x = Math.max(0, Math.min(W - vb.w, vb.x));
+    vb.y = h >= 392 ? (392 - h) / 2 : Math.max(0, Math.min(392 - h, vb.y));
   }
+  function placePins() {
+    const k = scaleK();
+    pins.forEach((p) => p.g.setAttribute("transform", `translate(${p.x + p.off * k} ${p.y}) scale(${k})`));
+    drawThread();
+  }
+  function applyView() {
+    clampView();
+    map.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.w / aspect()}`);
+    placePins();
+  }
+  // 一打开，镜头框住所有图钉
+  function centre() {
+    if (!pins.length) return applyView();
+    const xs = pins.map((p) => p.x), ys = pins.map((p) => p.y), A = aspect();
+    const x0 = Math.min(...xs) - 30, x1 = Math.max(...xs) + 130, y0 = Math.min(...ys) - 50, y1 = Math.max(...ys) + 30;
+    vb.w = Math.max(x1 - x0, (y1 - y0) * A, 160);
+    vb.x = (x0 + x1) / 2 - vb.w / 2; vb.y = (y0 + y1) / 2 - vb.w / A / 2;
+    applyView();
+  }
+  function zoomAt(f, cx, cy) {
+    const r = map.getBoundingClientRect(), A = aspect();
+    const fx = (cx - r.left) / r.width, fy = (cy - r.top) / r.height;
+    const ux = vb.x + fx * vb.w, uy = vb.y + fy * vb.w / A;
+    vb.w *= f; clampView();
+    vb.x = ux - fx * vb.w; vb.y = uy - fy * vb.w / A;
+    applyView();
+  }
+  const mid = () => { const r = map.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+  $("zin").addEventListener("click", () => zoomAt(.6, ...mid()));
+  $("zout").addEventListener("click", () => zoomAt(1 / .6, ...mid()));
+  $("zall").addEventListener("click", centre);
+  map.addEventListener("wheel", (e) => { e.preventDefault(); zoomAt(Math.pow(1.0018, e.deltaY), e.clientX, e.clientY); }, { passive: false });
+  const touches = new Map(); let pinched = false, downAt = null;
+  map.addEventListener("pointerdown", (e) => {
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touches.size === 1) { pinched = false; downAt = { x: e.clientX, y: e.clientY }; }
+    map.classList.add("grabbing");
+  });
+  window.addEventListener("pointermove", (e) => {
+    if (!touches.has(e.pointerId)) return;
+    const prev = touches.get(e.pointerId), now = { x: e.clientX, y: e.clientY };
+    if (touches.size === 1) {
+      const k = scaleK();
+      vb.x -= (now.x - prev.x) * k; vb.y -= (now.y - prev.y) * k;
+      touches.set(e.pointerId, now);
+      applyView();
+    } else if (touches.size === 2) {
+      const [a, b] = [...touches.values()];
+      const before = Math.hypot(a.x - b.x, a.y - b.y);
+      touches.set(e.pointerId, now);
+      const [c, d] = [...touches.values()];
+      const after = Math.hypot(c.x - d.x, c.y - d.y);
+      if (before > 0 && after > 0) zoomAt(before / after, (c.x + d.x) / 2, (c.y + d.y) / 2);
+      pinched = true;
+    }
+  });
+  const lift = (e) => { touches.delete(e.pointerId); if (!touches.size) map.classList.remove("grabbing"); };
+  window.addEventListener("pointerup", lift); window.addEventListener("pointercancel", lift);
+  // 拖过、捏过之后松手，不算点图钉
+  map.addEventListener("click", (e) => {
+    if (pinched || (downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 6)) { e.stopPropagation(); e.preventDefault(); }
+  }, true);
+  window.addEventListener("resize", applyView);
 
   function render() {
     const c = cards[index];
@@ -401,7 +485,29 @@ h1{margin:2px 0 0;font-weight:400;font-size:24px;letter-spacing:.08em;text-wrap:
     history.replaceState(null, "", location.pathname);
   }
   const flip = () => $("card").classList.toggle("flipped");
-  $("card").addEventListener("click", flip);
+  // 按住明信片能晃：手指往哪边走，卡就往哪边歪；没怎么动就是点一下，翻面
+  const card = $("card"); let hold = null;
+  card.addEventListener("pointerdown", (e) => {
+    if (e.target.closest(".swap")) return;
+    hold = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    try { card.setPointerCapture(e.pointerId); } catch (x) {}
+    card.classList.remove("spring"); card.classList.add("held");
+  });
+  card.addEventListener("pointermove", (e) => {
+    if (!hold || e.pointerId !== hold.id) return;
+    const dx = e.clientX - hold.x, dy = e.clientY - hold.y;
+    card.style.setProperty("--ry", Math.max(-40, Math.min(40, dx * .35)) + "deg");
+    card.style.setProperty("--rx", Math.max(-28, Math.min(28, -dy * .3)) + "deg");
+  });
+  const letGo = (e) => {
+    if (!hold || e.pointerId !== hold.id) return;
+    const moved = Math.hypot(e.clientX - hold.x, e.clientY - hold.y);
+    hold = null;
+    card.classList.remove("held"); card.classList.add("spring");
+    card.style.setProperty("--ry", "0deg"); card.style.setProperty("--rx", "0deg");
+    if (e.type === "pointerup" && moved < 8) { card.classList.remove("spring"); flip(); }
+  };
+  card.addEventListener("pointerup", letGo); card.addEventListener("pointercancel", letGo);
   $("card").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
   $("close").addEventListener("click", close);
   $("prev").addEventListener("click", () => index > 0 && open(index - 1));
